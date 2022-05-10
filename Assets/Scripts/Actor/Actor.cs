@@ -18,14 +18,11 @@ namespace CSM
         {
             foreach (State state in states) state.Update(this);
             processQueues();
+        }
 
-            slatedForDeletion.Clear();
-            slatedForCreation.Clear();
-
-            if (Input.anyKey)
-            {
-                states.Min.Process(this, new Action { name = "jump" });
-            }
+        public void FireAction(Action action)
+        {
+            states.Min.Process(this, action);
         }
 
         public void EnterState<T>() where T : State
@@ -43,8 +40,6 @@ namespace CSM
         private void ExitState(State state)
         {
             slatedForDeletion.Enqueue(state);
-            state.End(this);
-            UpdateStateChain();
         }
 
         private void ExitState(Type stateType)
@@ -66,7 +61,9 @@ namespace CSM
         {
             while (slatedForDeletion.Count > 0)//
             {
-                states.Remove(slatedForDeletion.Dequeue());
+                State state = slatedForDeletion.Dequeue();
+                states.Remove(state);
+                state.End(this);
                 UpdateStateChain();
             }
 

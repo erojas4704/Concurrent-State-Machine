@@ -19,7 +19,7 @@
 		"scope": "language-csharp, csharp, c#, cs",
 		"prefix": "New State",
 		"body": [
-			"namespace Actor",
+			"namespace CSM.States",
 			"{",
 			"\tpublic class $1 : State",
 			"\t{",

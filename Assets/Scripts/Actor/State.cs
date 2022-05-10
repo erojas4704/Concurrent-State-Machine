@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Linq;
 
 namespace CSM
 {
@@ -39,6 +40,9 @@ namespace CSM
             return this.GetType().GetHashCode();
         }
 
-
+        public override string ToString()
+        {
+            return this.GetType().ToString().Split('.').Last();
+        }
     }
 }

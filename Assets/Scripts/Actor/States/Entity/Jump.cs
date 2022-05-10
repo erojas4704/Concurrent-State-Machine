@@ -1,32 +1,23 @@
-using CSM;
-using UnityEngine;
-using System;
-
 namespace CSM.States
 {
-    [Serializable]
-    public class InMotion : State
+    public class Jump : State
     {
         private Entity entity;
-        private CharacterController controller;
-
-
-        public InMotion()
+        public Jump()
         {
-            Group = -1;//
-            Priority = 0;
+            Group = 2;
+            Priority = 2;
         }
 
         override public void Init(Actor actor)
         {
-            // Debug.Log($"INIT WAS CALLED BUT NOT REALLY ?? ACTOR IS {actor} ");
             entity = actor.GetComponent<Entity>();
-            controller = actor.GetComponent<CharacterController>();
+            entity.Velocity.y = 4f;
         }
 
         override public void Update(Actor actor)
         {
-            controller.Move(entity.Velocity * Time.deltaTime);
+            if (entity.Velocity.y < 0) Exit(this.GetType());
         }
 
         override public void Process(Actor actor, Action action)

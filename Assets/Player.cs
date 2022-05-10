@@ -19,6 +19,7 @@ public class Player : Entity
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetKey(KeyCode.Space))
+            actor.FireAction(new Action("jump"));
     }
 }

@@ -13,7 +13,7 @@ public class ActorEditor : Editor
 
         foreach (State state in states)
         {
-            EditorGUILayout.LabelField(state.GetType().ToString());
+            EditorGUILayout.LabelField($"[State ({state.Group}): {state}] Priority: {state.Priority}");
         }
     }
 }

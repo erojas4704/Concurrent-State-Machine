@@ -2,6 +2,11 @@ namespace CSM
 {
     public class Action
     {
-        public string name;
+        public string Name;
+        public Action(string name)
+        {
+            Name = name;
+        }
+
     }
 }

@@ -7,7 +7,7 @@ namespace CSM.States
 
     public class Airborne : State
     {
-        private Vector3 velocity;
+        private Entity entity;
 
         public Airborne()
         {
@@ -15,12 +15,17 @@ namespace CSM.States
             Priority = 1;
         }
 
+        override public void Init(Actor actor)
+        {
+            entity = actor.GetComponent<Entity>();
+        }
+
         override public void Update(Actor actor)
         {
             CharacterController controller = actor.GetComponent<CharacterController>();
-            controller.Move(velocity * Time.deltaTime);
-            velocity.y += -9.8f * Time.deltaTime;
-            if (velocity.y < -10) velocity.y = -10;
+            controller.Move(entity.Velocity * Time.deltaTime);
+            entity.Velocity.y += -9.8f * Time.deltaTime;
+            if (entity.Velocity.y < -10) entity.Velocity.y = -10;
             if (controller.isGrounded) Enter(typeof(Grounded));
         }
 
