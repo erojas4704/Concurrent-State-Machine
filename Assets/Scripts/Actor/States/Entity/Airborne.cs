@@ -1,31 +1,31 @@
 using UnityEngine;
+using System;
 
-namespace Actor.Entity
+namespace Actor.States.Entity
 {
-    [System.Serializable]
+    [Serializable]
+
     public class Airborne : State
     {
         private Vector3 velocity;
+
+        public Airborne()
+        {
+            Group = 0;
+            Priority = 1;
+        }
 
         override public void Update(Actor actor)
         {
             CharacterController controller = actor.GetComponent<CharacterController>();
             controller.Move(velocity * Time.deltaTime);
             velocity.y += -9.8f * Time.deltaTime;
-            if (velocity.y < -10)
-            {
-                velocity.y = -10;
-            }
+            if (velocity.y < -10) velocity.y = -10;
+            if (controller.isGrounded) Enter(typeof(Grounded));
         }
 
         override public void Process(Actor actor, Action action)
         {
-            if (action.name == "jump")
-            {
-                velocity.y = 10f;
-                Debug.Log("show me jumping");
-            }
-
             Next(actor, action);
         }
     }

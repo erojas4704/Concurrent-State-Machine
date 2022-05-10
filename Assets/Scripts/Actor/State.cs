@@ -1,26 +1,44 @@
+using UnityEngine;
+using System;
+
 namespace Actor
 {
 
+    [Serializable]
     public abstract class State
     {
         public int Priority;
+        public int Group;
 
         public delegate void NextStateCallback(Actor actor, Action action);
-        public delegate void EnterStateCallback<TState>();
+        public delegate void EnterStateCallback(Type stateType);
 
-        public delegate void ExitStateCallback();
+        public delegate void ExitStateCallback(Type stateType);
         public delegate void ExitStateCallback<TState>();
 
-        public virtual void Init(Actor actor) { }
+        public virtual void Init(Actor actor) { Debug.Log($"Entering state {GetType().Name}"); }
         public virtual void Update(Actor actor) { }
         public virtual void Process(Actor actor, Action action) { }
-        public virtual void End(Actor actor) { }
+        public virtual void End(Actor actor) { Debug.Log($"Exiting state {GetType().Name}"); }
 
-        public EnterStateCallback<State> Enter;
+        public EnterStateCallback Enter;
         public ExitStateCallback Exit;
-        public ExitStateCallback<State> ExitState;
         public NextStateCallback Next = (a, action) => { };
 
         public State() { }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+            return obj.GetType() == this.GetType();
+        }
+
+        public override int GetHashCode()
+        {
+            return this.GetType().GetHashCode();
+        }
+
+
     }
 }

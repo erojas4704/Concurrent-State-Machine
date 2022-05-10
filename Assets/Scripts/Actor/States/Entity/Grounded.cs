@@ -1,9 +1,17 @@
-namespace Actor
+namespace Actor.States.Entity
 {
+    [System.Serializable]
+
     public class Grounded : State
     {
+        public Grounded(){
+            Group = 0;
+            Priority = 1;
+        }
+
         override public void Init(Actor actor)
         {
+            base.Init(actor);
         }
 
         override public void Update(Actor actor)
