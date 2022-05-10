@@ -37,12 +37,7 @@ namespace CSM
         {
             State newState = (State)Activator.CreateInstance(stateType);
             ExitStateGroup(newState.Group);
-
             slatedForCreation.Enqueue(newState);
-            newState.Enter = EnterState;
-            newState.Exit = ExitState;
-            newState.Init(this);
-            UpdateStateChain();
         }
 
         private void ExitState(State state)
@@ -69,11 +64,21 @@ namespace CSM
 
         private void processQueues()
         {
-            while (slatedForDeletion.Count > 0)
+            while (slatedForDeletion.Count > 0)//
+            {
                 states.Remove(slatedForDeletion.Dequeue());
+                UpdateStateChain();
+            }
 
             while (slatedForCreation.Count > 0)
-                states.Add(slatedForCreation.Dequeue());
+            {
+                State newState = slatedForCreation.Dequeue();
+                states.Add(newState);
+                newState.Enter = EnterState;
+                newState.Exit = ExitState;
+                newState.Init(this);
+                UpdateStateChain();
+            }
         }
 
         private void ExitStateGroup(int group)
