@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
 
-namespace Actor.States.Entity
+namespace CSM.States
 {
     [Serializable]
 

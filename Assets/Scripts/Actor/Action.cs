@@ -1,4 +1,4 @@
-namespace Actor
+namespace CSM
 {
     public class Action
     {

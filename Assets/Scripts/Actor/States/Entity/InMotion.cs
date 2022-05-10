@@ -1,0 +1,43 @@
+using CSM;
+using UnityEngine;
+using System;
+
+namespace CSM.States
+{
+    [Serializable]
+    public class InMotion : State
+    {
+        private Entity entity;
+        private CharacterController controller;
+
+
+        public InMotion()
+        {
+            Group = -1;//
+            Priority = 0;
+        }
+
+        override public void Init(Actor actor)
+        {
+            // Debug.Log($"INIT WAS CALLED BUT NOT REALLY ?? ACTOR IS {actor} ");
+            entity = actor.GetComponent<Entity>();
+            controller = actor.GetComponent<CharacterController>();
+        }
+
+        override public void Update(Actor actor)
+        {//
+            Debug.Log(entity, controller);
+            controller.Move(entity.Velocity * Time.deltaTime);
+        }
+
+        override public void Process(Actor actor, Action action)
+        {
+            Next(actor, action);
+        }
+
+        override public void End(Actor actor)
+        {
+        }
+
+    }
+}

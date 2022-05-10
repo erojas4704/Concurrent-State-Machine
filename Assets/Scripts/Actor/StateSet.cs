@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System;
 
-namespace Actor
+namespace CSM
 {
     public class StateSet : SortedSet<State>
     {

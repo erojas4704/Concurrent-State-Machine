@@ -1,10 +1,9 @@
-using System.Collections;
 using System.Collections.Generic;
 using System;
 using UnityEngine;
-using Actor.States.Entity;
+using CSM.States;
 
-namespace Actor
+namespace CSM
 {
     public class Actor : MonoBehaviour, ISerializationCallbackReceiver
     {
@@ -13,7 +12,6 @@ namespace Actor
         private Queue<State> slatedForCreation = new Queue<State>();
         void Start()
         {
-            EnterState(typeof(Airborne));
         }
 
         void Update()
@@ -30,7 +28,12 @@ namespace Actor
             }
         }
 
-        private void EnterState(Type stateType)
+        public void EnterState<T>() where T : State
+        {
+            EnterState(typeof(T));
+        }
+
+        public void EnterState(Type stateType)
         {
             State newState = (State)Activator.CreateInstance(stateType);
             ExitStateGroup(newState.Group);
@@ -92,6 +95,11 @@ namespace Actor
 
                 prev = s;
             }
+        }
+
+        public StateSet GetStates()
+        {
+            return states;
         }
 
         #region ISerializationCallbackReceiver implementation

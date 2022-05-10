@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
 
-namespace Actor
+namespace CSM
 {
 
     [Serializable]
@@ -16,10 +16,10 @@ namespace Actor
         public delegate void ExitStateCallback(Type stateType);
         public delegate void ExitStateCallback<TState>();
 
-        public virtual void Init(Actor actor) { Debug.Log($"Entering state {GetType().Name}"); }
+        public virtual void Init(Actor actor) { }
         public virtual void Update(Actor actor) { }
         public virtual void Process(Actor actor, Action action) { }
-        public virtual void End(Actor actor) { Debug.Log($"Exiting state {GetType().Name}"); }
+        public virtual void End(Actor actor) { }
 
         public EnterStateCallback Enter;
         public ExitStateCallback Exit;
@@ -35,7 +35,7 @@ namespace Actor
         }
 
         public override int GetHashCode()
-        {
+        {//
             return this.GetType().GetHashCode();
         }
 

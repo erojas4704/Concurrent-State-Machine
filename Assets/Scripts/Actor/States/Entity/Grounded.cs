@@ -1,4 +1,4 @@
-namespace Actor.States.Entity
+namespace CSM.States
 {
     [System.Serializable]
 
