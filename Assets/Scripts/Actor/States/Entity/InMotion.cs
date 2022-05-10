@@ -13,13 +13,12 @@ namespace CSM.States
 
         public InMotion()
         {
-            Group = -1;//
+            Group = -1;
             Priority = 0;
         }
 
         override public void Init(Actor actor)
         {
-            // Debug.Log($"INIT WAS CALLED BUT NOT REALLY ?? ACTOR IS {actor} ");
             entity = actor.GetComponent<Entity>();
             controller = actor.GetComponent<CharacterController>();
         }
