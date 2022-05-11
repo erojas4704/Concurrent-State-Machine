@@ -11,8 +11,8 @@ namespace CSM.States
 
         public Airborne()
         {
-            Group = 0;
-            Priority = 1;
+            group = 0;
+            priority = 3;
         }
 
         override public void Init(Actor actor)

@@ -13,8 +13,8 @@ namespace CSM.States
 
         public InMotion()
         {
-            Group = -1;
-            Priority = 98;
+            group = -1;
+            priority = 98;
         }
 
         override public void Init(Actor actor)

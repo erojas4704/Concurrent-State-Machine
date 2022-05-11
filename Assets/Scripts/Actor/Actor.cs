@@ -21,7 +21,11 @@ namespace CSM
 
         void Update()
         {
-            foreach (State state in states) state.Update(this);
+            foreach (State state in states)
+            {
+                state.time += Time.deltaTime;
+                state.Update(this);
+            }
             processQueues();
             ProcessActionBuffer();
         }
@@ -35,7 +39,7 @@ namespace CSM
         {
             State pooledState = statePool.FirstOrDefault<State>(s => s.GetType() == stateType);
             State newState = pooledState != null ? pooledState : (State)Activator.CreateInstance(stateType);
-            if (newState.Group > -1) ExitStateGroup(newState.Group);
+            if (newState.group > -1) ExitStateGroup(newState.group);
             slatedForCreation.Enqueue(newState);
         }
 
@@ -78,6 +82,7 @@ namespace CSM
                 newState.Enter = EnterState;
                 newState.Exit = ExitState;
                 newState.Init(this);
+                newState.time = 0;
                 UpdateStateChain();
             }
         }
@@ -88,7 +93,7 @@ namespace CSM
 
             Action firstAction = actionBuffer.Peek();
             firstAction.timer += Time.deltaTime;
-            
+
             if (FireAction(firstAction, false))
             {
                 actionBuffer.Dequeue();
@@ -116,7 +121,7 @@ namespace CSM
         private void ExitStateGroup(int group)
         {
             foreach (State state in states)
-                if (state.Group == group)
+                if (state.group == group)
                     ExitState(state.GetType());
         }
 

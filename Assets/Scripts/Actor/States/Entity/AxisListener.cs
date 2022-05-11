@@ -6,8 +6,8 @@ namespace CSM.States
         public Vector2 axis;
         public AxisListener()
         {
-            Group = -1;
-            Priority = 99;
+            group = -1;
+            priority = 99;
         }
 
         override public void Init(Actor actor)

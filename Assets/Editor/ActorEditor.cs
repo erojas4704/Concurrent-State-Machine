@@ -17,7 +17,7 @@ public class ActorEditor : Editor
 
         foreach (State state in states)
         {
-            EditorGUILayout.LabelField($"[State ({state.Group}): {state}] Priority: {state.Priority}");
+            EditorGUILayout.LabelField($"[State ({state.group}): {state}] Priority: {state.priority} Active: {state.time}");
         }
 
         foreach (Action action in actionBuffer)

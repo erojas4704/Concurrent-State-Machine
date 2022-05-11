@@ -8,8 +8,9 @@ namespace CSM
     [Serializable]
     public abstract class State
     {
-        public int Priority;
-        public int Group;
+        public int priority;
+        public int group;
+        public float time = 0f;
 
         public delegate void NextStateCallback(Actor actor, Action action);
         public delegate void EnterStateCallback(Type stateType);
