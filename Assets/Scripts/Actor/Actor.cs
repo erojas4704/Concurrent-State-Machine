@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using System.Linq;
 using UnityEngine.InputSystem;
 using CSM.States;
 
@@ -11,6 +12,8 @@ namespace CSM
         private StateSet states = new StateSet(new StateComparer());
         private Queue<State> slatedForDeletion = new Queue<State>();
         private Queue<State> slatedForCreation = new Queue<State>();
+
+        private HashSet<State> statePool = new HashSet<State>();
         void Start()
         {
         }
@@ -28,7 +31,8 @@ namespace CSM
 
         public void EnterState(Type stateType)
         {
-            State newState = (State)Activator.CreateInstance(stateType);
+            State pooledState = statePool.FirstOrDefault<State>(s => s.GetType() == stateType);
+            State newState = pooledState != null ? pooledState : (State)Activator.CreateInstance(stateType);
             ExitStateGroup(newState.Group);
             slatedForCreation.Enqueue(newState);
         }
@@ -59,6 +63,7 @@ namespace CSM
             {
                 State state = slatedForDeletion.Dequeue();
                 states.Remove(state);
+                statePool.Add(state);
                 state.End(this);
                 UpdateStateChain();
             }
@@ -67,6 +72,7 @@ namespace CSM
             {
                 State newState = slatedForCreation.Dequeue();
                 states.Add(newState);
+                statePool.Remove(newState);
                 newState.Enter = EnterState;
                 newState.Exit = ExitState;
                 newState.Init(this);
