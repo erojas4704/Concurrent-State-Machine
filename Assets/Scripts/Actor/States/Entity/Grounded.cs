@@ -6,6 +6,7 @@ namespace CSM.States
 
     public class Grounded : State
     {
+        private Vector2 axis;
         private CharacterController controller;
         private Entity entity;
         public Grounded()
@@ -23,17 +24,21 @@ namespace CSM.States
 
         override public void Update(Actor actor)
         {
-            if (!controller.isGrounded)
-            {
-                actor.EnterState<Airborne>();
-            }
+            if (!controller.isGrounded) actor.EnterState<Airborne>();
+            entity.Velocity = new Vector3(axis.x * 20, entity.Velocity.y, axis.y * 20);
         }
 
         override public void Process(Actor actor, Action action)
         {
-            if (action.Name == "jump")
+            if (action.name == "Jump")
             {
                 actor.EnterState<Jump>();
+            }
+
+            if (action.name == "Move")
+            {
+                Vector2 axis = action.GetValue<Vector2>();
+                this.axis = axis;
             }
             Next(actor, action);
         }

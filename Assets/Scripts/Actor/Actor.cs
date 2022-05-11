@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using CSM.States;
 
 namespace CSM
@@ -18,11 +19,6 @@ namespace CSM
         {
             foreach (State state in states) state.Update(this);
             processQueues();
-        }
-
-        public void FireAction(Action action)
-        {
-            states.Min.Process(this, action);
         }
 
         public void EnterState<T>() where T : State
@@ -76,6 +72,11 @@ namespace CSM
                 newState.Init(this);
                 UpdateStateChain();
             }
+        }
+
+        public void FireAction(Action action)
+        {
+            states.Min.Process(this, action);
         }
 
         private void ExitStateGroup(int group)
