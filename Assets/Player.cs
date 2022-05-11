@@ -23,7 +23,6 @@ public class Player : Entity
         actionMap.actionTriggered += OnAction;
     }
 
-    // Update is called once per frame
     void Update()
     {
 
@@ -42,5 +41,11 @@ public class Player : Entity
         action.phase = Action.TranslateToActionPhase(context.phase);
         action.SetValue(context.ReadValue<Vector2>());
         actor.FireAction(action, false);
+    }
+
+    public void OnEnable()
+    {
+        actionMap.Enable();
+        actionMap.actionTriggered += OnAction;
     }
 }
