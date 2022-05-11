@@ -13,7 +13,7 @@ namespace CSM
         private Queue<State> slatedForDeletion = new Queue<State>();
         private Queue<State> slatedForCreation = new Queue<State>();
         private Queue<Action> actionBuffer = new Queue<Action>();
-        public Action movementActionBuffer;
+        private Action movementActionBuffer;
         private HashSet<State> statePool = new HashSet<State>();
         public float actionTimer = .75f;
         void Start()
@@ -90,11 +90,12 @@ namespace CSM
 
         private void ProcessActionBuffer()
         {
-            if (actionBuffer.Count < 1) return;
-
             //!! Continuation of the movement action buffer hack.
             if (movementActionBuffer != null) if (FireAction(movementActionBuffer, false)) movementActionBuffer = null;
-            
+
+            if (actionBuffer.Count < 1) return;
+
+
 
             Action firstAction = actionBuffer.Peek();
             firstAction.timer += Time.deltaTime;
@@ -119,7 +120,7 @@ namespace CSM
             //!! This is a hack to get around the fact that movement actions aren't being processed by the state chain.
             if (!action.processed && action.name == "Move")
                 movementActionBuffer = action;
-            
+
 
             return action.processed;
         }
