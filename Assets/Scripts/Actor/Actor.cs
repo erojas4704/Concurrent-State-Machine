@@ -13,6 +13,7 @@ namespace CSM
         private Queue<State> slatedForDeletion = new Queue<State>();
         private Queue<State> slatedForCreation = new Queue<State>();
         private Queue<Action> actionBuffer = new Queue<Action>();
+        public Action movementActionBuffer;
         private HashSet<State> statePool = new HashSet<State>();
         public float actionTimer = .75f;
         void Start()
@@ -91,6 +92,10 @@ namespace CSM
         {
             if (actionBuffer.Count < 1) return;
 
+            //!! Continuation of the movement action buffer hack.
+            if (movementActionBuffer != null) if (FireAction(movementActionBuffer, false)) movementActionBuffer = null;
+            
+
             Action firstAction = actionBuffer.Peek();
             firstAction.timer += Time.deltaTime;
 
@@ -106,9 +111,15 @@ namespace CSM
 
         public bool FireAction(Action action, bool buffer = true)
         {
+            Debug.Log("Firing action: " + action);
             states.Min.Process(this, action);
             if (ShouldBufferAction(action, buffer))
                 actionBuffer.Enqueue(action);
+
+            //!! This is a hack to get around the fact that movement actions aren't being processed by the state chain.
+            if (!action.processed && action.name == "Move")
+                movementActionBuffer = action;
+            
 
             return action.processed;
         }

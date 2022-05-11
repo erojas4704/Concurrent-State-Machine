@@ -41,11 +41,12 @@ namespace CSM.States
                     actor.EnterState<Jump>();
                 }
             }
-            
+
             if (action.name == "Move")
             {
-                Vector2 axis = action.GetValue<Vector2>();
-                this.axis = axis;
+                Debug.Log($"Got move action {action}");
+                this.axis = action.axis;
+                action.processed = true;
             }
             Next(actor, action);
         }

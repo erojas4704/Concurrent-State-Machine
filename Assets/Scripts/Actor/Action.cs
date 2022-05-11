@@ -1,7 +1,9 @@
+using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
 namespace CSM
 {
+    [Serializable]
     public class Action
     {
         public string name;
@@ -9,6 +11,7 @@ namespace CSM
         public ActionPhase phase = ActionPhase.None;
         public bool processed = false;
         public float timer = 0f;
+        public Vector2 axis;
 
         public Action() { }
         public Action(string name)
@@ -22,7 +25,7 @@ namespace CSM
             phase = TranslateToActionPhase(action.phase);
         }
 
-        private Object _value;
+        private System.Object _value;
 
         public void SetValue<T>(T value) where T : struct
         {
@@ -54,7 +57,7 @@ namespace CSM
                 : phase == ActionPhase.Held ? "(h)"
                 : phase == ActionPhase.Released ? "(^)"
                 : "()";
-                
+
             return $"--> Action {name} {token}";
         }
     }

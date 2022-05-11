@@ -9,16 +9,14 @@ using CSM;
 public class Player : Entity
 {
     private Actor actor;
-
+    private Vector2 axis;
     public InputActionMap actionMap;
-    // Start is called before the first frame update
+
     void Start()
     {
         actor = GetComponent<Actor>();
         actor.EnterState<InMotion>();
         actor.EnterState<Airborne>();
-        actor.EnterState<AxisListener>();
-
         actionMap.Enable();
         actionMap.actionTriggered += OnAction;
     }
@@ -32,14 +30,20 @@ public class Player : Entity
     {
         Action action = new Action(context.action);
         actor.FireAction(action);
+        action.axis = axis;
+
     }
 
     public void OnMove(InputAction.CallbackContext context)
     {
+        Vector2 axis = context.ReadValue<Vector2>();
+        this.axis = axis;
+
         Action action = new Action();
         action.name = context.action.name;
         action.phase = Action.TranslateToActionPhase(context.phase);
         action.SetValue(context.ReadValue<Vector2>());
+        action.axis = axis;
         actor.FireAction(action, false);
     }
 
