@@ -17,6 +17,7 @@ public class Player : Entity
         actor = GetComponent<Actor>();
         actor.EnterState<InMotion>();
         actor.EnterState<Airborne>();
+        actor.EnterState<AxisListener>();
 
         actionMap.Enable();
         actionMap.actionTriggered += OnAction;
@@ -25,7 +26,7 @@ public class Player : Entity
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     public void OnAction(InputAction.CallbackContext context)
