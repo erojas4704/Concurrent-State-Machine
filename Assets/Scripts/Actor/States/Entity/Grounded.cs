@@ -9,6 +9,7 @@ namespace CSM.States
         private Vector2 axis;
         private CharacterController controller;
         private Entity entity;
+        private Player player;
 
         public float speed = 5f;
         public Grounded()
@@ -20,12 +21,14 @@ namespace CSM.States
         override public void Init(Actor actor)
         {
             entity = actor.GetComponent<Entity>();
-            entity.Velocity.y = -10f;
             controller = actor.GetComponent<CharacterController>();
+            player = actor.GetComponent<Player>();
+            entity.Velocity.y = -10f;
         }
 
         override public void Update(Actor actor)
         {
+            axis = player.axis;
             if (!controller.isGrounded) actor.EnterState<Airborne>();
             entity.Velocity.x = axis.x * speed;
             entity.Velocity.z = axis.y * speed;
@@ -44,8 +47,6 @@ namespace CSM.States
 
             if (action.name == "Move")
             {
-                Debug.Log($"Got move action {action}");
-                this.axis = action.axis;
                 action.processed = true;
             }
             Next(actor, action);

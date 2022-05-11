@@ -8,8 +8,9 @@ using CSM;
 [RequireComponent(typeof(Actor))]
 public class Player : Entity
 {
+    // [HideInInspector]
+    public Vector2 axis;
     private Actor actor;
-    private Vector2 axis;
     public InputActionMap actionMap;
 
     void Start()
@@ -31,13 +32,11 @@ public class Player : Entity
         Action action = new Action(context.action);
         actor.FireAction(action);
         action.axis = axis;
-
     }
 
     public void OnMove(InputAction.CallbackContext context)
     {
-        Vector2 axis = context.ReadValue<Vector2>();
-        this.axis = axis;
+        axis = context.ReadValue<Vector2>();
 
         Action action = new Action();
         action.name = context.action.name;
