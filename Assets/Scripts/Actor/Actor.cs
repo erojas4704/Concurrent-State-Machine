@@ -84,20 +84,19 @@ namespace CSM
 
         private void ProcessActionBuffer()
         {
-            actionBuffer = new Queue<Action>(actionBuffer.Where(action =>
-                {
-                    action.timer += Time.deltaTime;
-                    return action.timer < actionTimer;
-                })
-            );
-
             if (actionBuffer.Count < 1) return;
 
             Action firstAction = actionBuffer.Peek();
+            firstAction.timer += Time.deltaTime;
+            
             if (FireAction(firstAction, false))
             {
                 actionBuffer.Dequeue();
-            };
+            }
+            else if (firstAction.timer >= actionTimer)
+            {
+                actionBuffer.Dequeue();
+            }
         }
 
         public bool FireAction(Action action, bool buffer = true)

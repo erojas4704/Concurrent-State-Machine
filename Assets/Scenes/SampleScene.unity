@@ -1145,6 +1145,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4676456423dff8341862aec85e7f6f73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  actionTimer: 0.35
   _stateArray: []
   references:
     version: 2
