@@ -18,6 +18,7 @@ public class Player : Entity
         actor = GetComponent<Actor>();
         actor.EnterState<InMotion>();
         actor.EnterState<Airborne>();
+        actor.EnterState<MeleeArmed>();
         actionMap.Enable();
         actionMap.actionTriggered += OnAction;
     }
