@@ -33,7 +33,7 @@ namespace CSM
         {
             State pooledState = statePool.FirstOrDefault<State>(s => s.GetType() == stateType);
             State newState = pooledState != null ? pooledState : (State)Activator.CreateInstance(stateType);
-            ExitStateGroup(newState.Group);
+            if (newState.Group > -1) ExitStateGroup(newState.Group);
             slatedForCreation.Enqueue(newState);
         }
 

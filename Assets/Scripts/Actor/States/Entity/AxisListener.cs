@@ -6,7 +6,7 @@ namespace CSM.States
         public Vector2 axis;
         public AxisListener()
         {
-            Group = -2;
+            Group = -1;
             Priority = 99;
         }
 
