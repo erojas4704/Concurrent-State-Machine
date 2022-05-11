@@ -9,6 +9,8 @@ namespace CSM.States
         private Vector2 axis;
         private CharacterController controller;
         private Entity entity;
+
+        public float speed = 5f;
         public Grounded()
         {
             Group = 0;
@@ -25,7 +27,8 @@ namespace CSM.States
         override public void Update(Actor actor)
         {
             if (!controller.isGrounded) actor.EnterState<Airborne>();
-            entity.Velocity = new Vector3(axis.x * 20, entity.Velocity.y, axis.y * 20);
+            entity.Velocity.x = axis.x * speed;
+            entity.Velocity.z = axis.y * speed;
         }
 
         override public void Process(Actor actor, Action action)
