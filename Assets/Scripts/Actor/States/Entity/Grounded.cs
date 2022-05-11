@@ -33,11 +33,15 @@ namespace CSM.States
 
         override public void Process(Actor actor, Action action)
         {
-            if (action.name == "Jump")
+            if (action.phase == Action.ActionPhase.Pressed)
             {
-                actor.EnterState<Jump>();
+                if (action.name == "Jump")
+                {
+                    action.processed = true;
+                    actor.EnterState<Jump>();
+                }
             }
-
+            
             if (action.name == "Move")
             {
                 Vector2 axis = action.GetValue<Vector2>();

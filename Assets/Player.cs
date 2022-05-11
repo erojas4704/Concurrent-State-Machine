@@ -41,6 +41,6 @@ public class Player : Entity
         action.name = context.action.name;
         action.phase = Action.TranslateToActionPhase(context.phase);
         action.SetValue(context.ReadValue<Vector2>());
-        actor.FireAction(action);
+        actor.FireAction(action, false);
     }
 }

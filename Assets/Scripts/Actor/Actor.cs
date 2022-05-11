@@ -12,8 +12,9 @@ namespace CSM
         private StateSet states = new StateSet(new StateComparer());
         private Queue<State> slatedForDeletion = new Queue<State>();
         private Queue<State> slatedForCreation = new Queue<State>();
-
+        private Queue<Action> actionBuffer = new Queue<Action>();
         private HashSet<State> statePool = new HashSet<State>();
+        public float actionTimer = .75f;
         void Start()
         {
         }
@@ -22,6 +23,7 @@ namespace CSM
         {
             foreach (State state in states) state.Update(this);
             processQueues();
+            ProcessActionBuffer();
         }
 
         public void EnterState<T>() where T : State
@@ -80,9 +82,36 @@ namespace CSM
             }
         }
 
-        public void FireAction(Action action)
+        private void ProcessActionBuffer()
+        {
+            actionBuffer = new Queue<Action>(actionBuffer.Where(action =>
+                {
+                    action.timer += Time.deltaTime;
+                    return action.timer < actionTimer;
+                })
+            );
+
+            if (actionBuffer.Count < 1) return;
+
+            Action firstAction = actionBuffer.Peek();
+            if (FireAction(firstAction, false))
+            {
+                actionBuffer.Dequeue();
+            };
+        }
+
+        public bool FireAction(Action action, bool buffer = true)
         {
             states.Min.Process(this, action);
+            if (ShouldBufferAction(action, buffer))
+                actionBuffer.Enqueue(action);
+
+            return action.processed;
+        }
+
+        private bool ShouldBufferAction(Action action, bool buffer)
+        {
+            return !action.processed && buffer && action.phase == Action.ActionPhase.Pressed;
         }
 
         private void ExitStateGroup(int group)

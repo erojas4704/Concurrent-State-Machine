@@ -7,6 +7,8 @@ namespace CSM
         public string name;
         public enum ActionPhase { None, Pressed, Held, Released }
         public ActionPhase phase = ActionPhase.None;
+        public bool processed = false;
+        public float timer = 0f;
 
         public Action() { }
         public Action(string name)
@@ -44,6 +46,16 @@ namespace CSM
             }
 
             return ActionPhase.None;
+        }
+
+        public override string ToString()
+        {
+            String token = phase == ActionPhase.Pressed ? "(v)"
+                : phase == ActionPhase.Held ? "(h)"
+                : phase == ActionPhase.Released ? "(^)"
+                : "()";
+                
+            return $"--> Action {name} {token}";
         }
     }
 }
