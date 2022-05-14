@@ -21,7 +21,7 @@ namespace CSM
 
         public virtual void Init(Actor actor) { }
         public virtual void Update(Actor actor) { }
-        public virtual void Process(Actor actor, Action action) { }
+        public virtual void Process(Actor actor, Action action) { Next(actor, action); }
         public virtual void End(Actor actor) { }
 
         public EnterStateCallback Enter;

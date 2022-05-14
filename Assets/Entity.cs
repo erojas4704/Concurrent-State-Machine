@@ -6,6 +6,7 @@ namespace CSM.Entities
     {
         public Vector3 velocity;
         public Stats stats;
+        public Stats finalStats;
 
         void Start()
         {
@@ -23,22 +24,32 @@ namespace CSM.Entities
             base.Update();
         }
 
+        //TODO allow to insert this middleware in and consolidate loops for performance reasons.
         public void CalculateStats()
         {
-            Debug.Log("CALCLUTTE STATS");
-            Stats lastStat = this.stats;
+            Stats lastCalculatedStat = this.stats;
 
-            foreach (State state in statePool)
+            string stackedStates = "";
+            foreach(State s in states)
             {
-                Debug.Log("Last stats: " + lastStat);
-                Debug.Log($"{state.GetType()} {typeof(EntityState)} and {state.GetType().IsSubclassOf(typeof(EntityState))}");
+                stackedStates += s + "\n";
+            }
+            Debug.Log("THERE WAS A STATE CHANGE");
+            Debug.Log(stackedStates);
+
+            foreach (State state in states)
+            {
                 if (state.GetType().IsSubclassOf(typeof(EntityState)))
                 {
                     EntityState e = (EntityState)state;
-                    lastStat = e.Reduce(this, lastStat);
-                    e.stats = lastStat;
+                    lastCalculatedStat = e.Reduce(this, lastCalculatedStat);
+                    e.stats = lastCalculatedStat;
+                    Debug.Log($"Processing state {e.GetType()}: " +
+                        $"EState stats {e.stats} Last calculated stats {lastCalculatedStat} base stats {this.stats}");
                 }
             }
+
+            finalStats = lastCalculatedStat;
         }
     }
 }

@@ -15,7 +15,10 @@ public class DeathCube : MonoBehaviour
 
     void Start()
     {
-        Transform closestWaypoint = waypoints.Aggregate((curr, next) => Vector3.Distance(transform.position, curr.position) < Vector3.Distance(transform.position, next.position) ? curr : next);
+        Transform closestWaypoint = waypoints.Aggregate((curr, next) =>
+        {
+            return Vector3.Distance(transform.position, curr.position) < Vector3.Distance(transform.position, next.position) ? curr : next;
+        });
         waypointIndex = Array.IndexOf(waypoints, closestWaypoint);
     }
     // Update is called once per frame

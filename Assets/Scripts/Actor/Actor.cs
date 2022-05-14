@@ -9,7 +9,7 @@ namespace CSM
 {
     public class Actor : MonoBehaviour, ISerializationCallbackReceiver
     {
-        private StateSet states = new StateSet(new StateComparer());
+        protected StateSet states = new StateSet(new StateComparer());
         private Queue<State> slatedForDeletion = new Queue<State>();
         private Queue<State> slatedForCreation = new Queue<State>();
         private Queue<Action> actionBuffer = new Queue<Action>();
@@ -18,9 +18,6 @@ namespace CSM
         public event StateChangeHandler OnStateChange;
 
         public float actionTimer = .75f;
-        void Start()
-        {
-        }
 
         public virtual void Update()
         {
@@ -75,7 +72,7 @@ namespace CSM
         private void processQueues()
         {
             bool changed = false;
-            while (slatedForDeletion.Count > 0)//
+            while (slatedForDeletion.Count > 0)
             {
                 State state = slatedForDeletion.Dequeue();
                 states.Remove(state);
@@ -89,7 +86,7 @@ namespace CSM
             {
                 //TODO extract methods here.
                 State newState = slatedForCreation.Dequeue();
-                if (!HasRequirements(newState)) return;
+                if (!HasRequirements(newState)) continue;
                 foreach (Type negatedState in newState.negatedStates) ExitState(negatedState);
                 foreach (Type partnerState in newState.partnerStates) EnterState(partnerState);
                 if (newState.solo) ExitAllStatesExcept(newState);

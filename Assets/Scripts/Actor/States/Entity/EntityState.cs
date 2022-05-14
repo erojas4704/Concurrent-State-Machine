@@ -1,3 +1,4 @@
+using UnityEngine;
 namespace CSM.Entities
 {
     public class EntityState : State

@@ -14,9 +14,9 @@ namespace CSM.States
             Next(actor, action);
         }
 
-        override public Stats Reduce(Entity entity, Stats stats){
+        override public Stats Reduce(Entity entity, Stats stats)
+        {
             stats.speed = 15;
-            Debug.Log(stats);
             return stats;
         }
     }
