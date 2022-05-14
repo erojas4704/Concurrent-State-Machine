@@ -1,15 +1,10 @@
+using CSM.Entities.States;
+
 namespace CSM.States
 {
     [StateDescriptor(priority = 4, group = 4)]
     public class MeleeArmed : State
     {
-        override public void Init(Actor actor)
-        {
-        }
-
-        override public void Update(Actor actor)
-        {
-        }
 
         override public void Process(Actor actor, Action action)
         {
@@ -23,10 +18,6 @@ namespace CSM.States
                 }
             }
             Next(actor, action);
-        }
-
-        override public void End(Actor actor)
-        {
         }
 
     }

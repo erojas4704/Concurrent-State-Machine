@@ -1,11 +1,12 @@
-namespace CSM.States
+
+using CSM.States;
+
+namespace CSM.Entities.States
 {
     [StateDescriptor(group = 3, priority = 5)]
-    public class MeleeAttack : State
+    public class MeleeAttack : EntityState
     {
         private int combo;
-        public MeleeAttack()
-        { }
 
         override public void Init(Actor actor)
         {
@@ -14,6 +15,7 @@ namespace CSM.States
 
         override public void Update(Actor actor)
         {
+            if (time >= 2f) Exit(this.GetType());
         }
 
         override public void Process(Actor actor, Action action)
@@ -28,12 +30,7 @@ namespace CSM.States
                 }
             }
 
-            Next(actor, action);
+            //Next(actor, action);
         }
-
-        override public void End(Actor actor)
-        {
-        }
-
     }
 }

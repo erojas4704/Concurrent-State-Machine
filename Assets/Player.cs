@@ -17,7 +17,6 @@ public class Player : MonoBehaviour
         actor = GetComponent<Actor>();
         actor.EnterState<Airborne>();
         actor.EnterState<MeleeArmed>();
-        actor.EnterState<InMotion>();
         actionMap.Enable();
         actionMap.actionTriggered += OnAction;
     }

@@ -11,7 +11,7 @@ namespace CSM.States
         override public void Init(Actor actor)
         {
             entity = (Entity)actor;
-            entity.velocity.y = 5f;
+            entity.velocity.y = 9f;
         }
 
         override public void Update(Actor actor)

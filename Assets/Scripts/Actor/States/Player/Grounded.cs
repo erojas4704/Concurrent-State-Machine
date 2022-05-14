@@ -4,18 +4,19 @@ using CSM.States;
 namespace CSM.Entities.States
 {
     [StateDescriptor(priority = 3, group = 0)]
-    public class Grounded : EntityState
+    public class Grounded : Movable
     {
-        private CharacterController controller;
 
         override public void Init(Entity entity)
         {
+            base.Init(entity);
             controller = entity.GetComponent<CharacterController>();
             entity.velocity.y = -10f;
         }
 
         override public void Update(Entity entity)
         {
+            base.Update(entity);
             if (!controller.isGrounded) Enter(typeof(Airborne));
         }
 

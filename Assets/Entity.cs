@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CSM.Entities
 {
-    public class Entity : Actor
+    public class Entity : Actor, ISerializationCallbackReceiver
     {
         public Vector3 velocity;
         public Stats stats;
@@ -40,5 +40,17 @@ namespace CSM.Entities
 
             finalStats = lastCalculatedStat;
         }
+
+        #region ISerializationCallbackReceiver implementation
+        public new void OnBeforeSerialize()
+        {
+            base.OnBeforeSerialize();
+        }
+        public new void OnAfterDeserialize()//
+        {
+            OnStateChange += OnStateChangeHandler;
+            base.OnAfterDeserialize();
+        }
+        #endregion
     }
 }
