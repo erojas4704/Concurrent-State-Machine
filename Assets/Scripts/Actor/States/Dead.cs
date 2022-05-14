@@ -4,7 +4,7 @@ namespace CSM.States
     [Solo]
     public class Dead : State
     {
-        override public void Init(Actor actor)
+        public override void Init(Actor actor)
         {
             Rigidbody rb = actor.GetComponent<Rigidbody>();
             if(rb == null) rb = actor.gameObject.AddComponent<Rigidbody>();

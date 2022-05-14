@@ -8,13 +8,13 @@ namespace CSM.States
         private bool isHeld;
         private float hangTime = 0.55f;
 
-        override public void Init(Actor actor)
+        public override void Init(Actor actor)
         {
             entity = (Entity)actor;
             entity.velocity.y = 7.5f;
         }
 
-        override public void Update(Actor actor)
+        public override void Update(Actor actor)
         {
             if (entity.velocity.y < 0)
             {
@@ -25,7 +25,7 @@ namespace CSM.States
             }
         }
 
-        override public void Process(Actor actor, Action action)
+        public override void Process(Actor actor, Action action)
         {
             if (action.name == "Jump" && action.phase == Action.ActionPhase.Held)
             {
@@ -37,7 +37,7 @@ namespace CSM.States
             Next(actor, action);
         }
 
-        override public void End(Actor actor)
+        public override void End(Actor actor)
         {
         }
 

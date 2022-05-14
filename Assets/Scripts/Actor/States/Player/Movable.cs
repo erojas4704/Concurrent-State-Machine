@@ -14,13 +14,13 @@ namespace CSM.States
         [SerializeField]
         private Vector3 vel;
 
-        override public void Init(Entity entity)
+        public override void Init(Entity entity)
         {
             player = entity.GetComponent<Player>();
             controller = entity.GetComponent<CharacterController>();
         }
 
-        override public void Update(Entity entity)
+        public override void Update(Entity entity)
         {
             axis = player.axis;
             Vector3 targetVelocity = new Vector3();

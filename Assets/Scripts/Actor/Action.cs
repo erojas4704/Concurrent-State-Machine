@@ -19,6 +19,12 @@ namespace CSM
             this.name = name;
         }
 
+        public Action(string name, ActionPhase phase)
+        {
+            this.name = name;
+            this.phase = phase;
+        }
+
         public Action(InputAction action)
         {
             name = action.name;
@@ -59,6 +65,27 @@ namespace CSM
                 : "()";
 
             return $"--> Action {name} {token}";
+        }
+    }
+
+    public class Action<T> : Action {
+        private T initiator;
+        
+        public Action(string name, T initiator, ActionPhase phase)
+        {
+            this.initiator = initiator;
+            this.name = name;
+            this.phase = phase;
+        }
+
+        public T GetInitiator()
+        {
+            return initiator;
+        }
+
+        public void SetInitiator(T initiator)
+        {
+            this.initiator = initiator;
         }
     }
 }

@@ -7,13 +7,13 @@ namespace CSM.Entities.States
     public class Sprint : EntityState
     {
         public float sprintSpeed = 8f;
-        override public void Process(Entity actor, Action action)
+        public override void Process(Entity actor, Action action)
         {
             if (action.name == "Sprint" && action.phase == Action.ActionPhase.Released) Exit(this.GetType());
             Next(actor, action);
         }
 
-        override public Stats Reduce(Entity entity, Stats stats)
+        public override Stats Reduce(Entity entity, Stats stats)
         {
             stats.speed = sprintSpeed;
             return stats;

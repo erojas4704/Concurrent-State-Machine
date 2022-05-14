@@ -7,33 +7,37 @@ namespace CSM.Entities.States
     public class Grounded : Movable
     {
 
-        override public void Init(Entity entity)
+        public override void Init(Entity entity)
         {
             base.Init(entity);
             controller = entity.GetComponent<CharacterController>();
             entity.velocity.y = -10f;
         }
 
-        override public void Update(Entity entity)
+        public override void Update(Entity entity)
         {
             base.Update(entity);
             if (!controller.isGrounded) Enter(typeof(Airborne));
         }
 
-        override public void Process(Entity entity, Action action)
+        public override void Process(Entity entity, Action action)
         {
             if (action.phase == Action.ActionPhase.Pressed)
             {
-                if (action.name == "Jump")
+                switch (action.name)
                 {
-                    action.processed = true;
-                    entity.EnterState<Jump>();
-                }
-
-                if (action.name == "Sprint")
-                {
-                    action.processed = true;
-                    entity.EnterState<Sprint>();
+                    case "Jump":
+                        action.processed = true;
+                        entity.EnterState<Jump>();
+                        break;
+                    case "Sprint":
+                        action.processed = true;
+                        entity.EnterState<Sprint>();
+                        break;
+                    case "Ladder":
+                        action.processed = true;
+                        entity.EnterState<Climb>();
+                        break;
                 }
             }
 

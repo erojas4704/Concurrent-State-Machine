@@ -9,7 +9,7 @@ using System.Collections.Generic;
 public class ActorEditor : Editor
 {
 
-    override public void OnInspectorGUI()
+    public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
         StateSet states = ((Actor)target).GetStates();

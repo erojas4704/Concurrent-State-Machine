@@ -8,17 +8,17 @@ namespace CSM.Entities.States
     {
         private int combo;
 
-        override public void Init(Actor actor)
+        public override void Init(Actor actor)
         {
             combo = 0;
         }
 
-        override public void Update(Actor actor)
+        public override void Update(Actor actor)
         {
             if (time >= 2f) Exit(this.GetType());
         }
 
-        override public void Process(Actor actor, Action action)
+        public override void Process(Actor actor, Action action)
         {
             if (action.phase == Action.ActionPhase.Pressed)
             {

@@ -11,7 +11,7 @@ namespace CSM.Entities.States
         public float airAcceleration = 15f;
         public float drag = 3f;
 
-        override public void Update(Entity entity)
+        public override void Update(Entity entity)
         {
             base.Update(entity);
             CharacterController controller = entity.GetComponent<CharacterController>();

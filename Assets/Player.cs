@@ -50,4 +50,12 @@ public class Player : MonoBehaviour
         actionMap.Enable();
         actionMap.actionTriggered += OnAction;
     }
+
+    public void OnTriggerEnter(Collider other)
+    {
+        if (other.GetComponent<Ladder>())
+        {
+            actor.FireAction(new Action<Ladder>("Ladder", other.GetComponent<Ladder>(), Action.ActionPhase.Pressed), false);
+        }
+    }
 }

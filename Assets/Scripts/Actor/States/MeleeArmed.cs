@@ -6,7 +6,7 @@ namespace CSM.States
     public class MeleeArmed : State
     {
 
-        override public void Process(Actor actor, Action action)
+        public override void Process(Actor actor, Action action)
         {
             if (action.phase == Action.ActionPhase.Pressed)
             {
