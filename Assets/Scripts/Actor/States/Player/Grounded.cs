@@ -1,48 +1,44 @@
 using UnityEngine;
+using CSM.Entities;
 
 namespace CSM.States
 {
-    [System.Serializable]
     [StateDescriptor(priority = 3, group = 0)]
-    public class Grounded : State
+    public class Grounded : EntityState
     {
         private Vector2 axis;
         private CharacterController controller;
-        private Entity entity;
         private Player player;
 
-        public float speed = 5f;
-
-        override public void Init(Actor actor)
+        override public void Init(Entity entity)
         {
-            entity = actor.GetComponent<Entity>();
-            controller = actor.GetComponent<CharacterController>();
-            player = actor.GetComponent<Player>();
-            entity.Velocity.y = -10f;
+            controller = entity.GetComponent<CharacterController>();
+            player = entity.GetComponent<Player>();
+            entity.velocity.y = -10f;
         }
 
-        override public void Update(Actor actor)
+        override public void Update(Entity entity)
         {
             axis = player.axis;
-            if (!controller.isGrounded) actor.EnterState<Airborne>();
-            entity.Velocity.x = axis.x * speed;
-            entity.Velocity.z = axis.y * speed;
+            if (!controller.isGrounded) Enter(typeof(Airborne));
+            entity.velocity.x = axis.x * stats.speed;
+            entity.velocity.z = axis.y * stats.speed;
         }
 
-        override public void Process(Actor actor, Action action)
+        override public void Process(Entity entity, Action action)
         {
             if (action.phase == Action.ActionPhase.Pressed)
             {
                 if (action.name == "Jump")
                 {
                     action.processed = true;
-                    actor.EnterState<Jump>();
+                    entity.EnterState<Jump>();
                 }
 
                 if (action.name == "Sprint")
                 {
                     action.processed = true;
-                    actor.EnterState<Sprint>();
+                    entity.EnterState<Sprint>();
                 }
             }
 
@@ -50,11 +46,7 @@ namespace CSM.States
             {
                 action.processed = true;
             }
-            Next(actor, action);
-        }
-
-        override public void End(Actor actor)
-        {
+            Next(entity, action);
         }
 
     }

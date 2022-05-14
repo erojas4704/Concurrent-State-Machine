@@ -1,12 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using CSM.States;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using CSM;
 
 [RequireComponent(typeof(Actor))]
-public class Player : Entity
+public class Player : MonoBehaviour
 {
     // [HideInInspector]
     public Vector2 axis;

@@ -13,13 +13,16 @@ namespace CSM
         private Queue<State> slatedForDeletion = new Queue<State>();
         private Queue<State> slatedForCreation = new Queue<State>();
         private Queue<Action> actionBuffer = new Queue<Action>();
-        private HashSet<State> statePool = new HashSet<State>();
+        protected HashSet<State> statePool = new HashSet<State>();
+        public delegate void StateChangeHandler(Actor actor);
+        public event StateChangeHandler OnStateChange;
+
         public float actionTimer = .75f;
         void Start()
         {
         }
 
-        void Update()
+        public virtual void Update()
         {
             foreach (State state in states)
             {
@@ -71,6 +74,7 @@ namespace CSM
 
         private void processQueues()
         {
+            bool changed = false;
             while (slatedForDeletion.Count > 0)//
             {
                 State state = slatedForDeletion.Dequeue();
@@ -78,6 +82,7 @@ namespace CSM
                 statePool.Add(state);
                 state.End(this);
                 UpdateStateChain();
+                changed = true;
             }
 
             while (slatedForCreation.Count > 0)
@@ -96,7 +101,11 @@ namespace CSM
                 newState.Init(this);
                 newState.time = 0;
                 UpdateStateChain();
+                changed = true;
             }
+
+            if (changed && OnStateChange != null)
+                OnStateChange(this);
         }
 
         private void ExitAllStatesExcept(State state)
