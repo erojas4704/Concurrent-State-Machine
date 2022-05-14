@@ -19,6 +19,7 @@
 		"scope": "language-csharp, csharp, c#, cs",
 		"prefix": "New State",
 		"body": [
+			"using CSM",
 			"namespace CSM.States",
 			"{",
 			"\tpublic class $1 : State",

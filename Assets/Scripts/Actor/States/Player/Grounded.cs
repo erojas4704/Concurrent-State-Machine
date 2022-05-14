@@ -12,7 +12,7 @@ namespace CSM.States
         private Player player;
 
         public float speed = 5f;
-        
+
         override public void Init(Actor actor)
         {
             entity = actor.GetComponent<Entity>();
@@ -37,6 +37,12 @@ namespace CSM.States
                 {
                     action.processed = true;
                     actor.EnterState<Jump>();
+                }
+
+                if (action.name == "Sprint")
+                {
+                    action.processed = true;
+                    actor.EnterState<Sprint>();
                 }
             }
 
