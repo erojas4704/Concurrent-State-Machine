@@ -30,7 +30,8 @@ namespace CSM
             ProcessActionBuffer();
         }
 
-        public bool Is<TState>(){
+        public bool Is<TState>()
+        {
             return states.Any(s => s.GetType() == typeof(TState));
         }
 
@@ -54,6 +55,7 @@ namespace CSM
 
         private void ExitState(Type stateType)
         {
+            //TODO o(n) implement hashset
             State state = null;
             foreach (State s in states)
             {
@@ -80,7 +82,13 @@ namespace CSM
 
             while (slatedForCreation.Count > 0)
             {
+                //TODO extract methods here.
                 State newState = slatedForCreation.Dequeue();
+                if (!HasRequirements(newState)) return;
+                foreach (Type negatedState in newState.negatedStates) ExitState(negatedState);
+                foreach (Type partnerState in newState.partnerStates) EnterState(partnerState);
+                if (newState.solo) ExitAllStatesExcept(newState);
+
                 states.Add(newState);
                 statePool.Remove(newState);
                 newState.Enter = EnterState;
@@ -89,6 +97,21 @@ namespace CSM
                 newState.time = 0;
                 UpdateStateChain();
             }
+        }
+
+        private void ExitAllStatesExcept(State state)
+        {
+            foreach (State s in states) if (s != state) ExitState(s);
+        }
+
+        private bool HasRequirements(State state)
+        {
+            //TODO o(n^2) implement hashset
+            foreach (Type requiredState in state.requiredStates)
+            {
+                if (!states.Any(s => s.GetType() == requiredState)) return false;
+            }
+            return true;
         }
 
         private void ProcessActionBuffer()
