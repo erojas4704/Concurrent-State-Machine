@@ -3,17 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using CSM;
 using CSM.States;
+using System;
+using System.Linq;
 
 public class DeathCube : MonoBehaviour
 {
+    public bool reverse = false;
     public float speed = 10f;
     public Transform[] waypoints;
     private int waypointIndex = 0;
 
+    void Start()
+    {
+        Transform closestWaypoint = waypoints.Aggregate((curr, next) => Vector3.Distance(transform.position, curr.position) < Vector3.Distance(transform.position, next.position) ? curr : next);
+        waypointIndex = Array.IndexOf(waypoints, closestWaypoint);
+    }
     // Update is called once per frame
     void Update()
     {
-        Vector3 target = waypoints[waypointIndex].position;
+        Vector3 target = waypoints[reverse ? waypoints.Length - 1 - waypointIndex : waypointIndex].position;
         transform.position = Vector3.MoveTowards(transform.position, target, Time.deltaTime * speed);
         float distance = Vector3.Distance(transform.position, target);
         if (distance < 0.2f)
