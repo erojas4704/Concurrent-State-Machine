@@ -1,13 +1,8 @@
 namespace CSM.States
 {
+    [StateDescriptor(priority = 4, group = 4)]
     public class MeleeArmed : State
     {
-        public MeleeArmed()
-        {
-            priority = 4;
-            group = 4;
-        }
-
         override public void Init(Actor actor)
         {
         }

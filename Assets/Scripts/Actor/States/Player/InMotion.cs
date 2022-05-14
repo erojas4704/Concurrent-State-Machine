@@ -5,17 +5,11 @@ using System;
 namespace CSM.States
 {
     [Serializable]
+    [StateDescriptor(priority = 98, group = -1)]
     public class InMotion : State
     {
         private Entity entity;
         private CharacterController controller;
-
-
-        public InMotion()
-        {
-            group = -1;
-            priority = 98;
-        }
 
         override public void Init(Actor actor)
         {

@@ -3,7 +3,7 @@ using UnityEngine;
 namespace CSM.States
 {
     [System.Serializable]
-
+    [StateDescriptor(priority = 3, group = 0)]
     public class Grounded : State
     {
         private Vector2 axis;
@@ -12,12 +12,7 @@ namespace CSM.States
         private Player player;
 
         public float speed = 5f;
-        public Grounded()
-        {
-            group = 0;
-            priority = 3;
-        }
-
+        
         override public void Init(Actor actor)
         {
             entity = actor.GetComponent<Entity>();

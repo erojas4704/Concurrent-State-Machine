@@ -4,16 +4,10 @@ using System;
 namespace CSM.States
 {
     [Serializable]
-
+    [StateDescriptor(priority = 3, group = 0)]
     public class Airborne : State
     {
         private Entity entity;
-
-        public Airborne()
-        {
-            group = 0;
-            priority = 3;
-        }
 
         override public void Init(Actor actor)
         {

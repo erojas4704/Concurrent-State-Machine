@@ -85,7 +85,6 @@ namespace CSM
                 statePool.Remove(newState);
                 newState.Enter = EnterState;
                 newState.Exit = ExitState;
-                newState.Prepare();
                 newState.Init(this);
                 newState.time = 0;
                 UpdateStateChain();

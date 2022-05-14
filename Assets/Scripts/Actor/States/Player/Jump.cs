@@ -1,15 +1,11 @@
 namespace CSM.States
 {
+    [StateDescriptor(priority = 2, group = 2)]
     public class Jump : State
     {
         private Entity entity;
         private bool isHeld;
         private float hangTime = 0.55f;
-        public Jump()
-        {
-            group = 2;
-            priority = 2;
-        }
 
         override public void Init(Actor actor)
         {

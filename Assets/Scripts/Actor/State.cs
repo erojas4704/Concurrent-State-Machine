@@ -10,8 +10,8 @@ namespace CSM
     [Serializable]
     public abstract class State
     {
-        public int priority;// {get; init;}
-        public int group;// {get; init;}
+        public int priority { get; init; }
+        public int group { get; init; }
         public float time = 0f;
 
         public delegate void NextStateCallback(Actor actor, Action action);
@@ -29,23 +29,15 @@ namespace CSM
         public ExitStateCallback Exit;
         public NextStateCallback Next = (a, action) => { };
 
-        public State() { 
 
-            
-        }
-
-        /// <summary>
-        /// Must be called by the state machine to prepare a state. 
-        /// This method is not to be overridden.
-        /// </summary>
-        internal void Prepare()
+        public State()
         {
-            // StateDescriptor desc = (StateDescriptor)System.Attribute.GetCustomAttribute(this.GetType(), typeof(StateDescriptor));
-            // if (desc != null)
-            // {
-            //     priority = desc.priority;
-            //     group = desc.group;
-            // }
+            StateDescriptor desc = (StateDescriptor)System.Attribute.GetCustomAttribute(this.GetType(), typeof(StateDescriptor));
+            if (desc != null)
+            {
+                priority = desc.priority;
+                group = desc.group;
+            }
         }
 
         public override bool Equals(object obj)
@@ -65,4 +57,10 @@ namespace CSM
             return this.GetType().ToString().Split('.').Last();
         }
     }
+}
+
+//! hack
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit { }
 }
