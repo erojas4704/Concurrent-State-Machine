@@ -1,5 +1,6 @@
 namespace CSM.States
 {
+    [StateDescriptor(group = "Melee", priority = 1)]
     public class MeleeAttack : State
     {
         private int combo;

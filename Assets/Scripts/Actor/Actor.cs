@@ -30,6 +30,10 @@ namespace CSM
             ProcessActionBuffer();
         }
 
+        public bool Is<TState>(){
+            return states.Any(s => s.GetType() == typeof(TState));
+        }
+
         public void EnterState<T>() where T : State
         {
             EnterState(typeof(T));
@@ -81,6 +85,7 @@ namespace CSM
                 statePool.Remove(newState);
                 newState.Enter = EnterState;
                 newState.Exit = ExitState;
+                newState.Prepare();
                 newState.Init(this);
                 newState.time = 0;
                 UpdateStateChain();
