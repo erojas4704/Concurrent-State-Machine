@@ -28,15 +28,6 @@ namespace CSM.Entities
         public void CalculateStats()
         {
             Stats lastCalculatedStat = this.stats;
-
-            string stackedStates = "";
-            foreach(State s in states)
-            {
-                stackedStates += s + "\n";
-            }
-            Debug.Log("THERE WAS A STATE CHANGE");
-            Debug.Log(stackedStates);
-
             foreach (State state in states)
             {
                 if (state.GetType().IsSubclassOf(typeof(EntityState)))
@@ -44,8 +35,6 @@ namespace CSM.Entities
                     EntityState e = (EntityState)state;
                     lastCalculatedStat = e.Reduce(this, lastCalculatedStat);
                     e.stats = lastCalculatedStat;
-                    Debug.Log($"Processing state {e.GetType()}: " +
-                        $"EState stats {e.stats} Last calculated stats {lastCalculatedStat} base stats {this.stats}");
                 }
             }
 
