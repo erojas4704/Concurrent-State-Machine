@@ -1,31 +1,20 @@
 using UnityEngine;
 using System;
-using CSM.Entities;
+using CSM;
+using CSM.States;
 
-namespace CSM.States
+namespace CSM.Entities.States
 {
     [StateDescriptor(priority = 3, group = 0)]
-    public class Airborne : State
+    public class Airborne : EntityState
     {
-        private Entity entity;
 
-        override public void Init(Actor actor)
+        override public void Update(Entity entity)
         {
-            entity = (Entity)actor;
-        }
-
-        override public void Update(Actor actor)
-        {
-            CharacterController controller = actor.GetComponent<CharacterController>();
-            controller.Move(entity.velocity * Time.deltaTime);
+            CharacterController controller = entity.GetComponent<CharacterController>();
             entity.velocity.y += -9.8f * Time.deltaTime;
             if (entity.velocity.y < -10) entity.velocity.y = -10;
             if (controller.isGrounded) Enter(typeof(Grounded));
-        }
-
-        override public void Process(Actor actor, Action action)
-        {
-            Next(actor, action);
         }
     }
 }

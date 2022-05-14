@@ -1,7 +1,5 @@
-using CSM;
-using CSM.Entities;
-using UnityEngine;
-namespace CSM.States
+using CSM.States;
+namespace CSM.Entities.States
 {
 
     [StateDescriptor(group = 3, priority = 5)]

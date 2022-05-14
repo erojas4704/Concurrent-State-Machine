@@ -2,6 +2,7 @@ using CSM.States;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using CSM;
+using CSM.Entities.States;
 
 [RequireComponent(typeof(Actor))]
 public class Player : MonoBehaviour
@@ -14,9 +15,9 @@ public class Player : MonoBehaviour
     void Start()
     {
         actor = GetComponent<Actor>();
-        actor.EnterState<InMotion>();
         actor.EnterState<Airborne>();
         actor.EnterState<MeleeArmed>();
+        actor.EnterState<InMotion>();
         actionMap.Enable();
         actionMap.actionTriggered += OnAction;
     }

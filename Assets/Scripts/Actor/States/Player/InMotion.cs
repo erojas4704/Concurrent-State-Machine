@@ -4,30 +4,25 @@ using System;
 
 namespace CSM.States
 {
-    [StateDescriptor(priority = 98, group = -1)]
-    public class InMotion : State
+    [StateDescriptor(priority = 1)]
+    public class InMotion : EntityState
     {
-        private Entity entity;
+        private Player player;
         private CharacterController controller;
+        private Vector2 axis;
 
-        override public void Init(Actor actor)
+        override public void Init(Entity entity)
         {
-            entity = (Entity) actor;
-            controller = actor.GetComponent<CharacterController>();//
+            player = entity.GetComponent<Player>();
+            controller = entity.GetComponent<CharacterController>();
         }
 
-        override public void Update(Actor actor)
+        override public void Update(Entity entity)
         {
+            axis = player.axis;
+            entity.velocity.x = axis.x * stats.speed;
+            entity.velocity.z = axis.y * stats.speed;
             controller.Move(entity.velocity * Time.deltaTime);
-        }
-
-        override public void Process(Actor actor, Action action)
-        {
-            Next(actor, action);
-        }
-
-        override public void End(Actor actor)
-        {
         }
 
     }

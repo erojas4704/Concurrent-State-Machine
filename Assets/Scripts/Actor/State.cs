@@ -10,7 +10,7 @@ namespace CSM
     public abstract class State
     {
         public int priority { get; init; }
-        public int group { get; init; }
+        public int group { get; init; } = -1;
         public float time = 0f;
 
         public delegate void NextStateCallback(Actor actor, Action action);
