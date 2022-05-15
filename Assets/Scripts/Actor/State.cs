@@ -20,6 +20,9 @@ namespace CSM
         public delegate void ExitStateCallback<TState>();
 
         public virtual void Init(Actor actor) { }
+        public virtual void Init(Actor actor, Action initiator) { Init(actor); }
+
+
         public virtual void Update(Actor actor) { }
         public virtual void Process(Actor actor, Action action) { Next(actor, action); }
         public virtual void End(Actor actor) { }
@@ -28,9 +31,9 @@ namespace CSM
         public ExitStateCallback Exit;
         public NextStateCallback Next = (a, action) => { };
 
-        public Type[] requiredStates = new Type[]{};
-        public Type[] negatedStates = new Type[]{};
-        public Type[] partnerStates = new Type[]{};
+        public Type[] requiredStates = new Type[] { };
+        public Type[] negatedStates = new Type[] { };
+        public Type[] partnerStates = new Type[] { };
 
         public bool solo;
 

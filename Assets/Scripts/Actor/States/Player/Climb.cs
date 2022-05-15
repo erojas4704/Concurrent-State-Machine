@@ -11,7 +11,7 @@ namespace CSM.Entities.States
         private float climbSpeed = 5f;
         private Player player;
         private CharacterController controller;
-        public override void Init(Entity entity)
+        public override void Init(Entity entity, Action inititator)
         {
             player = entity.GetComponent<Player>();
             controller = entity.GetComponent<CharacterController>();
@@ -19,16 +19,14 @@ namespace CSM.Entities.States
         public override void Update(Entity entity)
         {
             Vector2 axis = player.axis;
-            controller.Move(new Vector3(0f, player.axis.y * climbSpeed, 0f));
+            controller.Move(new Vector3(0f, player.axis.y * climbSpeed * Time.deltaTime, 0f ));
         }
 
         public override void Process(Entity entity, Action action)
         {
             base.Process(entity, action);
+            Debug.Log(action);
         }
 
-        public override void End(Entity entity)
-        {
-        }
     }
 }

@@ -11,7 +11,7 @@ namespace CSM
     {
         protected StateSet states = new StateSet(new StateComparer());
         private Queue<State> slatedForDeletion = new Queue<State>();
-        private Queue<State> slatedForCreation = new Queue<State>();
+        private Queue<StateAndInitiator> slatedForCreation = new Queue<StateAndInitiator>();
         private Queue<Action> actionBuffer = new Queue<Action>();
         protected HashSet<State> statePool = new HashSet<State>();
         public delegate void StateChangeHandler(Actor actor);
@@ -40,12 +40,27 @@ namespace CSM
             EnterState(typeof(T));
         }
 
+        public void EnterState<T>(Action initiator) where T : State
+        {
+            EnterState(typeof(T), initiator);
+        }
+
         public void EnterState(Type stateType)
+        {
+            EnterState(stateType, null);
+        }
+
+        public void EnterState(Type stateType, Action initiator = null)
         {
             State pooledState = statePool.FirstOrDefault<State>(s => s.GetType() == stateType);
             State newState = pooledState != null ? pooledState : (State)Activator.CreateInstance(stateType);
             if (newState.group > -1) ExitStateGroup(newState.group);
-            slatedForCreation.Enqueue(newState);
+
+            StateAndInitiator si = new StateAndInitiator(
+               newState, initiator
+            );
+
+            slatedForCreation.Enqueue(si);
         }
 
         private void ExitState(State state)
@@ -85,7 +100,8 @@ namespace CSM
             while (slatedForCreation.Count > 0)
             {
                 //TODO extract methods here.
-                State newState = slatedForCreation.Dequeue();
+                StateAndInitiator si = slatedForCreation.Dequeue();
+                State newState = si.state;
                 if (!HasRequirements(newState)) continue;
                 foreach (Type negatedState in newState.negatedStates) ExitState(negatedState);
                 foreach (Type partnerState in newState.partnerStates) EnterState(partnerState);
@@ -95,7 +111,10 @@ namespace CSM
                 statePool.Remove(newState);
                 newState.Enter = EnterState;
                 newState.Exit = ExitState;
-                newState.Init(this);
+                if (si.initiator != null)
+                    newState.Init(this, si.initiator);
+                else
+                    newState.Init(this);
                 newState.time = 0;
                 UpdateStateChain();
                 changed = true;
@@ -180,6 +199,18 @@ namespace CSM
         public StateSet GetStates()
         {
             return states;
+        }
+
+        private class StateAndInitiator
+        {
+            public State state;
+            public Action initiator;
+
+            public StateAndInitiator(State state, Action initiator)
+            {
+                this.state = state;
+                this.initiator = initiator;
+            }
         }
 
         #region ISerializationCallbackReceiver implementation

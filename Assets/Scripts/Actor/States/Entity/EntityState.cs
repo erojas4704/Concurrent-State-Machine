@@ -8,6 +8,8 @@ namespace CSM.Entities
 
         public virtual void Init(Entity entity) { }
 
+        public virtual void Init(Entity entity, Action initiator) { Init(entity); }
+
         public virtual void Update(Entity entity) { }
 
         public virtual void Process(Entity entity, Action action)
@@ -25,6 +27,11 @@ namespace CSM.Entities
         public override void Init(Actor actor)
         {
             Init((Entity)actor);
+        }
+
+        public override void Init(Actor actor, Action initiator)
+        {
+            Init((Entity)actor, initiator);
         }
 
         public override void Update(Actor actor)
