@@ -5,6 +5,7 @@ using CSM;
 using CSM.States;
 using System;
 using System.Linq;
+using CSM.Entities.States;
 
 public class DeathCube : MonoBehaviour
 {
@@ -40,6 +41,5 @@ public class DeathCube : MonoBehaviour
         {
             other.gameObject.GetComponent<Actor>().EnterState<Dead>();
         }
-
     }
 }

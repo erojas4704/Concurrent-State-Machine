@@ -22,6 +22,7 @@ namespace CSM.Entities.States
 
         public override void Process(Entity entity, Action action)
         {
+            Debug.Log("GOt action " + action);
             if (action.phase == Action.ActionPhase.Pressed)
             {
                 switch (action.name)
@@ -36,7 +37,7 @@ namespace CSM.Entities.States
                         break;
                     case "Ladder":
                         action.processed = true;
-                        entity.EnterState<Climb>();
+                        Enter(typeof(Climb));
                         break;
                 }
             }

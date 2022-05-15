@@ -53,9 +53,10 @@ public class Player : MonoBehaviour
 
     public void OnTriggerEnter(Collider other)
     {
-        if (other.GetComponent<Ladder>())
+        Debug.Log("COLLIDERERD " + other.GetComponent<Ladder>());
+        if (other.GetComponent<Ladder>() != null)
         {
-            actor.FireAction(new Action<Ladder>("Ladder", other.GetComponent<Ladder>(), Action.ActionPhase.Pressed), false);
+            actor.FireAction(new Action("Ladder", other.GetComponent<Ladder>()), false);
         }
     }
 }

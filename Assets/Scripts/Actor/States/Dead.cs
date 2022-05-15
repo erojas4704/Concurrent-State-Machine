@@ -1,5 +1,6 @@
+using CSM.States;
 using UnityEngine;
-namespace CSM.States
+namespace CSM.Entities.States
 {
     [Solo]
     public class Dead : State
@@ -7,7 +8,7 @@ namespace CSM.States
         public override void Init(Actor actor)
         {
             Rigidbody rb = actor.GetComponent<Rigidbody>();
-            if(rb == null) rb = actor.gameObject.AddComponent<Rigidbody>();
+            if (rb == null) rb = actor.gameObject.AddComponent<Rigidbody>();
             rb.useGravity = true;
             rb.isKinematic = false;
             rb.constraints = RigidbodyConstraints.None;

@@ -25,6 +25,13 @@ namespace CSM
             this.phase = phase;
         }
 
+        public Action(string name, System.Object initiator)
+        {
+            this.name = name;
+            this.phase = ActionPhase.Pressed;
+            this._initiator = initiator;
+        }
+
         public Action(InputAction action)
         {
             name = action.name;
@@ -40,6 +47,17 @@ namespace CSM
         public T GetValue<T>() where T : struct
         {
             return (T)this._value;
+        }
+
+        private System.Object _initiator;
+
+        public void SetInitiator<T>(T value)
+        {
+            this._initiator = value;
+        }
+        public T GetInitiator<T>()
+        {
+            return (T)this._initiator;
         }
 
         public static ActionPhase TranslateToActionPhase(InputActionPhase phase)
@@ -65,27 +83,6 @@ namespace CSM
                 : "()";
 
             return $"--> Action {name} {token}";
-        }
-    }
-
-    public class Action<T> : Action {
-        private T initiator;
-        
-        public Action(string name, T initiator, ActionPhase phase)
-        {
-            this.initiator = initiator;
-            this.name = name;
-            this.phase = phase;
-        }
-
-        public T GetInitiator()
-        {
-            return initiator;
-        }
-
-        public void SetInitiator(T initiator)
-        {
-            this.initiator = initiator;
         }
     }
 }

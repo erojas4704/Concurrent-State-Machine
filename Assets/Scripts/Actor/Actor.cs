@@ -115,7 +115,11 @@ namespace CSM
             //TODO o(n^2) implement hashset
             foreach (Type requiredState in state.requiredStates)
             {
-                if (!states.Any(s => s.GetType() == requiredState)) return false;
+                if (!states.Any(s => s.GetType() == requiredState))
+                {
+                    Debug.LogWarning($"Not entering state {state} because dependency {state} is missing!");
+                    return false;
+                }
             }
             return true;
         }
