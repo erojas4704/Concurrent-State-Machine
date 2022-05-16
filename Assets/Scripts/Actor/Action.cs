@@ -31,6 +31,12 @@ namespace CSM
             this.phase = ActionPhase.Pressed;
             this._initiator = initiator;
         }
+        public Action(string name, System.Object initiator, ActionPhase phase)
+        {
+            this.name = name;
+            this.phase = phase;
+            this._initiator = initiator;
+        }
 
         public Action(InputAction action)
         {

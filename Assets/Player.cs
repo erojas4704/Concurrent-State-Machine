@@ -58,4 +58,13 @@ public class Player : MonoBehaviour
             actor.FireAction(new Action("Ladder", other.GetComponent<Ladder>()), false);
         }
     }
+
+    public void OnTriggerExit(Collider other)
+    {
+        Debug.Log("EXITED TRIGGER");
+        if (other.GetComponent<Ladder>() != null)
+        {
+            actor.FireAction(new Action("Ladder", other.GetComponent<Ladder>(), Action.ActionPhase.Released), false);
+        }
+    }
 }
