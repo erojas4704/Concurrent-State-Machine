@@ -16,7 +16,7 @@ namespace CSM.Entities.States
             base.Update(entity);
             CharacterController controller = entity.GetComponent<CharacterController>();
             entity.velocity.y += -9.8f * Time.deltaTime;
-            if (entity.velocity.y < -10) entity.velocity.y = -10;
+            entity.velocity.y = Mathf.Max(entity.velocity.y, -50f); //Clamp to -50 terminal velocity
             if (controller.isGrounded) Enter(typeof(Grounded));
         }
 

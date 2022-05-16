@@ -31,7 +31,9 @@ namespace CSM.Entities.States
 
             controller.Move(nearestLadderPoint - player.transform.position);
 
-            Debug.Log($"{nearestLadderPoint}");
+            //If i'm descending and my feet touch the ground, exit ladder state.
+            if (axis.y < 0f && controller.isGrounded)
+                Enter(typeof(Grounded));
         }
 
         public override void Process(Entity entity, Action action)
