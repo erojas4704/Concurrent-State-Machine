@@ -136,7 +136,7 @@ namespace CSM
             {
                 if (!states.Any(s => s.GetType() == requiredState))
                 {
-                    Debug.LogWarning($"Not entering state {state} because dependency {state} is missing!");
+                    Debug.LogWarning($"Not entering state {state} because dependency {requiredState} is missing!");
                     return false;
                 }
             }
@@ -165,7 +165,6 @@ namespace CSM
             states.Min.Process(this, action);
             if (ShouldBufferAction(action, buffer))
                 actionBuffer.Enqueue(action);
-
 
             return action.processed;
         }

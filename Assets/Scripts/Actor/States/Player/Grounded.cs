@@ -6,6 +6,8 @@ namespace CSM.Entities.States
     [StateDescriptor(priority = 3, group = 0)]
     public class Grounded : Movable
     {
+        /** How accurately must a player be facing a ladder to be able to climb it.**/
+        private float climbAngleMin = 0.85f;
 
         public override void Init(Entity entity)
         {
@@ -36,7 +38,10 @@ namespace CSM.Entities.States
                         break;
                     case "Ladder":
                         action.processed = true;
-                        entity.EnterState<Climb>(action);
+                        if (CanClimb(entity, action.GetInitiator<Ladder>()))
+                        {
+                            entity.EnterState<Climb>(action);
+                        }
                         break;
                 }
             }
@@ -46,6 +51,16 @@ namespace CSM.Entities.States
                 action.processed = true;
             }
             Next(entity, action);
+        }
+
+        private bool CanClimb(Entity entity, Ladder ladder)
+        {
+            Vector3 ladderFace = Vector3.Scale(ladder.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
+            float dot = Vector3.Dot(ladderFace, entity.velocity.normalized);
+            if (dot > climbAngleMin) 
+                return true;
+
+            return false;
         }
 
     }

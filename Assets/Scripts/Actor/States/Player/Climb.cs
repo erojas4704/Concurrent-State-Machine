@@ -17,9 +17,18 @@ namespace CSM.Entities.States
         {
             player = entity.GetComponent<Player>();
             controller = entity.GetComponent<CharacterController>();
-
             ladder = inititator.GetInitiator<Ladder>();
+
+            controller.detectCollisions = false;
+            //entity.GetComponent<Collider>().enabled = false;
         }
+
+        public override void End(Entity entity)
+        {
+            //entity.GetComponent<Collider>().enabled = true;
+            controller.detectCollisions = true;
+        }
+
         public override void Update(Entity entity)
         {
             Vector2 axis = player.axis;
@@ -45,7 +54,7 @@ namespace CSM.Entities.States
                     if (action.GetInitiator<Ladder>() == ladder)
                     {
                         //!!! Error prone. Consider having a default state
-                        Enter(typeof(Airborne));
+                        //Enter(typeof(Airborne));
                     }
                 }
             }
