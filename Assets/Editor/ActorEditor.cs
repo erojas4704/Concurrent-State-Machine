@@ -23,10 +23,10 @@ public class ActorEditor : Editor
         {
             EditorGUILayout.LabelField($"[State ({state.group}): {state}] Priority: {state.priority} Active: {state.time}");
             EntityState eEstate = state as EntityState;
-            if (eEstate != null)
-            {
-                EditorGUILayout.LabelField($"EntityState: {eEstate.stats}");
-            }
+            //if (eEstate != null)
+            //{
+            //    EditorGUILayout.LabelField($"EntityState: {eEstate.stats}");
+            //}
         }
 
         foreach (Action action in actionBuffer)

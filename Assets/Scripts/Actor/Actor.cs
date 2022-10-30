@@ -93,7 +93,6 @@ namespace CSM
                 states.Remove(state);
                 statePool.Add(state);
                 state.End(this);
-                UpdateStateChain();
                 changed = true;
             }
 
@@ -116,9 +115,10 @@ namespace CSM
                 else
                     newState.Init(this);
                 newState.time = 0;
-                UpdateStateChain();
                 changed = true;
             }
+
+            UpdateStateChain();
 
             if (changed && OnStateChange != null)
                 OnStateChange(this);
@@ -186,6 +186,7 @@ namespace CSM
             State prev = null;
             foreach (State s in states)
             {
+                s.Next = (Actor actor, Action action) => {};
                 if (prev != null)
                 {
                     prev.Next = s.Process;
