@@ -55,8 +55,10 @@ namespace CSM.Entities.States
 
         private bool CanClimb(Entity entity, Ladder ladder)
         {
-            Vector3 ladderFace = Vector3.Scale(ladder.transform.forward, new Vector3(1f, 0f, 1f)).normalized;
-            float dot = Vector3.Dot(ladderFace, entity.velocity.normalized);
+            Vector3 flatten = new Vector3(1f, 0f, 1f);
+            Vector3 ladderFace = Vector3.Scale(ladder.transform.forward, flatten).normalized;
+            Vector3 entityHeading = Vector3.Scale(entity.velocity, flatten).normalized;
+            float dot = Vector3.Dot(ladderFace, entityHeading);
             if (dot > climbAngleMin) 
                 return true;
 
