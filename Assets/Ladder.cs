@@ -6,5 +6,4 @@ public class Ladder : MonoBehaviour
 {
     public Transform start;
     public Transform end;
-
 }

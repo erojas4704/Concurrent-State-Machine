@@ -55,6 +55,8 @@ public class Player : MonoBehaviour
     {
         if (other.GetComponent<Ladder>() != null)
         {
+            //TODO, forward triggers to states and let them handle them by name
+            //Try to reduce as much logic here as possible
             actor.FireAction(new Action("Ladder", other.GetComponent<Ladder>()), false);
         }
     }
