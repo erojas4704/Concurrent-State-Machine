@@ -1,6 +1,4 @@
 using UnityEngine;
-using System;
-using CSM;
 using CSM.States;
 
 namespace CSM.Entities.States
