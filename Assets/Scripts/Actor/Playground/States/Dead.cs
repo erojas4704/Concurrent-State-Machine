@@ -1,5 +1,5 @@
 using UnityEngine;
-using csm;
+using CSM;
 
 namespace playground
 {

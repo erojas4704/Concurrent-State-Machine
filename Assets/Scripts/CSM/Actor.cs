@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 using System.Linq;
 
-namespace csm
+namespace CSM
 {
     public class Actor : MonoBehaviour, ISerializationCallbackReceiver
     {
@@ -201,8 +201,8 @@ namespace csm
 
         private class StateAndInitiator
         {
-            public State state;
-            public Action initiator;
+            public readonly State state;
+            public readonly Action initiator;
 
             public StateAndInitiator(State state, Action initiator)
             {

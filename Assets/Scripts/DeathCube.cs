@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using csm;
-using csm.entity;
+using CSM;
+using CSM.Entity;
 using System;
 using System.Linq;
 

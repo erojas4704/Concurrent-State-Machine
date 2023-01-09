@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace csm.entity
+namespace CSM.Entity
 {
     public class Entity : Actor, ISerializationCallbackReceiver
     {

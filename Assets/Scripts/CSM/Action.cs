@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
 
-namespace csm
+namespace CSM
 {
     [Serializable]
     public class Action
