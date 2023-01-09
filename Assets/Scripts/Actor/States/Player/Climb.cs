@@ -19,14 +19,12 @@ namespace CSM.Entities.States
             controller = entity.GetComponent<CharacterController>();
             ladder = inititator.GetInitiator<Ladder>();
 
-            controller.detectCollisions = false;
-            //entity.GetComponent<Collider>().enabled = false;
+            controller.enabled = false;
         }
 
         public override void End(Entity entity)
         {
-            //entity.GetComponent<Collider>().enabled = true;
-            controller.detectCollisions = true;
+            controller.enabled = true;
         }
 
         public override void Update(Entity entity)
@@ -34,11 +32,10 @@ namespace CSM.Entities.States
             Vector2 axis = player.axis;
             if (ladder == null) Exit(this.GetType());
             Vector3 ladderDirection = Vector3.Normalize(ladder.end.position - ladder.start.position);
-            //controller.Move(new Vector3(0f, player.axis.y * climbSpeed * Time.deltaTime, 0f));
             Vector3 futurePosition = player.transform.position + ladderDirection * climbSpeed * Time.deltaTime * player.axis.y;
             Vector3 nearestLadderPoint = FindNearestPointOnLadder(ladder.start.position, ladder.end.position, futurePosition);
 
-            controller.Move(nearestLadderPoint - player.transform.position);
+            player.transform.position = nearestLadderPoint;
 
             //If i'm descending and my feet touch the ground, exit ladder state.
             if (axis.y < 0f && controller.isGrounded)
@@ -53,7 +50,7 @@ namespace CSM.Entities.States
                 {
                     if (action.GetInitiator<Ladder>() == ladder)
                     {
-                        //!!! Error prone. Consider having a default state
+                        //!!! Error-prone. Consider having a default state
                         //Enter(typeof(Airborne));
                     }
                 }
@@ -61,15 +58,29 @@ namespace CSM.Entities.States
             Next(entity, action);
         }
 
-        private Vector3 FindNearestPointOnLadder(Vector3 origin, Vector3 end, Vector3 point)
+        private float GetProgressOnLadder(Vector3 origin, Vector3 end, Vector3 point)
         {
-            Vector3 heading = Vector3.Normalize(end - origin);
-            //float magnitudeMax = heading.magnitude;
+            float magnitudeMax = (end - origin).magnitude;
 
+            Vector3 heading = Vector3.Normalize(end - origin);
             Vector3 lhs = point - origin;
             float dotP = Vector3.Dot(lhs, heading);
-            return origin + heading * dotP;
+
+            dotP = Mathf.Clamp(dotP, 0f, magnitudeMax);
+            return dotP / magnitudeMax;
         }
 
+        private Vector3 FindNearestPointOnLadder(Vector3 origin, Vector3 end, Vector3 point)
+        {
+            //https://stackoverflow.com/a/51906100
+            float magnitudeMax = (end - origin).magnitude;
+
+            Vector3 heading = Vector3.Normalize(end - origin);
+            Vector3 lhs = point - origin;
+            float dotP = Vector3.Dot(lhs, heading);
+
+            dotP = Mathf.Clamp(dotP, 0f, magnitudeMax);
+            return origin + heading * dotP;
+        }
     }
 }
