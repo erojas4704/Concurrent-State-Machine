@@ -1,5 +1,6 @@
 using System;
-namespace CSM.States
+
+namespace csm
 {
     [System.AttributeUsage(System.AttributeTargets.Class)]
     public class StateDescriptor : System.Attribute

@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
-namespace CSM
+
+namespace csm
 {
     [Serializable]
     public class Action

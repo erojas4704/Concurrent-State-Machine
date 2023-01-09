@@ -1,5 +1,6 @@
 using UnityEngine;
-namespace CSM.Entities
+
+namespace csm.entity
 {
     public class EntityState : State
     {

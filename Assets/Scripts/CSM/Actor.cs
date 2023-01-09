@@ -2,10 +2,8 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using System.Linq;
-using UnityEngine.InputSystem;
-using CSM.States;
 
-namespace CSM
+namespace csm
 {
     public class Actor : MonoBehaviour, ISerializationCallbackReceiver
     {

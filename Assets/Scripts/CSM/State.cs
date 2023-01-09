@@ -4,7 +4,7 @@ using System.Linq;
 using CSM.States;
 using System.Runtime.CompilerServices;
 
-namespace CSM
+namespace csm
 {
     [Serializable]
     public abstract class State

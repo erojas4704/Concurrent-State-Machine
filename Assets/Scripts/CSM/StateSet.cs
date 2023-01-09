@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System;
 
-namespace CSM
+namespace csm
 {
     public class StateSet : SortedSet<State>
     {
