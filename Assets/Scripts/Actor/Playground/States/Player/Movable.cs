@@ -1,8 +1,8 @@
-using CSM.Entities;
 using UnityEngine;
-using System;
+using csm;
+using csm.entity;
 
-namespace CSM.States
+namespace playground
 {
     [StateDescriptor(priority = 1)]
     public abstract class Movable : EntityState

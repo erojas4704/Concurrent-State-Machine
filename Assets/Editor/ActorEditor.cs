@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
-using CSM.Entities;
-using CSM;
+using csm;
+using csm.entity;
 using System.Reflection;
 using System.Collections.Generic;
 

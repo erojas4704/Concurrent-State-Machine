@@ -1,5 +1,7 @@
-using CSM.States;
-namespace CSM.Entities.States
+using csm;
+using csm.entity;
+
+namespace playground
 {
 
     [StateDescriptor(group = 3, priority = 5)]

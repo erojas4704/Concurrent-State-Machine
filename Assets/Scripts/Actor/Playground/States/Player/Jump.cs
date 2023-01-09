@@ -1,5 +1,7 @@
-using CSM.Entities;
-namespace CSM.States
+using csm;
+using csm.entity;
+
+namespace playground
 {
     [StateDescriptor(priority = 2, group = 2)]
     public class Jump : State

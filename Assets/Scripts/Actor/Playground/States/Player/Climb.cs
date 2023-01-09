@@ -1,9 +1,9 @@
-﻿using CSM.Entities;
-using CSM.States;
+﻿using csm;
+using csm.entity;
 using System.Collections;
 using UnityEngine;
 
-namespace CSM.Entities.States
+namespace playground
 {
     [StateDescriptor(group = 0, priority = 99)]
     public class Climb : EntityState

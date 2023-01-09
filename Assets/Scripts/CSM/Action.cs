@@ -10,8 +10,8 @@ namespace csm
         public string name;
         public enum ActionPhase { None, Pressed, Held, Released }
         public ActionPhase phase = ActionPhase.None;
-        public bool processed = false;
-        public float timer = 0f;
+        public bool processed;
+        public float timer;
         public Vector2 axis;
 
         public Action() { }
@@ -72,11 +72,11 @@ namespace csm
             switch (phase)
             {
                 case InputActionPhase.Started:
-                    return Action.ActionPhase.Pressed;
+                    return ActionPhase.Pressed;
                 case InputActionPhase.Performed:
-                    return Action.ActionPhase.Held;
+                    return ActionPhase.Held;
                 case InputActionPhase.Canceled:
-                    return Action.ActionPhase.Released;
+                    return ActionPhase.Released;
             }
 
             return ActionPhase.None;

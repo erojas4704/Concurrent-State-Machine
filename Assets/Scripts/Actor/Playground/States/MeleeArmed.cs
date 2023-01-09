@@ -1,6 +1,7 @@
-using CSM.Entities.States;
+using csm;
+using csm.entity;
 
-namespace CSM.States
+namespace playground
 {
     [StateDescriptor(priority = 4, group = 4)]
     public class MeleeArmed : State

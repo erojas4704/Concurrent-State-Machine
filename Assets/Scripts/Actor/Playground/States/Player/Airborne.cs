@@ -1,7 +1,8 @@
 using UnityEngine;
-using CSM.States;
+using csm;
+using csm.entity;
 
-namespace CSM.Entities.States
+namespace playground
 {
     [StateDescriptor(priority = 3, group = 0)]
     public class Airborne : Movable

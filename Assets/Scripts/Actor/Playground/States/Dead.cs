@@ -1,6 +1,7 @@
-using CSM.States;
 using UnityEngine;
-namespace CSM.Entities.States
+using csm;
+
+namespace playground
 {
     [Solo]
     public class Dead : State
