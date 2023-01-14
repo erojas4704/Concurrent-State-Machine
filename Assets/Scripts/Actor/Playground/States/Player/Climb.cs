@@ -1,33 +1,31 @@
 ﻿using CSM;
-using CSM.Entity;
-using System.Collections;
 using UnityEngine;
 
 namespace playground
 {
     [StateDescriptor(group = 0, priority = 99)]
-    public class Climb : EntityState
+    public class Climb : State
     {
         private float climbSpeed = 5f;
         private Player player;
         private CharacterController controller;
         private Ladder ladder;
 
-        public override void Init(Entity entity, Action inititator)
+        public override void Init(Actor actor, Action inititator)
         {
-            player = entity.GetComponent<Player>();
-            controller = entity.GetComponent<CharacterController>();
+            player = actor.GetComponent<Player>();
+            controller = actor.GetComponent<CharacterController>();
             ladder = inititator.GetInitiator<Ladder>();
 
             controller.enabled = false;
         }
 
-        public override void End(Entity entity)
+        public override void End(Actor actor)
         {
             controller.enabled = true;
         }
 
-        public override void Update(Entity entity)
+        public override void Update(Actor actor)
         {
             Vector2 axis = player.axis;
             if (ladder == null) Exit(this.GetType());
@@ -42,7 +40,7 @@ namespace playground
                 Enter(typeof(Grounded));
         }
 
-        public override void Process(Entity entity, Action action)
+        public override void Process(Actor actor, Action action)
         {
             if (action.phase == Action.ActionPhase.Released)
             {
@@ -55,7 +53,7 @@ namespace playground
                     }
                 }
             }
-            Next(entity, action);
+            Next(actor, action);
         }
 
         private float GetProgressOnLadder(Vector3 origin, Vector3 end, Vector3 point)

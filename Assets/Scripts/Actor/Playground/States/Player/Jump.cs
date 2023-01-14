@@ -1,18 +1,17 @@
 using CSM;
-using CSM.Entity;
 
 namespace playground
 {
     [StateDescriptor(priority = 2, group = 2)]
     public class Jump : State
     {
-        private Entity entity;
+        private Actor entity;
         private bool isHeld;
         private float hangTime = 0.55f;
 
         public override void Init(Actor actor)
         {
-            entity = (Entity)actor;
+            entity = (Actor)actor;
             entity.velocity.y = 7.5f;
         }
 

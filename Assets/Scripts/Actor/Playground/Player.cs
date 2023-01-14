@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using CSM;
-using CSM.Entity;
 
 namespace playground
 {

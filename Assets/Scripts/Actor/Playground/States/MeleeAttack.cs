@@ -1,10 +1,9 @@
 using CSM;
-using CSM.Entity;
 
 namespace playground
 {
     [StateDescriptor(group = 3, priority = 5)]
-    public class MeleeAttack : EntityState
+    public class MeleeAttack : State
     {
         private int combo;
 

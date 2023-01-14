@@ -1,11 +1,10 @@
 using UnityEngine;
 using CSM;
-using CSM.Entity;
 
 namespace playground
 {
     [StateDescriptor(priority = 1)]
-    public abstract class Movable : EntityState
+    public abstract class Movable : State
     {
         private Player player;
         public CharacterController controller;
@@ -14,13 +13,13 @@ namespace playground
         [SerializeField]
         private Vector3 vel;
 
-        public override void Init(Entity entity)
+        public override void Init(Actor actor)
         {
-            player = entity.GetComponent<Player>();
-            controller = entity.GetComponent<CharacterController>();
+            player = actor.GetComponent<Player>();
+            controller = actor.GetComponent<CharacterController>();
         }
 
-        public override void Update(Entity entity)
+        public override void Update(Actor actor)
         {
             axis = player.axis;
             Vector3 targetVelocity = new Vector3();
@@ -28,7 +27,7 @@ namespace playground
             targetVelocity.z = axis.y * stats.speed;
 
             //Use a flat version of our movement vector so the Y axis doesn't factor into the length calculation.
-            Vector3 planarVelocity = entity.velocity;
+            Vector3 planarVelocity = actor.velocity;
             planarVelocity.y = 0;
 
             //Figure ot whether to use fiction or acceleration
@@ -37,10 +36,10 @@ namespace playground
 
             //Every update, apply the acceleration * time to speed.
             float accelerationThisFrame = accelerationFactor * Time.deltaTime;
-            entity.velocity.x = AccelerateWithClamping(accelerationThisFrame, entity.velocity.x, targetVelocity.x);
-            entity.velocity.z = AccelerateWithClamping(accelerationThisFrame, entity.velocity.z, targetVelocity.z);
+            actor.velocity.x = AccelerateWithClamping(accelerationThisFrame, actor.velocity.x, targetVelocity.x);
+            actor.velocity.z = AccelerateWithClamping(accelerationThisFrame, actor.velocity.z, targetVelocity.z);
 
-            controller.Move(entity.velocity * Time.deltaTime);
+            controller.Move(actor.velocity * Time.deltaTime);
         }
 
         private float AccelerateWithClamping(float accelerationThisFrame, float from, float to)

@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using CSM;
-using CSM.Entity;
 using System;
 using System.Linq;
 
@@ -38,7 +37,7 @@ namespace playground
         void OnCollisionEnter(Collision col)
         {
             Collider other = col.collider;
-            if (other.gameObject.tag == "Player")
+            if (other.gameObject.CompareTag("Player"))
             {
                 other.gameObject.GetComponent<Actor>().EnterState<Dead>();
             }

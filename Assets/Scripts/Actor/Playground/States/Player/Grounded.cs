@@ -1,6 +1,5 @@
 using UnityEngine;
 using CSM;
-using CSM.Entity;
 
 namespace playground
 {
@@ -10,20 +9,20 @@ namespace playground
         /** How accurately must a player be facing a ladder to be able to climb it.**/
         private float climbAngleMin = 0.85f;
 
-        public override void Init(Entity entity)
+        public override void Init(Actor actor)
         {
-            base.Init(entity);
-            controller = entity.GetComponent<CharacterController>();
-            entity.velocity.y = -10f;
+            base.Init(actor);
+            controller = actor.GetComponent<CharacterController>();
+            actor.velocity.y = -10f;
         }
 
-        public override void Update(Entity entity)
+        public override void Update(Actor actor)
         {
-            base.Update(entity);
+            base.Update(actor);
             if (!controller.isGrounded) Enter(typeof(Airborne));
         }
 
-        public override void Process(Entity entity, Action action)
+        public override void Process(Actor actor, Action action)
         {
             if (action.phase == Action.ActionPhase.Pressed)
             {
@@ -31,17 +30,17 @@ namespace playground
                 {
                     case "Jump":
                         action.processed = true;
-                        entity.EnterState<Jump>();
+                        actor.EnterState<Jump>();
                         break;
                     case "Sprint":
                         action.processed = true;
-                        entity.EnterState<Sprint>();
+                        actor.EnterState<Sprint>();
                         break;
                     case "Ladder":
                         action.processed = true;
-                        if (CanClimb(entity, action.GetInitiator<Ladder>()))
+                        if (CanClimb(actor, action.GetInitiator<Ladder>()))
                         {
-                            entity.EnterState<Climb>(action);
+                            actor.EnterState<Climb>(action);
                         }
                         break;
                 }
@@ -51,15 +50,15 @@ namespace playground
             {
                 action.processed = true;
             }
-            Next(entity, action);
+            Next(actor, action);
         }
 
-        private bool CanClimb(Entity entity, Ladder ladder)
+        private bool CanClimb(Actor actor, Ladder ladder)
         {
             Vector3 flatten = new Vector3(1f, 0f, 1f);
             Vector3 ladderFace = Vector3.Scale(ladder.transform.forward, flatten).normalized;
-            Vector3 entityHeading = Vector3.Scale(entity.velocity, flatten).normalized;
-            float dot = Vector3.Dot(ladderFace, entityHeading);
+            Vector3 actorHeading = Vector3.Scale(actor.velocity, flatten).normalized;
+            float dot = Vector3.Dot(ladderFace, actorHeading);
             if (dot > climbAngleMin) 
                 return true;
 

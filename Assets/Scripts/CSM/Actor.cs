@@ -12,6 +12,11 @@ namespace CSM
         private Queue<StateAndInitiator> slatedForCreation = new Queue<StateAndInitiator>();
         private Queue<Action> actionBuffer = new Queue<Action>();
         protected HashSet<State> statePool = new HashSet<State>();
+        
+        public Vector3 velocity;
+        public Stats stats;
+        public Stats finalStats;
+
         public delegate void StateChangeHandler(Actor actor);
         public event StateChangeHandler OnStateChange;
 
@@ -31,6 +36,11 @@ namespace CSM
         public bool Is<TState>()
         {
             return states.Any(s => s.GetType() == typeof(TState));
+        }
+        
+        public void OnStateChangeHandler(Actor actor)
+        {
+            CalculateStats();
         }
 
         public void EnterState<T>() where T : State
@@ -59,6 +69,19 @@ namespace CSM
             );
 
             slatedForCreation.Enqueue(si);
+        }
+        
+        //TODO allow to insert this middleware in and consolidate loops for performance reasons.
+        public void CalculateStats()
+        {
+            Stats lastCalculatedStat = this.stats;
+            foreach (State state in states)
+            {
+                    lastCalculatedStat = state.Reduce(this, lastCalculatedStat);
+                    state.stats = lastCalculatedStat;
+            }
+
+            finalStats = lastCalculatedStat;
         }
 
         private void ExitState(State state)
@@ -224,6 +247,7 @@ namespace CSM
             if (_stateArray == null) return;
             states = new StateSet();
             foreach (State s in _stateArray) EnterState(s.GetType());
+            OnStateChange += OnStateChangeHandler;
         }
         #endregion
     }

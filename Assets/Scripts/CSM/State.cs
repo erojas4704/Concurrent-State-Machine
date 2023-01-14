@@ -31,28 +31,30 @@ namespace CSM
         public Type[] requiredStates = new Type[] { };
         public Type[] negatedStates = new Type[] { };
         public Type[] partnerStates = new Type[] { };
+        
+        public Stats stats;
 
         public bool solo;
 
         public State()
         {
-            StateDescriptor desc = (StateDescriptor)System.Attribute.GetCustomAttribute(this.GetType(), typeof(StateDescriptor));
+            StateDescriptor desc = (StateDescriptor)System.Attribute.GetCustomAttribute(GetType(), typeof(StateDescriptor));
             if (desc != null)
             {
                 priority = desc.priority;
                 group = desc.group;
             }
 
-            Negate neg = (Negate)System.Attribute.GetCustomAttribute(this.GetType(), typeof(Negate));
+            Negate neg = (Negate)System.Attribute.GetCustomAttribute(GetType(), typeof(Negate));
             if (neg != null) negatedStates = neg.states;
 
-            Require req = (Require)System.Attribute.GetCustomAttribute(this.GetType(), typeof(Require));
+            Require req = (Require)System.Attribute.GetCustomAttribute(GetType(), typeof(Require));
             if (req != null) requiredStates = req.states;
 
-            With with = (With)System.Attribute.GetCustomAttribute(this.GetType(), typeof(With));
+            With with = (With)System.Attribute.GetCustomAttribute(GetType(), typeof(With));
             if (with != null) partnerStates = with.states;
 
-            Solo solo = (Solo)System.Attribute.GetCustomAttribute(this.GetType(), typeof(Solo));
+            Solo solo = (Solo)System.Attribute.GetCustomAttribute(GetType(), typeof(Solo));
             if (solo != null) this.solo = solo.solo;
         }
 
@@ -60,17 +62,22 @@ namespace CSM
         {
             if (obj == null)
                 return false;
-            return obj.GetType() == this.GetType();
+            return obj.GetType() == GetType();
         }
 
         public override int GetHashCode()
-        {//
-            return this.GetType().GetHashCode();
+        {
+            return GetType().GetHashCode();
         }
 
         public override string ToString()
         {
-            return this.GetType().ToString().Split('.').Last();
+            return GetType().ToString().Split('.').Last();
+        }
+        
+        public virtual Stats Reduce(Actor actor, Stats stats)
+        {
+            return stats;
         }
     }
 }

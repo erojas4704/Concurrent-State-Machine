@@ -1,6 +1,6 @@
 using System;
 
-namespace CSM.Entity
+namespace CSM
 {
     [Serializable]
     public struct Stats

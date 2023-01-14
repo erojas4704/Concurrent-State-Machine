@@ -1,6 +1,5 @@
 using UnityEngine;
 using CSM;
-using CSM.Entity;
 
 namespace playground
 {
@@ -10,7 +9,7 @@ namespace playground
         public float airAcceleration = 15f;
         public float drag = 3f;
 
-        public override void Update(Entity entity)
+        public override void Update(Actor entity)
         {
             base.Update(entity);
             CharacterController controller = entity.GetComponent<CharacterController>();
@@ -19,7 +18,7 @@ namespace playground
             if (controller.isGrounded) Enter(typeof(Grounded));
         }
 
-        public override Stats Reduce(Entity entity, Stats stats)
+        public override Stats Reduce(Actor actor, Stats stats)
         {
             stats.acceleration = airAcceleration;
             stats.friction = drag;
