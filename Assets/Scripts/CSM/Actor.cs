@@ -216,6 +216,19 @@ namespace CSM
                 prev = s;
             }
         }
+        
+        public T GetState<T>() where T:State
+        {
+            foreach (State s in states)
+            {
+                if (s.GetType() == typeof(T))
+                {
+                    return (T)s;
+                }
+            }
+
+            return null;
+        }
 
         public StateSet GetStates()
         {
