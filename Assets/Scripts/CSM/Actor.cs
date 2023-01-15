@@ -171,7 +171,7 @@ namespace CSM
             Action firstAction = actionBuffer.Peek();
             firstAction.timer += Time.deltaTime;
 
-            if (FireAction(firstAction, false))
+            if (PropagateAction(firstAction, false))
             {
                 actionBuffer.Dequeue();
             }
@@ -181,7 +181,7 @@ namespace CSM
             }
         }
 
-        public bool FireAction(Action action, bool buffer = true)
+        public bool PropagateAction(Action action, bool buffer = true)
         {
             states.Min.Process(this, action);
             if (ShouldBufferAction(action, buffer))

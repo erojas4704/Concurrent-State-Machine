@@ -29,7 +29,7 @@ namespace playground
         public void OnAction(InputAction.CallbackContext context)
         {
             Action action = new Action(context.action);
-            actor.FireAction(action);
+            actor.PropagateAction(action);
             action.axis = axis;
         }
 
@@ -37,12 +37,14 @@ namespace playground
         {
             axis = context.ReadValue<Vector2>();
 
-            Action action = new Action();
-            action.name = context.action.name;
-            action.phase = Action.TranslateToActionPhase(context.phase);
+            Action action = new Action
+            {
+                name = context.action.name,
+                phase = Action.TranslateToActionPhase(context.phase)
+            };
             action.SetValue(context.ReadValue<Vector2>());
             action.axis = axis;
-            actor.FireAction(action, false);
+            actor.PropagateAction(action, false);
         }
 
         public void OnEnable()
@@ -57,7 +59,7 @@ namespace playground
             {
                 //TODO, forward triggers to states and let them handle them by name
                 //Try to reduce as much logic here as possible
-                actor.FireAction(new Action("Ladder", other.GetComponent<Ladder>()), false);
+                actor.PropagateAction(new Action("Ladder", other.GetComponent<Ladder>()), false);
             }
         }
 
@@ -65,7 +67,7 @@ namespace playground
         {
             if (other.GetComponent<Ladder>() != null)
             {
-                actor.FireAction(new Action("Ladder", other.GetComponent<Ladder>(), Action.ActionPhase.Released), false);
+                actor.PropagateAction(new Action("Ladder", other.GetComponent<Ladder>(), Action.ActionPhase.Released), false);
             }
         }
     }
