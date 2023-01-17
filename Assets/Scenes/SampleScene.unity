@@ -2648,9 +2648,9 @@ GameObject:
   - component: {fileID: 306430088}
   - component: {fileID: 306430087}
   - component: {fileID: 306430086}
-  - component: {fileID: 306430094}
   - component: {fileID: 306430092}
   - component: {fileID: 306430093}
+  - component: {fileID: 306430094}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -2781,6 +2781,14 @@ MonoBehaviour:
       m_Interactions: 
       m_SingletonActionBindings: []
       m_Flags: 0
+    - m_Name: Move
+      m_Type: 0
+      m_ExpectedControlType: Vector2
+      m_Id: f09e522b-8f78-4ec5-8891-8c4f3a33fdbb
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 1
     - m_Name: Attack
       m_Type: 1
       m_ExpectedControlType: Button
@@ -2870,6 +2878,102 @@ MonoBehaviour:
       m_Groups: 
       m_Action: Sprint
       m_Flags: 0
+    - m_Name: 
+      m_Id: 6175f234-280d-43e0-b2d5-e8810adec27e
+      m_Path: <Gamepad>/leftStick
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Gamepad
+      m_Action: Move
+      m_Flags: 0
+    - m_Name: WASD
+      m_Id: ecaef3ba-bd74-4393-8bf2-7c89dd0d9d39
+      m_Path: Dpad
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Move
+      m_Flags: 4
+    - m_Name: up
+      m_Id: 4b953d0a-3dcf-40f0-ae61-a8f7e83de623
+      m_Path: <Keyboard>/w
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: up
+      m_Id: 60303285-27f3-4ec7-a35d-f83e14427c12
+      m_Path: <Keyboard>/upArrow
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: down
+      m_Id: 39bd13b5-5fd8-4904-8925-f1f409ac7523
+      m_Path: <Keyboard>/s
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: down
+      m_Id: 227811e1-6148-482a-8880-5a18635e3b09
+      m_Path: <Keyboard>/downArrow
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: left
+      m_Id: 7d078588-ed42-4190-b949-77d6e258517a
+      m_Path: <Keyboard>/a
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: left
+      m_Id: be1dab0f-0cd2-439a-9dab-9be690dec499
+      m_Path: <Keyboard>/leftArrow
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: right
+      m_Id: edf46420-7a89-41fb-85f3-49457265fb22
+      m_Path: <Keyboard>/d
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: right
+      m_Id: b5e2ef24-88ca-464c-8d2e-54f77cc29353
+      m_Path: <Keyboard>/rightArrow
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: 
+      m_Id: bf397ef5-2292-4804-8467-124ba77f1f0b
+      m_Path: <XRController>/{Primary2DAxis}
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: XR
+      m_Action: Move
+      m_Flags: 0
+    - m_Name: 
+      m_Id: e9564d38-4fd1-4f49-a083-be192916eb7c
+      m_Path: <Joystick>/stick
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: Joystick
+      m_Action: Move
+      m_Flags: 0
 --- !u!114 &306430093
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2877,13 +2981,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 306430085}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Actions: {fileID: -944628639613478452, guid: 80634d06690348f48a44baeb2685e308, type: 3}
-  m_NotificationBehavior: 2
+  m_NotificationBehavior: 3
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
     m_PersistentCalls:
@@ -2959,6 +3063,10 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 216961e8-33fa-457f-8dd8-ba647a129563
     m_ActionName: UI/TrackedDeviceOrientation
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: e4cabbb5-cf81-4939-a00a-75ab4c4a3f73
+    m_ActionName: Player/Jump[/Keyboard/space]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -2973,20 +3081,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 306430085}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f261909fcc885ae4b903f90fa73deedc, type: 3}
+  m_Script: {fileID: 11500000, guid: 4676456423dff8341862aec85e7f6f73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actionTimer: 0.35
-  _stateArray: []
   velocity: {x: 0, y: 0, z: 0}
   stats:
-    speed: 7
-    acceleration: 65
-    friction: 35
+    speed: 5
+    acceleration: 45
+    friction: 78
   finalStats:
     speed: 0
     acceleration: 0
     friction: 0
+  actionTimer: 0.025
+  _stateArray: []
   references:
     version: 2
     RefIds: []
