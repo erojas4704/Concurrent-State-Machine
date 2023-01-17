@@ -15,6 +15,7 @@ namespace playground
 
         }
 
+        /*
         public void OnTriggerEnter(Collider other)
         {
             if (other.GetComponent<Ladder>() != null)
@@ -33,5 +34,6 @@ namespace playground
                     false);
             }
         }
+        */
     }
 }
