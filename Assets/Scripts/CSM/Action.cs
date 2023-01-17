@@ -39,10 +39,15 @@ namespace CSM
             this._initiator = initiator;
         }
 
-        public Action(InputAction action)
+        public Action(InputAction.CallbackContext context)
         {
+            InputAction action = context.action;
             name = action.name;
             phase = TranslateToActionPhase(action.phase);
+            if (context.valueType == typeof(Vector2))
+            {
+                this.axis = context.ReadValue<Vector2>();
+            }
         }
 
         private System.Object _value;

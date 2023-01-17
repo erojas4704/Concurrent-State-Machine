@@ -1,6 +1,6 @@
 {
     "name": "com.mystic.csm",
-    "version": "0.0.6"0.0.5"..4"..3"..2"..1"0.0.2",
+    "version": "0.0.3",
     "description": "CSM - Collapsable State Machine",
     "displayName": "CSM",
     "author": {

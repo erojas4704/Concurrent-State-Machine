@@ -1,6 +1,8 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using CSM;
+using Action = CSM.Action;
 
 namespace playground
 {
@@ -18,19 +20,19 @@ namespace playground
             actor.EnterState<Airborne>();
             actor.EnterState<MeleeArmed>();
             actionMap.Enable();
-            actionMap.actionTriggered += OnAction;
-        }
-
-        void Update()
-        {
-
         }
 
         public void OnAction(InputAction.CallbackContext context)
         {
-            Action action = new Action(context.action);
+            if (context.action.phase == InputActionPhase.Started)
+            {
+                Debug.Log($"There was an action or whatever {context.action.name}");
+            }
+
+            Action action = new Action(context);
             actor.PropagateAction(action);
-            action.axis = axis;
+            if (context.action.name == "Move")
+                axis = action.axis;
         }
 
         public void OnMove(InputAction.CallbackContext context)
@@ -47,10 +49,20 @@ namespace playground
             actor.PropagateAction(action, false);
         }
 
-        public void OnEnable()
+        private void OnEnable()
         {
-            actionMap.Enable();
             actionMap.actionTriggered += OnAction;
+            actionMap.Enable();
+        }
+
+        private void OnDisable()
+        {
+            actionMap.actionTriggered -= OnAction;
+            actionMap.Disable();
+        }
+
+        private void Update()
+        {
         }
 
         public void OnTriggerEnter(Collider other)
@@ -67,7 +79,8 @@ namespace playground
         {
             if (other.GetComponent<Ladder>() != null)
             {
-                actor.PropagateAction(new Action("Ladder", other.GetComponent<Ladder>(), Action.ActionPhase.Released), false);
+                actor.PropagateAction(new Action("Ladder", other.GetComponent<Ladder>(), Action.ActionPhase.Released),
+                    false);
             }
         }
     }
