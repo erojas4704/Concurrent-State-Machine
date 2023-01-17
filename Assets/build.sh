@@ -16,13 +16,14 @@ fi
 echo $version > version
 echo $version
 
-target_dir=C:/Unity/Libraries/$version/
-
-sed -i "s/\"version\": \"*\"/\"version\": \"$version\"/g" package.json
+target_dir=C:/Unity/Libraries/CSM/$version/
 
 mkdir -p "$target_dir"
 
-cp -r ./Editor/CSM "$target_dir"
-cp -r ./Scripts/CSM "$target_dir"
+sed -i 's/\("version": "\)[^"]*/\1'$version'/' package.json
+
+cp -r ./Editor/CSM "$target_dir/Editor"
+cp -r ./Scripts/CSM "$target_dir/Scripts"
 cp package.json "$target_dir"
+
 
