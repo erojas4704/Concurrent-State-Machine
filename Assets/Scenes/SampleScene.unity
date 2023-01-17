@@ -2649,7 +2649,7 @@ GameObject:
   - component: {fileID: 306430087}
   - component: {fileID: 306430086}
   - component: {fileID: 306430092}
-  - component: {fileID: 306430094}
+  - component: {fileID: 306430093}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -2766,6 +2766,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 936292257576eed44aa092bc82a95693, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  velocity: {x: 0, y: 0, z: 0}
+  stats:
+    speed: 5
+    acceleration: 45
+    friction: 78
+  finalStats:
+    speed: 0
+    acceleration: 0
+    friction: 0
+  actionTimer: 0.025
+  _stateArray: []
   axis: {x: 0, y: 0}
   actionMap:
     m_Name: Action Map
@@ -2973,7 +2984,10 @@ MonoBehaviour:
       m_Groups: Joystick
       m_Action: Move
       m_Flags: 0
---- !u!114 &306430094
+  references:
+    version: 2
+    RefIds: []
+--- !u!114 &306430093
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2982,23 +2996,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 306430085}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4676456423dff8341862aec85e7f6f73, type: 3}
+  m_Script: {fileID: 11500000, guid: e4680c6208564be3b69c45af1a1d311a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  velocity: {x: 0, y: 0, z: 0}
-  stats:
-    speed: 5
-    acceleration: 45
-    friction: 78
-  finalStats:
-    speed: 0
-    acceleration: 0
-    friction: 0
-  actionTimer: 0.025
-  _stateArray: []
-  references:
-    version: 2
-    RefIds: []
 --- !u!1 &318749672
 GameObject:
   m_ObjectHideFlags: 0
