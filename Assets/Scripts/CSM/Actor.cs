@@ -183,6 +183,10 @@ namespace CSM
 
         public bool PropagateAction(Action action, bool buffer = true)
         {
+            if (states.Count < 1)
+            {
+                throw new Exception("This Actor has no states!");
+            }
             states.Min.Process(this, action);
             if (ShouldBufferAction(action, buffer))
                 actionBuffer.Enqueue(action);

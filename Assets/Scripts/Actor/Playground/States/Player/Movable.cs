@@ -6,16 +6,15 @@ namespace playground
     [StateDescriptor(priority = 1)]
     public abstract class Movable : State
     {
-        private Player player;
+        private PlayerActor player;
         public CharacterController controller;
         public Vector2 axis;
 
-        [SerializeField]
-        private Vector3 vel;
+        [SerializeField] private Vector3 vel;
 
         public override void Init(Actor actor)
         {
-            player = actor.GetComponent<Player>();
+            player = (PlayerActor)actor;
             controller = actor.GetComponent<CharacterController>();
         }
 
@@ -31,8 +30,9 @@ namespace playground
             planarVelocity.y = 0;
 
             //Figure ot whether to use fiction or acceleration
-            float accelerationFactor = targetVelocity.magnitude > planarVelocity.magnitude ?
-                stats.acceleration : stats.friction;
+            float accelerationFactor = targetVelocity.magnitude > planarVelocity.magnitude
+                ? stats.acceleration
+                : stats.friction;
 
             //Every update, apply the acceleration * time to speed.
             float accelerationThisFrame = accelerationFactor * Time.deltaTime;

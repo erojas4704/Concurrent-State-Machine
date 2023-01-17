@@ -7,13 +7,13 @@ namespace playground
     public class Climb : State
     {
         private float climbSpeed = 5f;
-        private Player player;
+        private PlayerActor player;
         private CharacterController controller;
         private Ladder ladder;
 
         public override void Init(Actor actor, Action inititator)
         {
-            player = actor.GetComponent<Player>();
+            player = (PlayerActor)actor;
             controller = actor.GetComponent<CharacterController>();
             ladder = inititator.GetInitiator<Ladder>();
 
@@ -30,8 +30,10 @@ namespace playground
             Vector2 axis = player.axis;
             if (ladder == null) Exit(this.GetType());
             Vector3 ladderDirection = Vector3.Normalize(ladder.end.position - ladder.start.position);
-            Vector3 futurePosition = player.transform.position + ladderDirection * climbSpeed * Time.deltaTime * player.axis.y;
-            Vector3 nearestLadderPoint = FindNearestPointOnLadder(ladder.start.position, ladder.end.position, futurePosition);
+            Vector3 futurePosition = player.transform.position +
+                                     ladderDirection * climbSpeed * Time.deltaTime * player.axis.y;
+            Vector3 nearestLadderPoint =
+                FindNearestPointOnLadder(ladder.start.position, ladder.end.position, futurePosition);
 
             player.transform.position = nearestLadderPoint;
 
@@ -53,6 +55,7 @@ namespace playground
                     }
                 }
             }
+
             Next(actor, action);
         }
 
