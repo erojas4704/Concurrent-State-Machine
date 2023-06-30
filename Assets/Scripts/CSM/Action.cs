@@ -26,27 +26,27 @@ namespace CSM
             this.phase = phase;
         }
 
-        public Action(string name, System.Object initiator)
+        public Action(string name, object initiator)
         {
             this.name = name;
-            this.phase = ActionPhase.Pressed;
-            this._initiator = initiator;
+            phase = ActionPhase.Pressed;
+            _initiator = initiator;
         }
-        public Action(string name, System.Object initiator, ActionPhase phase)
+        public Action(string name, object initiator, ActionPhase phase)
         {
             this.name = name;
             this.phase = phase;
-            this._initiator = initiator;
+            _initiator = initiator;
         }
 
         public Action(InputAction.CallbackContext context)
         {
             InputAction action = context.action;
             name = action.name;
-            phase = TranslateToActionPhase(action.phase);
+            phase = TranslateToActionPhase(context.phase);
             if (context.valueType == typeof(Vector2))
             {
-                this.axis = context.ReadValue<Vector2>();
+                axis = context.ReadValue<Vector2>();
             }
         }
 
@@ -54,22 +54,22 @@ namespace CSM
 
         public void SetValue<T>(T value) where T : struct
         {
-            this._value = value;
+            _value = value;
         }
         public T GetValue<T>() where T : struct
         {
-            return (T)this._value;
+            return (T)_value;
         }
 
-        private System.Object _initiator;
+        private object _initiator;
 
         public void SetInitiator<T>(T value)
         {
-            this._initiator = value;
+            _initiator = value;
         }
         public T GetInitiator<T>()
         {
-            return (T)this._initiator;
+            return (T)_initiator;
         }
 
         public static ActionPhase TranslateToActionPhase(InputActionPhase phase)

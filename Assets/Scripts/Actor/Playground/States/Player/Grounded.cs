@@ -48,8 +48,10 @@ namespace playground
 
             if (action.name == "Move")
             {
+                axis = action.axis;
                 action.processed = true;
             }
+            
             Next(actor, action);
         }
 

@@ -6,8 +6,8 @@ namespace CSM
     [Serializable]
     public abstract class State
     {
-        public int priority { get; init; }
-        public int group { get; init; } = -1;
+        public int Priority { get; init; }
+        public int Group { get; init; } = -1;
         public float time = 0f;
 
         public delegate void NextStateCallback(Actor actor, Action action);
@@ -41,8 +41,8 @@ namespace CSM
             StateDescriptor desc = (StateDescriptor)System.Attribute.GetCustomAttribute(GetType(), typeof(StateDescriptor));
             if (desc != null)
             {
-                priority = desc.priority;
-                group = desc.group;
+                Priority = desc.priority;
+                Group = desc.group;
             }
 
             Negate neg = (Negate)System.Attribute.GetCustomAttribute(GetType(), typeof(Negate));
@@ -74,11 +74,8 @@ namespace CSM
         {
             return GetType().ToString().Split('.').Last();
         }
-        
-        public virtual Stats Reduce(Actor actor, Stats stats)
-        {
-            return stats;
-        }
+
+        public virtual Stats Reduce(Actor actor, Stats stats) => stats;
     }
 }
 

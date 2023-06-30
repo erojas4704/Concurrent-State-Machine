@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using CSM;
 
@@ -7,10 +8,9 @@ namespace playground
     public abstract class Movable : State
     {
         private PlayerActor player;
-        public CharacterController controller;
-        public Vector2 axis;
-
-        [SerializeField] private Vector3 vel;
+        protected CharacterController controller;
+        protected Vector2 axis;
+        private Vector3 vel;
 
         public override void Init(Actor actor)
         {
@@ -20,8 +20,7 @@ namespace playground
 
         public override void Update(Actor actor)
         {
-            axis = player.axis;
-            Vector3 targetVelocity = new Vector3();
+            Vector3 targetVelocity = new();
             targetVelocity.x = axis.x * stats.speed;
             targetVelocity.z = axis.y * stats.speed;
 
@@ -46,7 +45,7 @@ namespace playground
         {
             float sign = Mathf.Sign(to - from);
             float speedDelta = accelerationThisFrame * sign;
-            if (to == from) return to;
+            if (Math.Abs(to - from) < 0.001f) return to;
 
             if (to > from)
             {
