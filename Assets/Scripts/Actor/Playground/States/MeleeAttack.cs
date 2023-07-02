@@ -1,7 +1,9 @@
 using CSM;
+using JetBrains.Annotations;
 
 namespace playground
 {
+    [UsedImplicitly]
     [StateDescriptor(group = 3, priority = 5)]
     public class MeleeAttack : State
     {
@@ -14,22 +16,21 @@ namespace playground
 
         public override void Update(Actor actor)
         {
-            if (time >= 2f) Exit(this.GetType());
+            if (time >= .5f) Exit();
         }
 
-        public override void Process(Actor actor, Action action)
+        public override bool Process(Actor actor, Message message)
         {
-            if (action.phase == Action.ActionPhase.Pressed)
+            if (message.phase == Message.Phase.Started)
             {
-                if (action.name == "Attack")
+                if (message.name == "Attack")
                 {
-                    action.processed = true;
+                    message.processed = true;
                     combo++;
-                    return; //Eat the input so it doesn't trigger the next state
                 }
             }
 
-            //Next(actor, action);
+            return true;
         }
     }
 }

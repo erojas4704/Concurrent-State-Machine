@@ -10,10 +10,10 @@ namespace CSM
 
         private void OnAction(InputAction.CallbackContext context)
         {
-            Action action = new(context);
-            PropagateAction(action);
+            Message message = new(context);
+            PropagateAction(message);
             if (context.action.name == "Move")
-                axis = action.axis;
+                axis = message.axis;
         }
 
         private void OnEnable()
@@ -33,7 +33,7 @@ namespace CSM
             ITrigger trigger = other.GetComponent<ITrigger>();
             if (trigger != null)
             {
-                PropagateAction(new Action(trigger.GetTriggerAction(), trigger), false);
+                PropagateAction(new Message(trigger.GetTriggerAction(), trigger), false);
             }
         }
 
@@ -42,7 +42,7 @@ namespace CSM
             ITrigger trigger = other.GetComponent<ITrigger>();
             if (trigger != null)
             {
-                PropagateAction(new Action(trigger.GetTriggerAction(), trigger, Action.ActionPhase.Released),
+                PropagateAction(new Message(trigger.GetTriggerAction(), trigger, Message.Phase.Ended),
                     false);
             }
         }

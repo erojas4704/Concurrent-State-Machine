@@ -1,7 +1,9 @@
 using CSM;
+using JetBrains.Annotations;
 
 namespace playground
 {
+    [UsedImplicitly]
     [StateDescriptor(priority = 2, group = 2)]
     public class Jump : State
     {
@@ -22,20 +24,20 @@ namespace playground
                 if (isHeld && time < hangTime)
                     entity.velocity.y = 0f;
                 else
-                    Exit(this.GetType());
+                    Exit();
             }
         }
 
-        public override void Process(Actor actor, Action action)
+        public override bool Process(Actor actor, Message message)
         {
-            if (action.name == "Jump" && action.phase == Action.ActionPhase.Held)
+            if (message.name == "Jump" && message.phase == Message.Phase.Held)
             {
                 isHeld = true;
             }
-            else if (action.name == "Jump" && action.phase == Action.ActionPhase.Released)
+            else if (message.name == "Jump" && message.phase == Message.Phase.Ended)
                 isHeld = false;
 
-            Next(actor, action);
+            return false;
         }
 
         public override void End(Actor actor)

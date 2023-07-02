@@ -19,40 +19,40 @@ namespace playground
         public override void Update(Actor actor)
         {
             base.Update(actor);
-            if (!controller.isGrounded) Enter(typeof(Airborne));
+            if (!controller.isGrounded) actor.EnterState<Airborne>();
         }
 
-        public override void Process(Actor actor, Action action)
+        public override bool Process(Actor actor, Message message)
         {
-            if (action.phase == Action.ActionPhase.Pressed)
+            if (message.phase == Message.Phase.Started)
             {
-                switch (action.name)
+                switch (message.name)
                 {
                     case "Jump":
-                        action.processed = true;
+                        message.processed = true;
                         actor.EnterState<Jump>();
                         break;
                     case "Sprint":
-                        action.processed = true;
+                        message.processed = true;
                         actor.EnterState<Sprint>();
                         break;
                     case "Ladder":
-                        action.processed = true;
-                        if (CanClimb(actor, action.GetInitiator<Ladder>()))
+                        message.processed = true;
+                        if (CanClimb(actor, message.GetInitiator<Ladder>()))
                         {
-                            actor.EnterState<Climb>(action);
+                            actor.EnterState<Climb>(message);
                         }
                         break;
                 }
             }
 
-            if (action.name == "Move")
+            if (message.name == "Move")
             {
-                axis = action.axis;
-                action.processed = true;
+                axis = message.axis;
+                message.processed = true;
             }
-            
-            Next(actor, action);
+
+            return false;
         }
 
         private bool CanClimb(Actor actor, Ladder ladder)

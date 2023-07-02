@@ -1,6 +1,5 @@
 using CSM;
 using UnityEngine;
-using Action = CSM.Action;
 
 namespace playground
 {
