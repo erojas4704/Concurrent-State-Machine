@@ -1,5 +1,6 @@
 using CSM;
 using JetBrains.Annotations;
+using UnityEngine;
 
 namespace playground
 {
@@ -8,16 +9,20 @@ namespace playground
     public class MeleeAttack : State
     {
         private int combo;
+        private Vector2 axis;
+        private PlayerActor player;
 
         public override void Init(Actor actor, Message initiator)
         {
+            player = (PlayerActor)actor;
             combo = 0;
         }
 
         public override Stats? Update(Actor actor, Stats stats)
         {
+            stats.speed *= 0.5f;
             if (time >= .5f) Exit();
-            return null;
+            return stats;
         }
 
         public override bool Process(Actor actor, Message message)
@@ -31,7 +36,19 @@ namespace playground
                 }
             }
 
-            return true;
+            if (message.name == "Move")
+            {
+                message.processed = true;
+                axis = message.axis;
+            }
+
+            return true; //Stop all states below from processing inputs.
+        }
+
+        public override void End(Actor actor)
+        {
+            player.axis = axis;
+            base.End(actor);
         }
     }
 }

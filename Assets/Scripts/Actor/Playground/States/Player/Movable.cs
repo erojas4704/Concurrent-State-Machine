@@ -9,7 +9,6 @@ namespace playground
     {
         private PlayerActor player;
         protected CharacterController controller;
-        protected Vector2 axis;
         private Vector3 vel;
 
         public override void Init(Actor actor, Message initiator)
@@ -20,10 +19,11 @@ namespace playground
 
         public override Stats? Update(Actor actor, Stats stats)
         {
+            //TODO demo: We shouldn't use the axis here.
             Vector3 targetVelocity = new()
             {
-                x = axis.x * stats.speed,
-                z = axis.y * stats.speed
+                x = player.axis.x * stats.speed,
+                z = player.axis.y * stats.speed
             };
 
 
@@ -31,7 +31,7 @@ namespace playground
             Vector3 planarVelocity = actor.velocity;
             planarVelocity.y = 0;
 
-            //Figure ot whether to use fiction or acceleration
+            //Figure ot whether to use friction or acceleration
             float accelerationFactor = targetVelocity.magnitude > planarVelocity.magnitude
                 ? stats.acceleration
                 : stats.friction;
@@ -42,7 +42,17 @@ namespace playground
             actor.velocity.z = AccelerateWithClamping(accelerationThisFrame, actor.velocity.z, targetVelocity.z);
 
             controller.Move(actor.velocity * Time.deltaTime);
-            return null;
+            return stats;
+        }
+
+        public override bool Process(Actor actor, Message message)
+        {
+            if (message.name == "Move")
+            {
+                player.axis = message.axis;
+                message.processed = true;
+            }
+            return base.Process(actor, message);
         }
 
         private float AccelerateWithClamping(float accelerationThisFrame, float from, float to)
@@ -67,6 +77,11 @@ namespace playground
             */
 
             return from + speedDelta;
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + $" Axis: ({player.axis.x}, {player.axis.y})";
         }
     }
 }

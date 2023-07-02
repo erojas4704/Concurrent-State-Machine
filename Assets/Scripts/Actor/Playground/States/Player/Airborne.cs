@@ -13,15 +13,13 @@ namespace playground
 
         public override Stats? Update(Actor actor, Stats stats)
         {
-            base.Update(actor, stats);
             actor.velocity.y += -9.8f * Time.deltaTime;
             actor.velocity.y = Mathf.Max(actor.velocity.y, -50f); //Clamp to -50 terminal velocity
             if (controller.isGrounded) actor.EnterState<Grounded>();
             
             stats.acceleration = AIR_ACCELERATION;
             stats.friction = DRAG;
-            return stats;
-            
+            return base.Update(actor, stats);
         }
     }
 }

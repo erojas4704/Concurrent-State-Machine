@@ -7,7 +7,7 @@ namespace playground
     public class Grounded : Movable
     {
         /** How accurately must a player be facing a ladder to be able to climb it.**/
-        private float climbAngleMin = 0.85f;
+        private const float CLIMB_ANGLE_MIN = 0.85f;
 
         public override void Init(Actor actor, Message initiator)
         {
@@ -18,9 +18,8 @@ namespace playground
 
         public override Stats? Update(Actor actor, Stats stats)
         {
-            base.Update(actor, stats);
             if (!controller.isGrounded) actor.EnterState<Airborne>();
-            return null;
+            return base.Update(actor, stats);
         }
 
         public override bool Process(Actor actor, Message message)
@@ -47,14 +46,8 @@ namespace playground
                         break;
                 }
             }
-
-            if (message.name == "Move")
-            {
-                axis = message.axis;
-                message.processed = true;
-            }
-
-            return false;
+            
+            return base.Process(actor, message);
         }
 
         private bool CanClimb(Actor actor, Ladder ladder)
@@ -63,7 +56,7 @@ namespace playground
             Vector3 ladderFace = Vector3.Scale(ladder.transform.forward, flatten).normalized;
             Vector3 actorHeading = Vector3.Scale(actor.velocity, flatten).normalized;
             float dot = Vector3.Dot(ladderFace, actorHeading);
-            if (dot > climbAngleMin)
+            if (dot > CLIMB_ANGLE_MIN)
                 return true;
 
             return false;
