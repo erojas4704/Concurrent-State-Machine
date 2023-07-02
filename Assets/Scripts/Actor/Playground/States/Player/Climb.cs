@@ -1,8 +1,10 @@
 ﻿using CSM;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace playground
 {
+    [UsedImplicitly]
     [StateDescriptor(group = 0, priority = 99)]
     public class Climb : State
     {
@@ -42,7 +44,7 @@ namespace playground
                 Enter(typeof(Grounded));
         }
 
-        public override void Process(Actor actor, Action action)
+        public override bool Process(Actor actor, Action action)
         {
             if (action.phase == Action.ActionPhase.Released)
             {
@@ -55,6 +57,8 @@ namespace playground
                     }
                 }
             }
+
+            return false;
         }
 
         private float GetProgressOnLadder(Vector3 origin, Vector3 end, Vector3 point)

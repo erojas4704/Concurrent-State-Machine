@@ -1,7 +1,9 @@
 using CSM;
+using JetBrains.Annotations;
 
 namespace playground
 {
+    [UsedImplicitly]
     [StateDescriptor(priority = 2, group = 2)]
     public class Jump : State
     {
@@ -26,7 +28,7 @@ namespace playground
             }
         }
 
-        public override void Process(Actor actor, Action action)
+        public override bool Process(Actor actor, Action action)
         {
             if (action.name == "Jump" && action.phase == Action.ActionPhase.Held)
             {
@@ -34,6 +36,8 @@ namespace playground
             }
             else if (action.name == "Jump" && action.phase == Action.ActionPhase.Released)
                 isHeld = false;
+
+            return false;
         }
 
         public override void End(Actor actor)

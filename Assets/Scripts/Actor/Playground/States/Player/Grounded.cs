@@ -22,7 +22,7 @@ namespace playground
             if (!controller.isGrounded) Enter(typeof(Airborne));
         }
 
-        public override void Process(Actor actor, Action action)
+        public override bool Process(Actor actor, Action action)
         {
             if (action.phase == Action.ActionPhase.Pressed)
             {
@@ -51,6 +51,8 @@ namespace playground
                 axis = action.axis;
                 action.processed = true;
             }
+
+            return false;
         }
 
         private bool CanClimb(Actor actor, Ladder ladder)

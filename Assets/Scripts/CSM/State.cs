@@ -8,7 +8,7 @@ namespace CSM
     {
         public int Priority { get; init; }
         public int Group { get; init; } = -1;
-        public float time = 0f;
+        public float time;
 
         public delegate void NextStateCallback(Actor actor, Action action);
         public delegate void EnterStateCallback(Type stateType);
@@ -21,15 +21,16 @@ namespace CSM
 
 
         public virtual void Update(Actor actor) { }
-        public virtual void Process(Actor actor, Action action) { }
+
+        public virtual bool Process(Actor actor, Action action) => false;
         public virtual void End(Actor actor) { }
 
         public EnterStateCallback Enter;
         public ExitStateCallback Exit;
 
-        public Type[] requiredStates = new Type[] { };
-        public Type[] negatedStates = new Type[] { };
-        public Type[] partnerStates = new Type[] { };
+        public Type[] requiredStates = { };
+        public Type[] negatedStates = { };
+        public Type[] partnerStates = { };
         
         public Stats stats;
 

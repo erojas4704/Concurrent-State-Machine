@@ -196,7 +196,7 @@ namespace CSM
 
             foreach (State s in statesStack)
             {
-                s.Process(this, action);
+                if(s.Process(this, action)) break;
                 if (action.cancelled) break;
             }
 
