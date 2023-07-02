@@ -12,18 +12,20 @@ namespace playground
         protected Vector2 axis;
         private Vector3 vel;
 
-        public override void Init(Actor actor)
+        public override void Init(Actor actor, Message initiator)
         {
             player = (PlayerActor)actor;
             controller = actor.GetComponent<CharacterController>();
         }
 
-        public override void Update(Actor actor)
+        public override Stats? Update(Actor actor, Stats stats)
         {
-            Vector3 targetVelocity = new();
-            targetVelocity.x = axis.x * stats.speed;
-            targetVelocity.z = axis.y * stats.speed;
-            
+            Vector3 targetVelocity = new()
+            {
+                x = axis.x * stats.speed,
+                z = axis.y * stats.speed
+            };
+
 
             //Use a flat version of our movement vector so the Y axis doesn't factor into the length calculation.
             Vector3 planarVelocity = actor.velocity;
@@ -40,6 +42,7 @@ namespace playground
             actor.velocity.z = AccelerateWithClamping(accelerationThisFrame, actor.velocity.z, targetVelocity.z);
 
             controller.Move(actor.velocity * Time.deltaTime);
+            return null;
         }
 
         private float AccelerateWithClamping(float accelerationThisFrame, float from, float to)

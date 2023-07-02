@@ -11,13 +11,13 @@ namespace playground
         private bool isHeld;
         private float hangTime = 0.55f;
 
-        public override void Init(Actor actor)
+        public override void Init(Actor actor, Message initiator)
         {
             entity = (Actor)actor;
             entity.velocity.y = 7.5f;
         }
 
-        public override void Update(Actor actor)
+        public override Stats? Update(Actor actor, Stats stats)
         {
             if (entity.velocity.y < 0)
             {
@@ -26,6 +26,8 @@ namespace playground
                 else
                     Exit();
             }
+
+            return null;
         }
 
         public override bool Process(Actor actor, Message message)

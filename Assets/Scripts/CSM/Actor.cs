@@ -21,7 +21,7 @@ namespace CSM
         private readonly Dictionary<Type, State> statePool = new();
 
         public Vector3 velocity;
-        public Stats stats;
+        [SerializeField] private Stats stats;
         [SerializeField] private Stats finalStats;
 
         public delegate void StateChangeHandler(Actor actor);
@@ -32,19 +32,30 @@ namespace CSM
 
         public virtual void Update()
         {
+            Stats lastCalculatedStat = stats;
             foreach (State state in statesStack)
             {
                 state.time += Time.deltaTime;
-                state.Update(this);
+                Stats? newStats = state.Update(this, lastCalculatedStat);
+                if (newStats != null)
+                {
+                    lastCalculatedStat = (Stats)newStats;
+#if ALLOW_STATE_PROFILING
+                //TODO keep record of all stat changes.
+#endif
+                }
             }
 
+            finalStats = lastCalculatedStat;
             ProcessQueues();
             ProcessActionBuffer();
         }
 
         public bool Is<TState>() => statesStack.Contains(typeof(TState));
 
-        private void OnStateChangeHandler(Actor actor) => CalculateStats();
+        private void OnStateChangeHandler(Actor actor)
+        {
+        }
 
         public void EnterState<T>() where T : State
         {
@@ -72,20 +83,6 @@ namespace CSM
             );
 
             slatedForCreation.Enqueue(si);
-        }
-
-        //TODO allow to insert this middleware in and consolidate loops for performance reasons. 
-        // What the FUCK does that mean ^
-        private void CalculateStats()
-        {
-            Stats lastCalculatedStat = stats;
-            foreach (State state in statesStack)
-            {
-                lastCalculatedStat = state.Reduce(this, lastCalculatedStat);
-                state.stats = lastCalculatedStat;
-            }
-
-            finalStats = lastCalculatedStat;
         }
 
         private void ExitState(State state)

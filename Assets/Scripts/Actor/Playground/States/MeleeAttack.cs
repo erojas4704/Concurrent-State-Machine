@@ -9,14 +9,15 @@ namespace playground
     {
         private int combo;
 
-        public override void Init(Actor actor)
+        public override void Init(Actor actor, Message initiator)
         {
             combo = 0;
         }
 
-        public override void Update(Actor actor)
+        public override Stats? Update(Actor actor, Stats stats)
         {
             if (time >= .5f) Exit();
+            return null;
         }
 
         public override bool Process(Actor actor, Message message)

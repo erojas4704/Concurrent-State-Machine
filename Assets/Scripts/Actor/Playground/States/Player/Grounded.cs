@@ -9,17 +9,18 @@ namespace playground
         /** How accurately must a player be facing a ladder to be able to climb it.**/
         private float climbAngleMin = 0.85f;
 
-        public override void Init(Actor actor)
+        public override void Init(Actor actor, Message initiator)
         {
-            base.Init(actor);
+            base.Init(actor, initiator);
             controller = actor.GetComponent<CharacterController>();
             actor.velocity.y = -10f;
         }
 
-        public override void Update(Actor actor)
+        public override Stats? Update(Actor actor, Stats stats)
         {
-            base.Update(actor);
+            base.Update(actor, stats);
             if (!controller.isGrounded) actor.EnterState<Airborne>();
+            return null;
         }
 
         public override bool Process(Actor actor, Message message)
@@ -42,6 +43,7 @@ namespace playground
                         {
                             actor.EnterState<Climb>(message);
                         }
+
                         break;
                 }
             }
@@ -61,11 +63,10 @@ namespace playground
             Vector3 ladderFace = Vector3.Scale(ladder.transform.forward, flatten).normalized;
             Vector3 actorHeading = Vector3.Scale(actor.velocity, flatten).normalized;
             float dot = Vector3.Dot(ladderFace, actorHeading);
-            if (dot > climbAngleMin) 
+            if (dot > climbAngleMin)
                 return true;
 
             return false;
         }
-
     }
 }
