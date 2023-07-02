@@ -21,12 +21,11 @@ namespace CSM
 
 
         public virtual void Update(Actor actor) { }
-        public virtual void Process(Actor actor, Action action) { Next(actor, action); }
+        public virtual void Process(Actor actor, Action action) { }
         public virtual void End(Actor actor) { }
 
         public EnterStateCallback Enter;
         public ExitStateCallback Exit;
-        public NextStateCallback Next = (a, action) => { };
 
         public Type[] requiredStates = new Type[] { };
         public Type[] negatedStates = new Type[] { };

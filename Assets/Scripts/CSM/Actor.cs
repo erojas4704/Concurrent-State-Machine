@@ -1,18 +1,25 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
-using System.Linq;
 using UnityEngine.Serialization;
 
 namespace CSM
 {
     public class Actor : MonoBehaviour, ISerializationCallbackReceiver
     {
-        private StateSet states = new(new StateComparer());
+        private StateStack statesStack = new();
+
+        /**States scheduled to be deleted this frame. This work is done at the end of an update cycle.*/
         private readonly Queue<State> slatedForDeletion = new();
+
+        /**States scheduled to be initialized this frame. This work is done at the end of an update cycle. */
         private readonly Queue<StateAndInitiator> slatedForCreation = new();
+
+        /** Buffered messages for player input buffering. */
         private readonly Queue<Action> actionBuffer = new();
-        private readonly HashSet<State> statePool = new();
+
+        /** Pool of states that have been removed. This prevents GC running on expired states. */
+        private readonly Dictionary<Type, State> statePool = new();
 
         public Vector3 velocity;
         public Stats stats;
@@ -26,25 +33,19 @@ namespace CSM
 
         public virtual void Update()
         {
-            foreach (State state in states)
+            foreach (State state in statesStack)
             {
                 state.time += Time.deltaTime;
                 state.Update(this);
             }
 
-            processQueues();
+            ProcessQueues();
             ProcessActionBuffer();
         }
 
-        public bool Is<TState>()
-        {
-            return states.Any(s => s.GetType() == typeof(TState));
-        }
+        public bool Is<TState>() => statesStack.Contains(typeof(TState));
 
-        private void OnStateChangeHandler(Actor actor)
-        {
-            CalculateStats();
-        }
+        private void OnStateChangeHandler(Actor actor) => CalculateStats();
 
         public void EnterState<T>() where T : State
         {
@@ -61,24 +62,25 @@ namespace CSM
             EnterState(stateType, null);
         }
 
-        private void EnterState(Type stateType, Action initiator = null)
+        private void EnterState(Type stateType, Action initiator)
         {
-            State pooledState = statePool.FirstOrDefault<State>(s => s.GetType() == stateType);
-            State newState = pooledState != null ? pooledState : (State)Activator.CreateInstance(stateType);
+            statePool.TryGetValue(stateType, out State pooledState);
+            State newState = pooledState ?? (State)Activator.CreateInstance(stateType);
             if (newState.Group > -1) ExitStateGroup(newState.Group);
 
-            StateAndInitiator si = new StateAndInitiator(
+            StateAndInitiator si = new(
                 newState, initiator
             );
 
             slatedForCreation.Enqueue(si);
         }
 
-        //TODO allow to insert this middleware in and consolidate loops for performance reasons.
+        //TODO allow to insert this middleware in and consolidate loops for performance reasons. 
+        // What the FUCK does that mean ^
         private void CalculateStats()
         {
             Stats lastCalculatedStat = stats;
-            foreach (State state in states)
+            foreach (State state in statesStack)
             {
                 lastCalculatedStat = state.Reduce(this, lastCalculatedStat);
                 state.stats = lastCalculatedStat;
@@ -94,9 +96,8 @@ namespace CSM
 
         private void ExitState(Type stateType)
         {
-            //TODO o(n) implement hashset
             State state = null;
-            foreach (State s in states)
+            foreach (State s in statesStack)
             {
                 if (s.GetType() == stateType)
                 {
@@ -108,14 +109,17 @@ namespace CSM
             if (state != null) ExitState(state);
         }
 
-        private void processQueues()
+        /**Creates and deletes all states that are slated for creation or deletion. This method handles state pooling and
+         * resolving dependencies.
+         */
+        private void ProcessQueues()
         {
             bool changed = false;
             while (slatedForDeletion.Count > 0)
             {
                 State state = slatedForDeletion.Dequeue();
-                states.Remove(state);
-                statePool.Add(state);
+                statesStack.Remove(state);
+                statePool.Add(state.GetType(), state);
                 state.End(this);
                 changed = true;
             }
@@ -130,8 +134,8 @@ namespace CSM
                 foreach (Type partnerState in newState.partnerStates) EnterState(partnerState);
                 if (newState.solo) ExitAllStatesExcept(newState);
 
-                states.Add(newState);
-                statePool.Remove(newState);
+                statesStack.Add(newState);
+                statePool.Remove(newState.GetType());
                 newState.Enter = EnterState;
                 newState.Exit = ExitState;
                 if (si.initiator != null)
@@ -142,29 +146,25 @@ namespace CSM
                 changed = true;
             }
 
-            UpdateStateChain();
-
             if (changed && OnStateChange != null)
                 OnStateChange(this);
         }
 
         private void ExitAllStatesExcept(State state)
         {
-            foreach (State s in states)
-                if (s != state)
+            foreach (State s in statesStack)
+                if (!Equals(s, state))
                     ExitState(s);
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         private bool HasRequirements(State state)
         {
-            //TODO o(n^2) implement hashset
             foreach (Type requiredState in state.requiredStates)
             {
-                if (!states.Any(s => s.GetType() == requiredState))
-                {
-                    Debug.LogWarning($"Not entering state {state} because dependency {requiredState} is missing!");
-                    return false;
-                }
+                if (statesStack.Contains(requiredState)) continue;
+                Debug.LogWarning($"Not entering state {state} because dependency {requiredState} is missing!");
+                return false;
             }
 
             return true;
@@ -189,12 +189,17 @@ namespace CSM
 
         protected bool PropagateAction(Action action, bool buffer = true)
         {
-            if (states.Count < 1)
+            if (statesStack.Count < 1)
             {
                 throw new Exception("This Actor has no states!");
             }
 
-            states.Min.Process(this, action);
+            foreach (State s in statesStack)
+            {
+                s.Process(this, action);
+                if (action.cancelled) break;
+            }
+
             if (ShouldBufferAction(action, buffer))
                 actionBuffer.Enqueue(action);
 
@@ -206,42 +211,14 @@ namespace CSM
 
         private void ExitStateGroup(int group)
         {
-            foreach (State state in states)
+            foreach (State state in statesStack)
                 if (state.Group == group)
                     ExitState(state.GetType());
         }
 
-        private void UpdateStateChain()
+        public StateStack GetStates()
         {
-            State prev = null;
-            foreach (State s in states)
-            {
-                s.Next = (Actor actor, Action action) => { };
-                if (prev != null)
-                {
-                    prev.Next = s.Process;
-                }
-
-                prev = s;
-            }
-        }
-
-        public T GetState<T>() where T : State
-        {
-            foreach (State s in states)
-            {
-                if (s.GetType() == typeof(T))
-                {
-                    return (T)s;
-                }
-            }
-
-            return null;
-        }
-
-        public StateSet GetStates()
-        {
-            return states;
+            return statesStack;
         }
 
         private class StateAndInitiator
@@ -262,14 +239,14 @@ namespace CSM
 
         public void OnBeforeSerialize()
         {
-            stateArray = new State[states.Count];
-            states.CopyTo(stateArray);
+            stateArray = new State[statesStack.Count];
+            statesStack.CopyTo(stateArray);
         }
 
         public void OnAfterDeserialize()
         {
             if (stateArray == null) return;
-            states = new StateSet();
+            statesStack = new StateStack();
             foreach (State s in stateArray) EnterState(s.GetType());
             OnStateChange += OnStateChangeHandler;
         }

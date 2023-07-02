@@ -11,6 +11,7 @@ namespace CSM
         public enum ActionPhase { None, Pressed, Held, Released }
         public ActionPhase phase = ActionPhase.None;
         public bool processed;
+        public bool cancelled;
         public float timer;
         public Vector2 axis;
 

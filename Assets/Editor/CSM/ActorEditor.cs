@@ -11,7 +11,7 @@ public class ActorEditor : Editor
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
-        StateSet states = ((Actor)target).GetStates();
+        StateStack states = ((Actor)target).GetStates();
         FieldInfo fi = target.GetType() == typeof(Actor) ?
             target.GetType().GetField("actionBuffer", BindingFlags.NonPublic | BindingFlags.Instance) :
             target.GetType().BaseType.GetField("actionBuffer", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
