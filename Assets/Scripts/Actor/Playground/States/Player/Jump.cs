@@ -34,8 +34,6 @@ namespace playground
             }
             else if (action.name == "Jump" && action.phase == Action.ActionPhase.Released)
                 isHeld = false;
-
-            Next(actor, action);
         }
 
         public override void End(Actor actor)

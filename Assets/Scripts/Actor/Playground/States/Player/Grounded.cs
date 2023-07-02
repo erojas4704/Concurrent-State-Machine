@@ -51,8 +51,6 @@ namespace playground
                 axis = action.axis;
                 action.processed = true;
             }
-            
-            Next(actor, action);
         }
 
         private bool CanClimb(Actor actor, Ladder ladder)

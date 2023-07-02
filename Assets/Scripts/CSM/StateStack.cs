@@ -141,8 +141,15 @@ namespace CSM
             set => throw new NotImplementedException();
         }
 
+        //TODO unit test
         private void InsertStateIntoList(State newState)
         {
+            if (list.Count < 1)
+            {
+                list.Add(newState);
+                return;
+            }
+
             for (int i = 0; i < list.Count; i++)
             {
                 if (i == list.Count - 1)

@@ -10,8 +10,7 @@ namespace playground
         public float sprintSpeed = 8f;
         public override void Process(Actor actor, Action action)
         {
-            if (action.name == "Sprint" && action.phase == Action.ActionPhase.Released) Exit(this.GetType());
-            Next(actor, action);
+            if (action.name == "Sprint" && action.phase == Action.ActionPhase.Released) Exit(GetType());
         }
 
         public override Stats Reduce(Actor entity, Stats stats)

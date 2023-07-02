@@ -14,10 +14,8 @@ namespace playground
                 {
                     action.processed = true;
                     actor.EnterState<MeleeAttack>();
-                    return;
                 }
             }
-            Next(actor, action);
         }
 
     }

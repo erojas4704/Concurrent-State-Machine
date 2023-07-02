@@ -55,8 +55,6 @@ namespace playground
                     }
                 }
             }
-
-            Next(actor, action);
         }
 
         private float GetProgressOnLadder(Vector3 origin, Vector3 end, Vector3 point)
