@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace CSM
 {
@@ -16,7 +15,7 @@ namespace CSM
         private readonly Queue<StateAndInitiator> slatedForCreation = new();
 
         /** Buffered messages for player input buffering. */
-        private readonly Queue<Action> actionBuffer = new();
+        private readonly Queue<Message> actionBuffer = new();
 
         /** Pool of states that have been removed. This prevents GC running on expired states. */
         private readonly Dictionary<Type, State> statePool = new();
@@ -52,7 +51,7 @@ namespace CSM
             EnterState(typeof(T));
         }
 
-        public void EnterState<T>(Action initiator) where T : State
+        public void EnterState<T>(Message initiator) where T : State
         {
             EnterState(typeof(T), initiator);
         }
@@ -62,7 +61,7 @@ namespace CSM
             EnterState(stateType, null);
         }
 
-        private void EnterState(Type stateType, Action initiator)
+        private void EnterState(Type stateType, Message initiator)
         {
             statePool.TryGetValue(stateType, out State pooledState);
             State newState = pooledState ?? (State)Activator.CreateInstance(stateType);
@@ -120,6 +119,7 @@ namespace CSM
                 State state = slatedForDeletion.Dequeue();
                 statesStack.Remove(state);
                 statePool.Add(state.GetType(), state);
+                TearDownState(state);
                 state.End(this);
                 changed = true;
             }
@@ -133,15 +133,10 @@ namespace CSM
                 foreach (Type negatedState in newState.negatedStates) ExitState(negatedState);
                 foreach (Type partnerState in newState.partnerStates) EnterState(partnerState);
                 if (newState.solo) ExitAllStatesExcept(newState);
-
                 statesStack.Add(newState);
                 statePool.Remove(newState.GetType());
-                newState.Enter = EnterState;
-                newState.Exit = ExitState;
-                if (si.initiator != null)
-                    newState.Init(this, si.initiator); //Might be redundant. Consider removing conditional
-                else
-                    newState.Init(this);
+                BuildState(newState);
+                newState.Init(this, si.initiator);
                 newState.time = 0;
                 changed = true;
             }
@@ -149,6 +144,18 @@ namespace CSM
             if (changed && OnStateChange != null)
                 OnStateChange(this);
         }
+
+        private void BuildState(State newState)
+        {
+            newState.OnExit += HandleStateExit;
+        }
+
+        private void TearDownState(State state)
+        {
+            state.OnExit -= HandleStateExit;
+        }
+
+        private void HandleStateExit(State state) => ExitState(state);
 
         private void ExitAllStatesExcept(State state)
         {
@@ -174,20 +181,20 @@ namespace CSM
         {
             if (actionBuffer.Count < 1) return;
 
-            Action firstAction = actionBuffer.Peek();
-            firstAction.timer += Time.deltaTime;
+            Message firstMessage = actionBuffer.Peek();
+            firstMessage.timer += Time.deltaTime;
 
-            if (PropagateAction(firstAction, false))
+            if (PropagateAction(firstMessage, false))
             {
                 actionBuffer.Dequeue();
             }
-            else if (firstAction.timer >= actionTimer)
+            else if (firstMessage.timer >= actionTimer)
             {
                 actionBuffer.Dequeue();
             }
         }
 
-        protected bool PropagateAction(Action action, bool buffer = true)
+        protected bool PropagateAction(Message message, bool buffer = true)
         {
             if (statesStack.Count < 1)
             {
@@ -196,18 +203,17 @@ namespace CSM
 
             foreach (State s in statesStack)
             {
-                if(s.Process(this, action)) break;
-                if (action.cancelled) break;
+                if (s.Process(this, message)) break;
             }
 
-            if (ShouldBufferAction(action, buffer))
-                actionBuffer.Enqueue(action);
+            if (ShouldBufferMessage(message, buffer))
+                actionBuffer.Enqueue(message);
 
-            return action.processed;
+            return message.processed;
         }
 
-        private static bool ShouldBufferAction(Action action, bool buffer) =>
-            !action.processed && buffer && action.phase == Action.ActionPhase.Pressed;
+        private static bool ShouldBufferMessage(Message message, bool buffer) =>
+            !message.processed && buffer && message.phase == Message.Phase.Started;
 
         private void ExitStateGroup(int group)
         {
@@ -224,9 +230,9 @@ namespace CSM
         private class StateAndInitiator
         {
             public readonly State state;
-            public readonly Action initiator;
+            public readonly Message initiator;
 
-            public StateAndInitiator(State state, Action initiator)
+            public StateAndInitiator(State state, Message initiator)
             {
                 this.state = state;
                 this.initiator = initiator;

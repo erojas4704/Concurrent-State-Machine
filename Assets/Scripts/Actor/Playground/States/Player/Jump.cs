@@ -24,17 +24,17 @@ namespace playground
                 if (isHeld && time < hangTime)
                     entity.velocity.y = 0f;
                 else
-                    Exit(this.GetType());
+                    Exit();
             }
         }
 
-        public override bool Process(Actor actor, Action action)
+        public override bool Process(Actor actor, Message message)
         {
-            if (action.name == "Jump" && action.phase == Action.ActionPhase.Held)
+            if (message.name == "Jump" && message.phase == Message.Phase.Held)
             {
                 isHeld = true;
             }
-            else if (action.name == "Jump" && action.phase == Action.ActionPhase.Released)
+            else if (message.name == "Jump" && message.phase == Message.Phase.Ended)
                 isHeld = false;
 
             return false;

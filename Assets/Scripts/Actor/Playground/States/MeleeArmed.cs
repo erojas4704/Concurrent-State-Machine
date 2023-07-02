@@ -7,13 +7,13 @@ namespace playground
     [StateDescriptor(priority = 4, group = 4)]
     public class MeleeArmed : State
     {
-        public override bool Process(Actor actor, Action action)
+        public override bool Process(Actor actor, Message message)
         {
-            if (action.phase == Action.ActionPhase.Pressed)
+            if (message.phase == Message.Phase.Started)
             {
-                if (action.name == "Attack")
+                if (message.name == "Attack")
                 {
-                    action.processed = true;
+                    message.processed = true;
                     actor.EnterState<MeleeAttack>();
                 }
             }

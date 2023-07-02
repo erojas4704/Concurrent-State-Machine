@@ -13,7 +13,7 @@ namespace playground
         private CharacterController controller;
         private Ladder ladder;
 
-        public override void Init(Actor actor, Action inititator)
+        public override void Init(CSM.Actor actor, Message inititator)
         {
             player = (PlayerActor)actor;
             controller = actor.GetComponent<CharacterController>();
@@ -30,7 +30,7 @@ namespace playground
         public override void Update(Actor actor)
         {
             Vector2 axis = player.axis;
-            if (ladder == null) Exit(this.GetType());
+            if (ladder == null) Exit();
             Vector3 ladderDirection = Vector3.Normalize(ladder.end.position - ladder.start.position);
             Vector3 futurePosition = player.transform.position +
                                      ladderDirection * climbSpeed * Time.deltaTime * player.axis.y;
@@ -41,16 +41,16 @@ namespace playground
 
             //If i'm descending and my feet touch the ground, exit ladder state.
             if (axis.y < 0f && controller.isGrounded)
-                Enter(typeof(Grounded));
+                actor.EnterState<Grounded>();
         }
 
-        public override bool Process(Actor actor, Action action)
+        public override bool Process(Actor actor, Message message)
         {
-            if (action.phase == Action.ActionPhase.Released)
+            if (message.phase == Message.Phase.Ended)
             {
-                if (action.name == "Ladder")
+                if (message.name == "Ladder")
                 {
-                    if (action.GetInitiator<Ladder>() == ladder)
+                    if (message.GetInitiator<Ladder>() == ladder)
                     {
                         //!!! Error-prone. Consider having a default state
                         //Enter(typeof(Airborne));

@@ -23,6 +23,7 @@ namespace playground
             Vector3 targetVelocity = new();
             targetVelocity.x = axis.x * stats.speed;
             targetVelocity.z = axis.y * stats.speed;
+            
 
             //Use a flat version of our movement vector so the Y axis doesn't factor into the length calculation.
             Vector3 planarVelocity = actor.velocity;

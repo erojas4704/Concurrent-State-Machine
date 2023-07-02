@@ -6,27 +6,24 @@ namespace CSM
     [Serializable]
     public abstract class State
     {
+        public bool solo;
         public int Priority { get; init; }
         public int Group { get; init; } = -1;
         public float time;
 
-        public delegate void NextStateCallback(Actor actor, Action action);
-        public delegate void EnterStateCallback(Type stateType);
+        public delegate void ExitStateHandler(State state);
 
-        public delegate void ExitStateCallback(Type stateType);
-        public delegate void ExitStateCallback<TState>();
-
-        public virtual void Init(Actor actor) { }
-        public virtual void Init(Actor actor, Action initiator) { Init(actor); }
-
-
+        public virtual void Init(Actor actor) { Init(actor, null);}
+        public virtual void Init(Actor actor, Message initiator) { }
+        
         public virtual void Update(Actor actor) { }
-
-        public virtual bool Process(Actor actor, Action action) => false;
+        public virtual bool Process(Actor actor, Message message) => false;
         public virtual void End(Actor actor) { }
 
-        public EnterStateCallback Enter;
-        public ExitStateCallback Exit;
+        // ReSharper disable once InconsistentNaming
+        public ExitStateHandler OnExit;
+
+        protected void Exit() => OnExit?.Invoke(this);
 
         public Type[] requiredStates = { };
         public Type[] negatedStates = { };
@@ -34,28 +31,26 @@ namespace CSM
         
         public Stats stats;
 
-        public bool solo;
-
-        public State()
+        protected State()
         {
-            StateDescriptor desc = (StateDescriptor)System.Attribute.GetCustomAttribute(GetType(), typeof(StateDescriptor));
+            StateDescriptor desc = (StateDescriptor)Attribute.GetCustomAttribute(GetType(), typeof(StateDescriptor));
             if (desc != null)
             {
                 Priority = desc.priority;
                 Group = desc.group;
             }
 
-            Negate neg = (Negate)System.Attribute.GetCustomAttribute(GetType(), typeof(Negate));
+            Negate neg = (Negate)Attribute.GetCustomAttribute(GetType(), typeof(Negate));
             if (neg != null) negatedStates = neg.states;
 
-            Require req = (Require)System.Attribute.GetCustomAttribute(GetType(), typeof(Require));
+            Require req = (Require)Attribute.GetCustomAttribute(GetType(), typeof(Require));
             if (req != null) requiredStates = req.states;
 
-            With with = (With)System.Attribute.GetCustomAttribute(GetType(), typeof(With));
+            With with = (With)Attribute.GetCustomAttribute(GetType(), typeof(With));
             if (with != null) partnerStates = with.states;
 
-            Solo solo = (Solo)System.Attribute.GetCustomAttribute(GetType(), typeof(Solo));
-            if (solo != null) this.solo = solo.solo;
+            Solo attrSolo = (Solo)Attribute.GetCustomAttribute(GetType(), typeof(Solo));
+            if (attrSolo != null) solo = attrSolo.solo;
         }
 
         public override bool Equals(object obj)

@@ -10,9 +10,9 @@ namespace playground
     public class Sprint : State
     {
         public float sprintSpeed = 8f;
-        public override bool Process(Actor actor, Action action)
+        public override bool Process(Actor actor, Message message)
         {
-            if (action.name == "Sprint" && action.phase == Action.ActionPhase.Released) Exit(GetType());
+            if (message.name == "Sprint" && message.phase == Message.Phase.Ended) Exit();
             return false;
         }
 

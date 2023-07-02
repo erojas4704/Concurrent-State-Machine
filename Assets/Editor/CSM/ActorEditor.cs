@@ -16,14 +16,14 @@ public class ActorEditor : Editor
             target.GetType().GetField("actionBuffer", BindingFlags.NonPublic | BindingFlags.Instance) :
             target.GetType().BaseType.GetField("actionBuffer", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
             
-        Queue<Action> actionBuffer = fi.GetValue(target) as Queue<Action>;
+        Queue<Message> actionBuffer = fi.GetValue(target) as Queue<Message>;
 
         foreach (State state in states)
         {
             EditorGUILayout.LabelField($"[State ({state.Group}): {state}] Priority: {state.Priority} Active: {state.time}");
         }
 
-        foreach (Action action in actionBuffer)
+        foreach (Message action in actionBuffer)
         {
             EditorGUILayout.LabelField($"[Action: {action}]");
         }

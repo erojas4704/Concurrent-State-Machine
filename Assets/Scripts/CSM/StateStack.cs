@@ -33,31 +33,12 @@ namespace CSM
             dictionary[newState.GetType()] = newState;
         }
 
-        public void Add(KeyValuePair<Type, State> item)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Clear()
         {
             dictionary.Clear();
             list.Clear();
         }
 
-        public bool Contains(KeyValuePair<Type, State> item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void CopyTo(KeyValuePair<Type, State>[] array, int arrayIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Remove(KeyValuePair<Type, State> item)
-        {
-            throw new NotImplementedException();
-        }
 
         // ReSharper disable once MemberCanBePrivate.Global
         public bool Contains(Type stateType) => dictionary.ContainsKey(stateType);
@@ -71,16 +52,6 @@ namespace CSM
             }
         }
 
-        //Slow. O(N).
-        public void Add(Type key, State value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool ContainsKey(Type key)
-        {
-            throw new NotImplementedException();
-        }
 
         public bool Remove(Type stateType)
         {
@@ -100,17 +71,11 @@ namespace CSM
 
             return false;
         }
-
-        public bool TryGetValue(Type key, out State value)
+        public void Add(KeyValuePair<Type, State> item)
         {
             throw new NotImplementedException();
         }
 
-        public State this[Type key]
-        {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
-        }
 
         public ICollection<Type> Keys => dictionary.Keys;
         public ICollection<State> Values => dictionary.Values;
@@ -120,28 +85,6 @@ namespace CSM
         public int Count => list.Count;
         public bool IsReadOnly { get; }
 
-        public int IndexOf(State item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Insert(int index, State item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RemoveAt(int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public State this[int index]
-        {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
-        }
-
-        //TODO unit test
         private void InsertStateIntoList(State newState)
         {
             if (list.Count < 1)
@@ -175,5 +118,63 @@ namespace CSM
                 break;
             }
         }
+        
+        #region Unimplemented Methods
+        public bool Contains(KeyValuePair<Type, State> item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CopyTo(KeyValuePair<Type, State>[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Remove(KeyValuePair<Type, State> item)
+        {
+            throw new NotImplementedException();
+        }
+        public void Add(Type key, State value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool ContainsKey(Type key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryGetValue(Type key, out State value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public State this[Type key]
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
+
+        public int IndexOf(State item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Insert(int index, State item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveAt(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public State this[int index]
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
+        #endregion
     }
 }

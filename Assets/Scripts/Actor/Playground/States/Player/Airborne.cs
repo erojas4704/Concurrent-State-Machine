@@ -9,13 +9,13 @@ namespace playground
         public float airAcceleration = 15f;
         public float drag = 3f;
 
-        public override void Update(Actor entity)
+        public override void Update(Actor actor)
         {
-            base.Update(entity);
-            CharacterController controller = entity.GetComponent<CharacterController>();
-            entity.velocity.y += -9.8f * Time.deltaTime;
-            entity.velocity.y = Mathf.Max(entity.velocity.y, -50f); //Clamp to -50 terminal velocity
-            if (controller.isGrounded) Enter(typeof(Grounded));
+            base.Update(actor);
+            CharacterController controller = actor.GetComponent<CharacterController>();
+            actor.velocity.y += -9.8f * Time.deltaTime;
+            actor.velocity.y = Mathf.Max(actor.velocity.y, -50f); //Clamp to -50 terminal velocity
+            if (controller.isGrounded) actor.EnterState<Grounded>();
         }
 
         public override Stats Reduce(Actor actor, Stats stats)
