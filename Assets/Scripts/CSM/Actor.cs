@@ -129,6 +129,7 @@ namespace CSM
                 //TODO extract methods here.
                 StateAndInitiator si = slatedForCreation.Dequeue();
                 State newState = si.state;
+                //TODO Extract these following methods to -> ResolveDependencyStates.  
                 if (!HasRequirements(newState)) continue;
                 foreach (Type negatedState in newState.negatedStates) ExitState(negatedState);
                 foreach (Type partnerState in newState.partnerStates) EnterState(partnerState);
