@@ -159,10 +159,14 @@ namespace CSM
                 }
 
                 State nextState = list[i + 1];
-                if (i == 0 && newState.Priority > nextState.Priority)
+                if (i == 0)
                 {
-                    list.Insert(0, newState);
-                    break;
+                    if (newState.Priority > nextState.Priority)
+                    {
+                        list.Insert(0, newState);
+                        break;
+                    }
+                    continue;
                 }
 
                 State lastState = list[i - 1];
