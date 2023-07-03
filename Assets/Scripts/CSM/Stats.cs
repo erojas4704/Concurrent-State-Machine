@@ -3,18 +3,11 @@ using System;
 namespace CSM
 {
     [Serializable]
-    public struct Stats
+    public record Stats
     {
         public float speed;
         public float acceleration;
         public float friction;
-
-        public Stats(float speed, float acceleration, float friction)
-        {
-            this.speed = speed;
-            this.acceleration = acceleration;
-            this.friction = friction;
-        }
 
         public override string ToString()
         {

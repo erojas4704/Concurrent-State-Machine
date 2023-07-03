@@ -1,4 +1,5 @@
 using CSM;
+using Playground.States;
 using UnityEngine;
 
 namespace playground
@@ -12,7 +13,6 @@ namespace playground
             actor = GetComponent<Actor>();
             actor.EnterState<Airborne>();
             actor.EnterState<MeleeArmed>();
-
         }
     }
 }

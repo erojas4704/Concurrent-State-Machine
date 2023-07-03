@@ -36,10 +36,10 @@ namespace CSM
             foreach (State state in statesStack)
             {
                 state.time += Time.deltaTime;
-                Stats? newStats = state.Update(this, lastCalculatedStat);
+                Stats newStats = state.Update(this, lastCalculatedStat);
                 if (newStats != null)
                 {
-                    lastCalculatedStat = (Stats)newStats;
+                    lastCalculatedStat = newStats;
 #if ALLOW_STATE_PROFILING
                 //TODO keep record of all stat changes.
 #endif
@@ -256,5 +256,11 @@ namespace CSM
         }
 
         #endregion
+    }
+
+    public class Actor<TStats> : Actor where TStats : struct
+    {
+        private TStats stats;
+        private TStats finalStats;
     }
 }

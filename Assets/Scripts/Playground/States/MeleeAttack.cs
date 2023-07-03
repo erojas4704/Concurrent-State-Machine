@@ -2,7 +2,7 @@ using CSM;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace playground
+namespace Playground.States
 {
     [UsedImplicitly]
     [StateDescriptor(group = 3, priority = 5)]
@@ -35,13 +35,11 @@ namespace playground
                     combo++;
                 }
             }
-
             if (message.name == "Move")
             {
                 message.processed = true;
                 axis = message.axis;
             }
-
             return true; //Stop all states below from processing inputs.
         }
 

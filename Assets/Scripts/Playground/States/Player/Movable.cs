@@ -1,8 +1,8 @@
 using System;
-using UnityEngine;
 using CSM;
+using UnityEngine;
 
-namespace playground
+namespace Playground.States.Player
 {
     [StateDescriptor(priority = 1)]
     public abstract class Movable : State
@@ -17,7 +17,7 @@ namespace playground
             controller = actor.GetComponent<CharacterController>();
         }
 
-        public override Stats? Update(Actor actor, Stats stats)
+        public override Stats Update(Actor actor, Stats stats)
         {
             //TODO demo: We shouldn't use the axis here.
             Vector3 targetVelocity = new()

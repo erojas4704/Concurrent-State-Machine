@@ -1,7 +1,8 @@
-using UnityEngine;
 using CSM;
+using playground;
+using UnityEngine;
 
-namespace playground
+namespace Playground.States.Player
 {
     [StateDescriptor(priority = 3, group = 0)]
     public class Grounded : Movable

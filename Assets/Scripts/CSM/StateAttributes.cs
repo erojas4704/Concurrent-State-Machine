@@ -2,8 +2,8 @@ using System;
 
 namespace CSM
 {
-    [System.AttributeUsage(System.AttributeTargets.Class)]
-    public class StateDescriptor : System.Attribute
+    [AttributeUsage(AttributeTargets.Class)]
+    public class StateDescriptor : Attribute
     {
         public int group = -1;
         public int priority;
@@ -13,7 +13,7 @@ namespace CSM
         }
     }
 
-    public class Negate : System.Attribute
+    public class Negate : Attribute
     {
         public Type[] states;
 
@@ -23,7 +23,7 @@ namespace CSM
         }
     }
 
-    public class Require : System.Attribute
+    public class Require : Attribute
     {
         public Type[] states;
 
@@ -33,7 +33,7 @@ namespace CSM
         }
     }
 
-    public class With : System.Attribute
+    public class With : Attribute
     {
         public Type[] states;
 
@@ -43,7 +43,7 @@ namespace CSM
         }
     }
 
-    public class Solo : System.Attribute
+    public class Solo : Attribute
     {
         public bool solo;
 
