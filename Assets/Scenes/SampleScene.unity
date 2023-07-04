@@ -2766,12 +2766,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   velocity: {x: 0, y: 0, z: 0}
-  stats:
-    speed: 0
-    friction: 0
-  finalStats:
-    speed: 0
-    friction: 0
   actionTimer: 0.75
   stateArray: []
   axis: {x: 0, y: 0}
@@ -2988,6 +2982,16 @@ MonoBehaviour:
     acceleration: 3
     landAcceleration: 5
     airAcceleration: 5
+    drag: 0
+    ladderClimbSpeed: 0
+    jumpHangTime: 0
+  finalStats:
+    speed: 0
+    friction: 0
+    sprintSpeed: 0
+    acceleration: 0
+    landAcceleration: 0
+    airAcceleration: 0
     drag: 0
     ladderClimbSpeed: 0
     jumpHangTime: 0
