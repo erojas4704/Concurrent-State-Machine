@@ -1,16 +1,10 @@
 using System;
+using UnityEngine;
 
 namespace CSM
 {
-    [Serializable]
-    public record Stats
+    public abstract class Stats : MonoBehaviour
     {
-        public float speed;
-        public float friction;
-
-        public override string ToString()
-        {
-            return $"Speed: {speed} ";
-        }
+        public abstract Stats Clone();
     }
 }
