@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace CSM
 {
-    public class Actor : MonoBehaviour, ISerializationCallbackReceiver
+    public class Actor : MonoBehaviour, ISerializationCallbackReceiver 
     {
         private StateStack statesStack = new();
 
@@ -21,8 +21,9 @@ namespace CSM
         private readonly Dictionary<Type, State> statePool = new();
 
         public Vector3 velocity;
-        [SerializeField] private Stats stats;
-        [SerializeField] private Stats finalStats;
+        [SerializeField, HideInInspector] public Stats stats;
+        [SerializeField, HideInInspector] public Stats finalStats;
+        
 
         public delegate void StateChangeHandler(Actor actor);
 
@@ -36,7 +37,8 @@ namespace CSM
             foreach (State state in statesStack)
             {
                 state.time += Time.deltaTime;
-                Stats newStats = state.Update(this, lastCalculatedStat);
+                //TODO <- Consider performance implications of unnecessary record cloning
+                Stats newStats = state.Update(this, lastCalculatedStat with { });
                 if (newStats != null)
                 {
                     lastCalculatedStat = newStats;
@@ -256,11 +258,5 @@ namespace CSM
         }
 
         #endregion
-    }
-
-    public class Actor<TStats> : Actor where TStats : struct
-    {
-        private TStats stats;
-        private TStats finalStats;
     }
 }

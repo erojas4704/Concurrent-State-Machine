@@ -1,10 +1,10 @@
 using CSM;
 using Playground.States;
-using UnityEngine;
+using Playground.States.Player;
 
 namespace playground
 {
-    public class Player : MonoBehaviour
+    public class Player : Actor
     {
         private Actor actor;
 
@@ -13,6 +13,7 @@ namespace playground
             actor = GetComponent<Actor>();
             actor.EnterState<Airborne>();
             actor.EnterState<MeleeArmed>();
+            actor.stats = new PlayerStats();
         }
     }
 }

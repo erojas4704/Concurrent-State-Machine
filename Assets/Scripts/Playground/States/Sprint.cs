@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using CSM;
 using JetBrains.Annotations;
 using Playground.States.Player;
@@ -10,11 +11,11 @@ namespace Playground.States
     [Require(typeof(Grounded))]
     public class Sprint : State
     {
-        public float sprintSpeed = 8f;
-
-        public override Stats? Update(Actor actor, Stats stats)
+        public override Stats Update(Actor actor, Stats stats)
         {
-            stats.speed = sprintSpeed;
+            PlayerStats pStats = stats as PlayerStats;
+            Debug.Assert(pStats != null, nameof(pStats) + " != null");
+            pStats.speed = pStats.sprintSpeed;
             return stats;
         }
 
