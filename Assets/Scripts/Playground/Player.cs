@@ -4,9 +4,10 @@ using Playground.States.Player;
 
 namespace playground
 {
-    public class Player : Actor
+    public class Player : PlayerActor
     {
         private Actor actor;
+        public new PlayerStats stats;
 
         private void Start()
         {

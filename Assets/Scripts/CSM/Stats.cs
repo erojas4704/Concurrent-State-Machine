@@ -6,7 +6,6 @@ namespace CSM
     public record Stats
     {
         public float speed;
-        public float acceleration;
         public float friction;
 
         public override string ToString()
