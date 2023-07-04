@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System;
+using Unity.Collections;
 using UnityEngine;
 
 namespace CSM
 {
-    public class Actor : MonoBehaviour, ISerializationCallbackReceiver 
+    public class Actor : MonoBehaviour, ISerializationCallbackReceiver
     {
         private StateStack statesStack = new();
 
@@ -21,9 +22,9 @@ namespace CSM
         private readonly Dictionary<Type, State> statePool = new();
 
         public Vector3 velocity;
-        [SerializeField, HideInInspector] public Stats stats;
-        [SerializeField, HideInInspector] public Stats finalStats;
-        
+        [NonSerialized] public Stats stats;
+        [ReadOnly, NonSerialized] public Stats finalStats;
+
 
         public delegate void StateChangeHandler(Actor actor);
 

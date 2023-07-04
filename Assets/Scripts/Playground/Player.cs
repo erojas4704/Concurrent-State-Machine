@@ -8,6 +8,7 @@ namespace playground
     {
         private Actor actor;
         public new PlayerStats stats;
+        public new PlayerStats finalStats;
 
         private void Start()
         {
