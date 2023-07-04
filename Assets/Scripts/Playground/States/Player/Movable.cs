@@ -1,6 +1,7 @@
 using System;
 using CSM;
 using UnityEngine;
+using Debug = System.Diagnostics.Debug;
 
 namespace Playground.States.Player
 {
@@ -20,10 +21,13 @@ namespace Playground.States.Player
         public override Stats Update(Actor actor, Stats stats)
         {
             //TODO demo: We shouldn't use the axis here.
+            PlayerStats pStats = stats as PlayerStats;
+            Debug.Assert(pStats != null, nameof(pStats) + " != null");
+            
             Vector3 targetVelocity = new()
             {
-                x = player.axis.x * stats.speed,
-                z = player.axis.y * stats.speed
+                x = player.axis.x * pStats.speed,
+                z = player.axis.y * pStats.speed
             };
 
 
@@ -33,8 +37,8 @@ namespace Playground.States.Player
 
             //Figure ot whether to use friction or acceleration
             float accelerationFactor = targetVelocity.magnitude > planarVelocity.magnitude
-                ? stats.acceleration
-                : stats.friction;
+                ? pStats.acceleration
+                : pStats.friction;
 
             //Every update, apply the acceleration * time to speed.
             float accelerationThisFrame = accelerationFactor * Time.deltaTime;
