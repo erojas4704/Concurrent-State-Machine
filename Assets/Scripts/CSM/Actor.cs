@@ -24,8 +24,7 @@ namespace CSM
         public Vector3 velocity;
         [NonSerialized] public Stats stats;
         [ReadOnly, NonSerialized] public Stats finalStats;
-
-
+        
         public delegate void StateChangeHandler(Actor actor);
 
         public event StateChangeHandler OnStateChange;
@@ -39,7 +38,7 @@ namespace CSM
             {
                 state.time += Time.deltaTime;
                 //TODO <- Consider performance implications of unnecessary record cloning
-                Stats newStats = state.Update(this, lastCalculatedStat with { });
+                Stats newStats = state.Update(this, lastCalculatedStat);
                 if (newStats != null)
                 {
                     lastCalculatedStat = newStats;

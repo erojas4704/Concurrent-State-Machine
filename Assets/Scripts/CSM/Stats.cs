@@ -5,6 +5,15 @@ namespace CSM
 {
     public abstract class Stats : MonoBehaviour
     {
-        public abstract Stats Clone();
+        public virtual void Reset()
+        {
+        }
+
+        protected class Stat<T> where T : struct
+        {
+            private T value;
+            public void SetValue(T newValue) => value = newValue;
+            public T GetValue() => value;
+        }
     }
 }

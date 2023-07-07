@@ -1,5 +1,6 @@
 using CSM;
 using JetBrains.Annotations;
+using Playground.States.Player;
 using UnityEngine;
 
 namespace Playground.States
@@ -18,9 +19,10 @@ namespace Playground.States
             combo = 0;
         }
 
-        public override Stats? Update(Actor actor, Stats stats)
+        public override Stats Update(Actor actor, Stats stats)
         {
-            stats.speed *= 0.5f;
+            PlayerStats pStats = stats as PlayerStats;
+            pStats.speed *= 0.5f;
             if (time >= .5f) Exit();
             return stats;
         }

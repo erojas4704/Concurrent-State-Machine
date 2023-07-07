@@ -6,19 +6,17 @@ using UnityEngine;
 namespace Playground.States.Player
 {
     [Serializable]
-    public class PlayerStats : Stats
+    public partial class PlayerStats : Stats
     {
         [Serialize] public float sprintSpeed;
         [HideInInspector] public float acceleration;
+        private float hp;
+        public float speed;
+        public float friction;
         public float landAcceleration;
         public float airAcceleration;
         public float drag;
         public float ladderClimbSpeed;
         public float jumpHangTime;
-
-        public override Stats Clone()
-        {
-            return this;
-        }
     }
 }

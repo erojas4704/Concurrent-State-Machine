@@ -28,7 +28,7 @@ namespace playground
             controller.enabled = true;
         }
 
-        public override Stats? Update(Actor actor, Stats stats)
+        public override Stats Update(Actor actor, Stats stats)
         {
             Vector2 axis = player.axis;
             if (ladder == null) Exit();

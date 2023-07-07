@@ -14,7 +14,6 @@ namespace Playground.States
         public override Stats Update(Actor actor, Stats stats)
         {
             PlayerStats pStats = stats as PlayerStats;
-            Debug.Assert(pStats != null, nameof(pStats) + " != null");
             pStats.speed = pStats.sprintSpeed;
             return stats;
         }

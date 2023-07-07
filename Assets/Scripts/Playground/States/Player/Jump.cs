@@ -15,7 +15,7 @@ namespace playground
             actor.velocity.y = 7.5f;
         }
 
-        public override Stats? Update(Actor actor, Stats stats)
+        public override Stats Update(Actor actor, Stats stats)
         {
             if (actor.velocity.y < 0)
             {
