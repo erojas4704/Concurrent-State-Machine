@@ -12,24 +12,30 @@ namespace CSM
         public bool solo;
         public int Priority { get; init; }
         public int Group { get; init; } = -1;
-        
+
         public float time; //TODO z-61. Keep a reference to start time.
         public float expiresAt;
-        
+
         public Stats stats;
 
         public delegate void ExitStateHandler(State state);
 
-        public virtual void Init(Message initiator) { }
+        public virtual void Init(Message initiator)
+        {
+        }
 
         /** Processes an update cycle, this method is called once every frame.
          *  Return: Can return a new set of stats for the actor, or null if no stat changes necessary.
          */
-        public virtual void Update() { }
+        public virtual void Update()
+        {
+        }
 
         public virtual bool Process(Message message) => false;
 
-        public virtual void End() { }
+        public virtual void End()
+        {
+        }
 
         // ReSharper disable once InconsistentNaming
         public ExitStateHandler OnExit;
@@ -78,11 +84,25 @@ namespace CSM
         {
             return GetType().ToString().Split('.').Last();
         }
+
+        public virtual void SetStats(Stats actorStats) => stats = actorStats;
     }
 
     public abstract class State<TStatType> : State where TStatType : Stats
     {
         public new TStatType stats;
+
+        public override void SetStats(Stats actorStats)
+        {
+            if (actorStats is TStatType castStats)
+            {
+                stats = castStats;
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid stats type for this state");
+            }
+        }
     }
 }
 

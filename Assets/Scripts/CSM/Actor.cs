@@ -159,13 +159,7 @@ namespace CSM
         private void BuildState(State newState)
         {
             newState.OnExit += HandleStateExit;
-            newState.stats = stats;
-
-            if (newState is State<Stats> newStateGeneric)
-            {
-                newStateGeneric.stats = stats;
-            }
-
+            newState.SetStats(stats);
             newState.actor = this;
         }
 
