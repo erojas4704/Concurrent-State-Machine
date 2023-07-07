@@ -9,12 +9,13 @@ namespace playground
     [StateDescriptor(group = 0, priority = 99)]
     public class Climb : State<PlayerStats>
     {
+        private const float TOLERANCE = 0.98f;
         private float climbSpeed = 5f;
         private PlayerActor player;
         private CharacterController controller;
         private Ladder ladder;
 
-        public override void Init( Message inititator)
+        public override void Init(Message inititator)
         {
             player = (PlayerActor)actor;
             controller = actor.GetComponent<CharacterController>();
@@ -39,6 +40,14 @@ namespace playground
                 FindNearestPointOnLadder(ladder.start.position, ladder.end.position, futurePosition);
 
             player.transform.position = nearestLadderPoint;
+            
+            float progress = GetProgressOnLadder(ladder.start.position, ladder.end.position, actor.transform.position);
+            if (progress > TOLERANCE)
+            {
+                //Snap to landing
+                SnapActorToLanding();
+            }
+            
 
             //If i'm descending and my feet touch the ground, exit ladder state.
             if (axis.y < 0f && controller.isGrounded)
@@ -58,7 +67,7 @@ namespace playground
                     }
                 }
             }
-            
+
             if (message.name == "Move")
             {
                 player.axis = message.axis;
@@ -72,6 +81,20 @@ namespace playground
             }
 
             return false;
+        }
+        
+        
+        private void SnapActorToLanding()
+        {
+            Transform transform = actor.transform;
+            Vector3 actorPosition = transform.position;
+            Vector3 bottomPoint = actorPosition - new Vector3(0f, controller.height / 2f, 0f);
+            Vector3 offset = ladder.landing.position - bottomPoint;
+
+            Vector3 newPosition = actorPosition + offset;
+            transform.position = newPosition;
+            Exit();
+            actor.EnterState<Airborne>(); //TODO <- Needs default state to avoid having to do this.
         }
 
         private float GetProgressOnLadder(Vector3 origin, Vector3 end, Vector3 point)
