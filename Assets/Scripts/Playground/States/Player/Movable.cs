@@ -12,13 +12,13 @@ namespace Playground.States.Player
         protected CharacterController controller;
         private Vector3 vel;
 
-        public override void Init(Actor actor, Message initiator)
+        public override void Init(Message initiator)
         {
             player = (PlayerActor)actor;
             controller = actor.GetComponent<CharacterController>();
         }
 
-        public override void Update(Actor actor, Stats stats)
+        public override void Update()
         {
             //TODO demo: We shouldn't use the axis here.
             PlayerStats pStats = stats as PlayerStats;
@@ -47,14 +47,14 @@ namespace Playground.States.Player
             controller.Move(actor.velocity * Time.deltaTime);
         }
 
-        public override bool Process(Actor actor, Message message)
+        public override bool Process(Message message)
         {
             if (message.name == "Move")
             {
                 player.axis = message.axis;
                 message.processed = true;
             }
-            return base.Process(actor, message);
+            return base.Process(message);
         }
 
         private float AccelerateWithClamping(float accelerationThisFrame, float from, float to)

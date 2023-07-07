@@ -10,20 +10,20 @@ namespace Playground.States.Player
         /** How accurately must a player be facing a ladder to be able to climb it.**/
         private const float CLIMB_ANGLE_MIN = 0.85f;
 
-        public override void Init(Actor actor, Message initiator)
+        public override void Init(Message initiator)
         {
-            base.Init(actor, initiator);
+            base.Init(initiator);
             controller = actor.GetComponent<CharacterController>();
             actor.velocity.y = -10f;
         }
 
-        public override void Update(Actor actor, Stats stats)
+        public override void Update()
         {
             if (!controller.isGrounded) actor.EnterState<Airborne>();
-            base.Update(actor, stats);
+            base.Update();
         }
 
-        public override bool Process(Actor actor, Message message)
+        public override bool Process(Message message)
         {
             if (message.phase == Message.Phase.Started)
             {
@@ -48,7 +48,7 @@ namespace Playground.States.Player
                 }
             }
             
-            return base.Process(actor, message);
+            return base.Process(message);
         }
 
         private bool CanClimb(Actor actor, Ladder ladder)

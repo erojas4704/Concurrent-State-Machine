@@ -14,7 +14,7 @@ namespace playground
         private CharacterController controller;
         private Ladder ladder;
 
-        public override void Init(Actor actor, Message inititator)
+        public override void Init( Message inititator)
         {
             player = (PlayerActor)actor;
             controller = actor.GetComponent<CharacterController>();
@@ -23,22 +23,18 @@ namespace playground
             controller.enabled = false;
         }
 
-        public override void End(Actor actor)
+        public override void End()
         {
             controller.enabled = true;
         }
 
-        public override void Update(Actor actor, Stats stats)
-        {
-            Debug.Log("LOL THE WORONG ONE IS BEING CALLED IDIOT");
-        }
-        public override void Update(Actor actor, PlayerStats stats)
+        public override void Update()
         {
             Vector2 axis = player.axis;
             if (ladder == null) Exit();
             Vector3 ladderDirection = Vector3.Normalize(ladder.end.position - ladder.start.position);
             Vector3 futurePosition = player.transform.position +
-                                     ladderDirection * climbSpeed * Time.deltaTime * player.axis.y;
+                                     ladderDirection * (climbSpeed * Time.deltaTime * axis.y);
             Vector3 nearestLadderPoint =
                 FindNearestPointOnLadder(ladder.start.position, ladder.end.position, futurePosition);
 
@@ -49,7 +45,7 @@ namespace playground
                 actor.EnterState<Grounded>();
         }
 
-        public override bool Process(Actor actor, Message message)
+        public override bool Process(Message message)
         {
             if (message.phase == Message.Phase.Ended)
             {
@@ -61,6 +57,18 @@ namespace playground
                         //Enter(typeof(Airborne));
                     }
                 }
+            }
+            
+            if (message.name == "Move")
+            {
+                player.axis = message.axis;
+                message.processed = true;
+            }
+
+            if (message.name == "Jump")
+            {
+                Exit();
+                actor.EnterState<Jump>();
             }
 
             return false;

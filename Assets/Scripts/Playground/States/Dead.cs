@@ -8,7 +8,7 @@ namespace Playground.States
     [UsedImplicitly]
     public class Dead : State
     {
-        public override void Init(CSM.Actor actor, Message initiator)
+        public override void Init(Message initiator)
         {
             Rigidbody rb = actor.GetComponent<Rigidbody>();
             if (rb == null) rb = actor.gameObject.AddComponent<Rigidbody>();

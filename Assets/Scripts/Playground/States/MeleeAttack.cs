@@ -13,20 +13,20 @@ namespace Playground.States
         private Vector2 axis;
         private PlayerActor player;
 
-        public override void Init(Actor actor, Message initiator)
+        public override void Init(Message initiator)
         {
             player = (PlayerActor)actor;
             combo = 0;
         }
 
-        public override void Update(Actor actor, Stats stats)
+        public override void Update()
         {
             PlayerStats pStats = stats as PlayerStats;
             pStats!.Speed *= 0.5f;
             if (time >= .5f) Exit();
         }
 
-        public override bool Process(Actor actor, Message message)
+        public override bool Process(Message message)
         {
             if (message.phase == Message.Phase.Started)
             {
@@ -44,10 +44,10 @@ namespace Playground.States
             return true; //Stop all states below from processing inputs.
         }
 
-        public override void End(Actor actor)
+        public override void End()
         {
             player.axis = axis;
-            base.End(actor);
+            base.End();
         }
     }
 }

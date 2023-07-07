@@ -7,7 +7,7 @@ namespace Playground.States
     [StateDescriptor(priority = 4, group = 4)]
     public class MeleeArmed : State
     {
-        public override bool Process(Actor actor, Message message)
+        public override bool Process(Message message)
         {
             if (message.phase == Message.Phase.Started)
             {

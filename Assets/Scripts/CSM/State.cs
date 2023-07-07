@@ -7,25 +7,25 @@ namespace CSM
     [Serializable]
     public abstract class State
     {
+        public Actor actor;
         public bool solo;
         public int Priority { get; init; }
         public int Group { get; init; } = -1;
         public float time;
+        public Stats stats;
 
         public delegate void ExitStateHandler(State state);
 
-        public virtual void Init(Actor actor, Message initiator)
-        {
-        }
+        public virtual void Init(Message initiator) { }
 
         /** Processes an update cycle, this method is called once every frame.
          *  Return: Can return a new set of stats for the actor, or null if no stat changes necessary.
          */
-        public virtual void Update(Actor actor, Stats stats) { }
+        public virtual void Update() { }
 
-        public virtual bool Process(Actor actor, Message message) => false;
+        public virtual bool Process(Message message) => false;
 
-        public virtual void End(Actor actor) { }
+        public virtual void End() { }
 
         // ReSharper disable once InconsistentNaming
         public ExitStateHandler OnExit;
@@ -78,19 +78,7 @@ namespace CSM
 
     public abstract class State<TStatType> : State where TStatType : Stats
     {
-        public override void Update(Actor actor, Stats stats)
-        {
-            if (stats is TStatType typedStats)
-            {
-                Update(actor, typedStats); //Hack. Allows us to bypass having to typecast.
-            }
-            else
-            {
-                throw new Exception("Invalid Stats object passed to state."); //TODO: Create CSMException
-            }
-        }
-
-        public virtual void Update(Actor actor, TStatType stats) { }
+        public new TStatType stats;
     }
 }
 
