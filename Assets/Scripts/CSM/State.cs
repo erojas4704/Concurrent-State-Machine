@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using UnityEngine;
 
 namespace CSM
 {
@@ -13,13 +14,17 @@ namespace CSM
 
         public delegate void ExitStateHandler(State state);
 
-        public virtual void Init(Actor actor, Message initiator) {}
+        public virtual void Init(Actor actor, Message initiator)
+        {
+        }
 
         /** Processes an update cycle, this method is called once every frame.
          *  Return: Can return a new set of stats for the actor, or null if no stat changes necessary.
          */
         public virtual void Update(Actor actor, Stats stats) { }
+
         public virtual bool Process(Actor actor, Message message) => false;
+
         public virtual void End(Actor actor) { }
 
         // ReSharper disable once InconsistentNaming
@@ -30,7 +35,7 @@ namespace CSM
         public Type[] requiredStates = { };
         public Type[] negatedStates = { };
         public Type[] partnerStates = { };
-        
+
         protected State()
         {
             StateDescriptor desc = (StateDescriptor)Attribute.GetCustomAttribute(GetType(), typeof(StateDescriptor));
@@ -70,10 +75,29 @@ namespace CSM
             return GetType().ToString().Split('.').Last();
         }
     }
+
+    public abstract class State<TStatType> : State where TStatType : Stats
+    {
+        public override void Update(Actor actor, Stats stats)
+        {
+            if (stats is TStatType typedStats)
+            {
+                Update(actor, typedStats); //Hack. Allows us to bypass having to typecast.
+            }
+            else
+            {
+                throw new Exception("Invalid Stats object passed to state."); //TODO: Create CSMException
+            }
+        }
+
+        public virtual void Update(Actor actor, TStatType stats) { }
+    }
 }
 
 //! hack
 namespace System.Runtime.CompilerServices
 {
-    internal static class IsExternalInit { }
+    internal static class IsExternalInit
+    {
+    }
 }

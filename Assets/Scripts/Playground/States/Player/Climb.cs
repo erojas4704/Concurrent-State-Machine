@@ -7,14 +7,14 @@ namespace playground
 {
     [UsedImplicitly]
     [StateDescriptor(group = 0, priority = 99)]
-    public class Climb : State
+    public class Climb : State<PlayerStats>
     {
         private float climbSpeed = 5f;
         private PlayerActor player;
         private CharacterController controller;
         private Ladder ladder;
 
-        public override void Init(CSM.Actor actor, Message inititator)
+        public override void Init(Actor actor, Message inititator)
         {
             player = (PlayerActor)actor;
             controller = actor.GetComponent<CharacterController>();
@@ -29,6 +29,10 @@ namespace playground
         }
 
         public override void Update(Actor actor, Stats stats)
+        {
+            Debug.Log("LOL THE WORONG ONE IS BEING CALLED IDIOT");
+        }
+        public override void Update(Actor actor, PlayerStats stats)
         {
             Vector2 axis = player.axis;
             if (ladder == null) Exit();
