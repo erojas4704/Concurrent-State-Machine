@@ -7,21 +7,21 @@ namespace playground
     [UsedImplicitly]
     [StateDescriptor(priority = 2, group = 2)]
     [With(typeof(Airborne))]
-    public class Jump : State
+    public class Jump : State<PlayerStats>
     {
         private bool isHeld;
         private const float HANG_TIME = 0.55f;
 
         public override void Init(Message initiator)
         {
-            actor.velocity.y = 7.5f;
+            actor.velocity.y = stats.JumpForce;
         }
 
         public override void Update()
         {
             if (actor.velocity.y < 0)
             {
-                if (isHeld && time < HANG_TIME)
+                if (isHeld && time < stats.JumpHangTime)
                     actor.velocity.y = 0f;
                 else
                     Exit();

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CSM
 {
@@ -11,7 +12,10 @@ namespace CSM
         public bool solo;
         public int Priority { get; init; }
         public int Group { get; init; } = -1;
-        public float time;
+        
+        public float time; //TODO z-61. Keep a reference to start time.
+        public float expiresAt;
+        
         public Stats stats;
 
         public delegate void ExitStateHandler(State state);

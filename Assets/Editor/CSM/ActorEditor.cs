@@ -12,10 +12,10 @@ public class ActorEditor : Editor
         DrawDefaultInspector();
 
         StateStack states = ((Actor)target).GetStates();
-        FieldInfo fi = typeof(Actor).GetField("actionBuffer",
+        FieldInfo fi = typeof(Actor).GetField("messageBuffer",
             BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
-        Queue<Message> actionBuffer = fi.GetValue(target) as Queue<Message>;
+        Queue<Message> messageBuffer = fi.GetValue(target) as Queue<Message>;
 
         foreach (State state in states)
         {
@@ -23,9 +23,9 @@ public class ActorEditor : Editor
                 $"[State ({state.Group}): {state}] Priority: {state.Priority} Active: {state.time}");
         }
 
-        foreach (Message action in actionBuffer)
+        foreach (Message message in messageBuffer)
         {
-            EditorGUILayout.LabelField($"[Action: {action}]");
+            EditorGUILayout.LabelField($"[Message: {message}]");
         }
     }
 }

@@ -16,10 +16,12 @@ namespace CSM
         private readonly Queue<StateAndInitiator> slatedForCreation = new();
 
         /** Buffered messages for player input buffering. */
-        private readonly Queue<Message> actionBuffer = new();
+        private readonly Queue<Message> messageBuffer = new();
 
         /** Pool of states that have been removed. This prevents GC running on expired states. */
         private readonly Dictionary<Type, State> statePool = new();
+
+        private List<State> ghostStates = new();
 
         public Vector3 velocity;
         private Stats stats;
@@ -42,13 +44,24 @@ namespace CSM
             {
                 state.time += Time.deltaTime;
                 state.Update();
-#if ALLOW_STATE_PROFILING
-                //TODO keep record of all stat changes.
-#endif
+                //TODO Z-56 keep record of all stat changes.
             }
 
             ProcessQueues();
             ProcessActionBuffer();
+        }
+
+        /**Persist a state as a 'ghost'. Ghost states will be treated as the bottom of the stack but will still
+         * be able to process messages. This is useful for implementing features like "coyote-time".
+         */
+        public void Persist(State state, float duration)
+        {
+            state.expiresAt = DateTime.Now.Millisecond + duration * 1000;
+
+            if (!ghostStates.Contains(state))
+            {
+                ghostStates.Add(state);
+            }
         }
 
         public bool Is<TState>() => statesStack.Contains(typeof(TState));
@@ -147,6 +160,12 @@ namespace CSM
         {
             newState.OnExit += HandleStateExit;
             newState.stats = stats;
+
+            if (newState is State<Stats> newStateGeneric)
+            {
+                newStateGeneric.stats = stats;
+            }
+
             newState.actor = this;
         }
 
@@ -179,18 +198,18 @@ namespace CSM
 
         private void ProcessActionBuffer()
         {
-            if (actionBuffer.Count < 1) return;
+            if (messageBuffer.Count < 1) return;
 
-            Message firstMessage = actionBuffer.Peek();
+            Message firstMessage = messageBuffer.Peek();
             firstMessage.timer += Time.deltaTime;
 
             if (PropagateAction(firstMessage, false))
             {
-                actionBuffer.Dequeue();
+                messageBuffer.Dequeue();
             }
             else if (firstMessage.timer >= actionTimer)
             {
-                actionBuffer.Dequeue();
+                messageBuffer.Dequeue();
             }
         }
 
@@ -203,11 +222,25 @@ namespace CSM
 
             foreach (State s in statesStack)
             {
-                if (s.Process(message)) break;
+                bool messageBlocked = s.Process(message);
+                if (messageBlocked) return message.processed;
             }
 
             if (ShouldBufferMessage(message, buffer))
-                actionBuffer.Enqueue(message);
+                messageBuffer.Enqueue(message);
+
+
+            //Process ghost states. Ghost states have no order and cannot block messages.
+            foreach (State s in ghostStates)
+            {
+                if (DateTime.Now.Millisecond * 0.001f > s.expiresAt)
+                {
+                    ghostStates.Remove(s);
+                    continue;
+                }
+
+                s.Process(message);
+            }
 
             return message.processed;
         }

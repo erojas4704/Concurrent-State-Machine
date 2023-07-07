@@ -15,9 +15,8 @@ namespace Playground.States.Player
             actor.velocity.y = Mathf.Max(actor.velocity.y, -50f); //Clamp to -50 terminal velocity
             if (controller.isGrounded) actor.EnterState<Grounded>();
 
-            PlayerStats pStats = stats as PlayerStats;
-            pStats!.Acceleration = pStats.AirAcceleration;
-            pStats.Friction = pStats.Drag;
+            stats.Acceleration = stats.AirAcceleration;
+            stats.Friction = stats.Drag;
             base.Update();
         }
     }

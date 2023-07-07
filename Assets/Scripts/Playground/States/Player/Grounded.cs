@@ -19,7 +19,11 @@ namespace Playground.States.Player
 
         public override void Update()
         {
-            if (!controller.isGrounded) actor.EnterState<Airborne>();
+            if (!controller.isGrounded)
+            {
+                actor.Persist(this, stats.CoyoteTime);
+                actor.EnterState<Airborne>();
+            }
             base.Update();
         }
 
