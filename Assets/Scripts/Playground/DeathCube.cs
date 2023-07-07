@@ -1,11 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using CSM;
 using System;
 using System.Linq;
+using Playground.States;
+using CSM;
 
-namespace playground
+namespace Playground
 {
     public class DeathCube : MonoBehaviour
     {
@@ -39,6 +38,8 @@ namespace playground
             Collider other = col.collider;
             if (other.gameObject.CompareTag("Player"))
             {
+                //TODO SHOULD ACCESS AN INTERFACE OR COMPONENT FOR DEALING DAMAGE. 
+                //SHOULD NOT REFERENCE THE CSM WHATSOEVER.
                 other.gameObject.GetComponent<Actor>().EnterState<Dead>();
             }
         }

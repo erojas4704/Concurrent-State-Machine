@@ -12,8 +12,6 @@ namespace CSM
         {
             Message message = new(context);
             PropagateAction(message);
-            if (context.action.name == "Move")
-                axis = message.axis;
         }
 
         private void OnEnable()

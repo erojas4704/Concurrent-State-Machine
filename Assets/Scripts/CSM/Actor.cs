@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace CSM
 {
+    [RequireComponent(typeof(Stats))]
     public class Actor : MonoBehaviour, ISerializationCallbackReceiver
     {
         private StateStack statesStack = new();
@@ -21,8 +22,7 @@ namespace CSM
         private readonly Dictionary<Type, State> statePool = new();
 
         public Vector3 velocity;
-        public Stats stats;
-        [SerializeField] private Stats finalStats;
+        private Stats stats;
 
         public delegate void StateChangeHandler(Actor actor);
 
@@ -30,12 +30,21 @@ namespace CSM
 
         public float actionTimer = .75f;
 
+        private void Awake()
+        {
+            stats = GetComponent<Stats>();
+        }
+
         public virtual void Update()
         {
+            stats.Reset();
             foreach (State state in statesStack)
             {
                 state.time += Time.deltaTime;
-                state.Update(this);
+                state.Update();
+#if ALLOW_STATE_PROFILING
+                //TODO keep record of all stat changes.
+#endif
             }
 
             ProcessQueues();
@@ -44,7 +53,9 @@ namespace CSM
 
         public bool Is<TState>() => statesStack.Contains(typeof(TState));
 
-        private void OnStateChangeHandler(Actor actor) => CalculateStats();
+        private void OnStateChangeHandler(Actor actor)
+        {
+        }
 
         public void EnterState<T>() where T : State
         {
@@ -72,20 +83,6 @@ namespace CSM
             );
 
             slatedForCreation.Enqueue(si);
-        }
-
-        //TODO allow to insert this middleware in and consolidate loops for performance reasons. 
-        // What the FUCK does that mean ^
-        private void CalculateStats()
-        {
-            Stats lastCalculatedStat = stats;
-            foreach (State state in statesStack)
-            {
-                lastCalculatedStat = state.Reduce(this, lastCalculatedStat);
-                state.stats = lastCalculatedStat;
-            }
-
-            finalStats = lastCalculatedStat;
         }
 
         private void ExitState(State state)
@@ -120,7 +117,7 @@ namespace CSM
                 statesStack.Remove(state);
                 statePool.Add(state.GetType(), state);
                 TearDownState(state);
-                state.End(this);
+                state.End();
                 changed = true;
             }
 
@@ -137,7 +134,7 @@ namespace CSM
                 statesStack.Add(newState);
                 statePool.Remove(newState.GetType());
                 BuildState(newState);
-                newState.Init(this, si.initiator);
+                newState.Init(si.initiator);
                 newState.time = 0;
                 changed = true;
             }
@@ -149,6 +146,8 @@ namespace CSM
         private void BuildState(State newState)
         {
             newState.OnExit += HandleStateExit;
+            newState.stats = stats;
+            newState.actor = this;
         }
 
         private void TearDownState(State state)
@@ -204,7 +203,7 @@ namespace CSM
 
             foreach (State s in statesStack)
             {
-                if (s.Process(this, message)) break;
+                if (s.Process(message)) break;
             }
 
             if (ShouldBufferMessage(message, buffer))

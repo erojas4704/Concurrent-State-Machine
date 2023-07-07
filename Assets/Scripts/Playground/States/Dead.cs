@@ -1,12 +1,14 @@
-using UnityEngine;
 using CSM;
+using JetBrains.Annotations;
+using UnityEngine;
 
-namespace playground
+namespace Playground.States
 {
     [Solo]
+    [UsedImplicitly]
     public class Dead : State
     {
-        public override void Init(Actor actor)
+        public override void Init(Message initiator)
         {
             Rigidbody rb = actor.GetComponent<Rigidbody>();
             if (rb == null) rb = actor.gameObject.AddComponent<Rigidbody>();

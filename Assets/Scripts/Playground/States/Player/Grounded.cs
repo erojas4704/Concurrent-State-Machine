@@ -1,28 +1,29 @@
-using UnityEngine;
 using CSM;
+using playground;
+using UnityEngine;
 
-namespace playground
+namespace Playground.States.Player
 {
     [StateDescriptor(priority = 3, group = 0)]
     public class Grounded : Movable
     {
         /** How accurately must a player be facing a ladder to be able to climb it.**/
-        private float climbAngleMin = 0.85f;
+        private const float CLIMB_ANGLE_MIN = 0.85f;
 
-        public override void Init(Actor actor)
+        public override void Init(Message initiator)
         {
-            base.Init(actor);
+            base.Init(initiator);
             controller = actor.GetComponent<CharacterController>();
             actor.velocity.y = -10f;
         }
 
-        public override void Update(Actor actor)
+        public override void Update()
         {
-            base.Update(actor);
             if (!controller.isGrounded) actor.EnterState<Airborne>();
+            base.Update();
         }
 
-        public override bool Process(Actor actor, Message message)
+        public override bool Process(Message message)
         {
             if (message.phase == Message.Phase.Started)
             {
@@ -42,17 +43,12 @@ namespace playground
                         {
                             actor.EnterState<Climb>(message);
                         }
+
                         break;
                 }
             }
-
-            if (message.name == "Move")
-            {
-                axis = message.axis;
-                message.processed = true;
-            }
-
-            return false;
+            
+            return base.Process(message);
         }
 
         private bool CanClimb(Actor actor, Ladder ladder)
@@ -61,11 +57,10 @@ namespace playground
             Vector3 ladderFace = Vector3.Scale(ladder.transform.forward, flatten).normalized;
             Vector3 actorHeading = Vector3.Scale(actor.velocity, flatten).normalized;
             float dot = Vector3.Dot(ladderFace, actorHeading);
-            if (dot > climbAngleMin) 
+            if (dot > CLIMB_ANGLE_MIN)
                 return true;
 
             return false;
         }
-
     }
 }

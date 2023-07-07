@@ -1,34 +1,34 @@
 using CSM;
 using JetBrains.Annotations;
+using Playground.States.Player;
 
 namespace playground
 {
     [UsedImplicitly]
     [StateDescriptor(priority = 2, group = 2)]
+    [With(typeof(Airborne))]
     public class Jump : State
     {
-        private Actor entity;
         private bool isHeld;
-        private float hangTime = 0.55f;
+        private const float HANG_TIME = 0.55f;
 
-        public override void Init(Actor actor)
+        public override void Init(Message initiator)
         {
-            entity = (Actor)actor;
-            entity.velocity.y = 7.5f;
+            actor.velocity.y = 7.5f;
         }
 
-        public override void Update(Actor actor)
+        public override void Update()
         {
-            if (entity.velocity.y < 0)
+            if (actor.velocity.y < 0)
             {
-                if (isHeld && time < hangTime)
-                    entity.velocity.y = 0f;
+                if (isHeld && time < HANG_TIME)
+                    actor.velocity.y = 0f;
                 else
                     Exit();
             }
         }
 
-        public override bool Process(Actor actor, Message message)
+        public override bool Process(Message message)
         {
             if (message.name == "Jump" && message.phase == Message.Phase.Held)
             {
@@ -39,10 +39,5 @@ namespace playground
 
             return false;
         }
-
-        public override void End(Actor actor)
-        {
-        }
-
     }
 }

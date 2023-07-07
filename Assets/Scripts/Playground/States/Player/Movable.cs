@@ -1,38 +1,43 @@
 using System;
-using UnityEngine;
 using CSM;
+using UnityEngine;
+using Debug = System.Diagnostics.Debug;
 
-namespace playground
+namespace Playground.States.Player
 {
     [StateDescriptor(priority = 1)]
     public abstract class Movable : State
     {
         private PlayerActor player;
         protected CharacterController controller;
-        protected Vector2 axis;
         private Vector3 vel;
 
-        public override void Init(Actor actor)
+        public override void Init(Message initiator)
         {
             player = (PlayerActor)actor;
             controller = actor.GetComponent<CharacterController>();
         }
 
-        public override void Update(Actor actor)
+        public override void Update()
         {
-            Vector3 targetVelocity = new();
-            targetVelocity.x = axis.x * stats.speed;
-            targetVelocity.z = axis.y * stats.speed;
+            //TODO demo: We shouldn't use the axis here.
+            PlayerStats pStats = stats as PlayerStats;
+            
+             Vector3 targetVelocity = new()
+            {
+                x = player.axis.x * pStats!.Speed,
+                z = player.axis.y * pStats.Speed
+            };
             
 
             //Use a flat version of our movement vector so the Y axis doesn't factor into the length calculation.
             Vector3 planarVelocity = actor.velocity;
             planarVelocity.y = 0;
 
-            //Figure ot whether to use fiction or acceleration
+            //Figure ot whether to use friction or acceleration
             float accelerationFactor = targetVelocity.magnitude > planarVelocity.magnitude
-                ? stats.acceleration
-                : stats.friction;
+                ? pStats.Acceleration
+                : pStats.Friction;
 
             //Every update, apply the acceleration * time to speed.
             float accelerationThisFrame = accelerationFactor * Time.deltaTime;
@@ -40,6 +45,16 @@ namespace playground
             actor.velocity.z = AccelerateWithClamping(accelerationThisFrame, actor.velocity.z, targetVelocity.z);
 
             controller.Move(actor.velocity * Time.deltaTime);
+        }
+
+        public override bool Process(Message message)
+        {
+            if (message.name == "Move")
+            {
+                player.axis = message.axis;
+                message.processed = true;
+            }
+            return base.Process(message);
         }
 
         private float AccelerateWithClamping(float accelerationThisFrame, float from, float to)
@@ -64,6 +79,11 @@ namespace playground
             */
 
             return from + speedDelta;
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + $" Axis: ({player.axis.x}, {player.axis.y})";
         }
     }
 }

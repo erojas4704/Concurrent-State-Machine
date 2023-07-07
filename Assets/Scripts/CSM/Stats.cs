@@ -1,24 +1,21 @@
 using System;
+using JetBrains.Annotations;
+using UnityEngine;
 
 namespace CSM
 {
-    [Serializable]
-    public struct Stats
+    public abstract class Stats : MonoBehaviour
     {
-        public float speed;
-        public float acceleration;
-        public float friction;
-
-        public Stats(float speed, float acceleration, float friction)
+        public virtual void Reset()
         {
-            this.speed = speed;
-            this.acceleration = acceleration;
-            this.friction = friction;
         }
 
-        public override string ToString()
+        [UsedImplicitly]
+        public class Stat<T> where T : struct
         {
-            return $"Speed: {speed} ";
+            private T value;
+            public void SetValue(T newValue) => value = newValue;
+            public T GetValue() => value;
         }
     }
 }
