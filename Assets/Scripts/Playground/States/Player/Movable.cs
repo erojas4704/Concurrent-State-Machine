@@ -22,14 +22,13 @@ namespace Playground.States.Player
         {
             //TODO demo: We shouldn't use the axis here.
             PlayerStats pStats = stats as PlayerStats;
-            Debug.Assert(pStats != null, nameof(pStats) + " != null");
             
-            Vector3 targetVelocity = new()
+             Vector3 targetVelocity = new()
             {
-                x = player.axis.x * pStats.speed,
-                z = player.axis.y * pStats.speed
+                x = player.axis.x * pStats!.Speed,
+                z = player.axis.y * pStats.Speed
             };
-
+            
 
             //Use a flat version of our movement vector so the Y axis doesn't factor into the length calculation.
             Vector3 planarVelocity = actor.velocity;
@@ -37,8 +36,8 @@ namespace Playground.States.Player
 
             //Figure ot whether to use friction or acceleration
             float accelerationFactor = targetVelocity.magnitude > planarVelocity.magnitude
-                ? pStats.acceleration
-                : pStats.friction;
+                ? pStats.Acceleration
+                : pStats.Friction;
 
             //Every update, apply the acceleration * time to speed.
             float accelerationThisFrame = accelerationFactor * Time.deltaTime;

@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace CSM
 {
+    [RequireComponent(typeof(Stats))]
     public class Actor : MonoBehaviour, ISerializationCallbackReceiver
     {
         private StateStack statesStack = new();
@@ -22,33 +23,32 @@ namespace CSM
         private readonly Dictionary<Type, State> statePool = new();
 
         public Vector3 velocity;
-        [NonSerialized] public Stats stats;
-        [ReadOnly, NonSerialized] public Stats finalStats;
-        
+        private Stats stats;
+
         public delegate void StateChangeHandler(Actor actor);
 
         public event StateChangeHandler OnStateChange;
 
         public float actionTimer = .75f;
 
+        private void Awake()
+        {
+            stats = GetComponent<Stats>();
+        }
+
         public virtual void Update()
         {
-            Stats lastCalculatedStat = stats;
+            stats.Reset();
             foreach (State state in statesStack)
             {
                 state.time += Time.deltaTime;
                 //TODO <- Consider performance implications of unnecessary record cloning
-                Stats newStats = state.Update(this, lastCalculatedStat);
-                if (newStats != null)
-                {
-                    lastCalculatedStat = newStats;
+                state.Update(this, stats);
 #if ALLOW_STATE_PROFILING
                 //TODO keep record of all stat changes.
 #endif
-                }
             }
 
-            finalStats = lastCalculatedStat;
             ProcessQueues();
             ProcessActionBuffer();
         }

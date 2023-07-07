@@ -14,7 +14,7 @@ namespace Playground.States
         public override Stats Update(Actor actor, Stats stats)
         {
             PlayerStats pStats = stats as PlayerStats;
-            pStats.speed = pStats.sprintSpeed;
+            pStats.Speed = pStats.sprintSpeed;
             return stats;
         }
 

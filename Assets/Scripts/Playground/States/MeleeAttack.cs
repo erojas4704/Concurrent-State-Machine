@@ -22,7 +22,7 @@ namespace Playground.States
         public override Stats Update(Actor actor, Stats stats)
         {
             PlayerStats pStats = stats as PlayerStats;
-            pStats.speed *= 0.5f;
+            pStats.Speed *= 0.5f;
             if (time >= .5f) Exit();
             return stats;
         }

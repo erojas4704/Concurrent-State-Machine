@@ -14,15 +14,7 @@ public class ActorEditor : Editor
         StateStack states = ((Actor)target).GetStates();
         FieldInfo fi = typeof(Actor).GetField("actionBuffer",
             BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-        
-        // FieldInfo fiStats = target.GetType() == typeof(Actor)
-        //     ? target.GetType().GetField("stats", BindingFlags.NonPublic | BindingFlags.Instance)
-        //     : target.GetType().BaseType.GetField("stats",
-        //         BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-        
-        // Stats stats = fiStats.GetValue(target) as Stats;
-        
-        RenderFinalStatsList(((Actor)target).finalStats);
+
         Queue<Message> actionBuffer = fi.GetValue(target) as Queue<Message>;
 
         foreach (State state in states)
@@ -34,18 +26,6 @@ public class ActorEditor : Editor
         foreach (Message action in actionBuffer)
         {
             EditorGUILayout.LabelField($"[Action: {action}]");
-        }
-    }
-
-    private void RenderFinalStatsList(Stats stats)
-    {
-        Type type = stats.GetType();
-        FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-        foreach (FieldInfo field in fields)
-        {
-            EditorGUILayout.LabelField($"{field.Name}:  {field.GetValue(stats)}");
-            //EditorGUILayout.Space();
         }
     }
 }

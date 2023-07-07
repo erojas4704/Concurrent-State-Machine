@@ -8,8 +8,6 @@ namespace Playground.States.Player
     [StateDescriptor(priority = 3, group = 0)]
     public class Airborne : Movable
     {
-        private const float AIR_ACCELERATION = 15f;
-        private const float DRAG = 3f;
 
         public override Stats Update(Actor actor, Stats stats)
         {
@@ -18,8 +16,8 @@ namespace Playground.States.Player
             if (controller.isGrounded) actor.EnterState<Grounded>();
 
             PlayerStats pStats = stats as PlayerStats;
-            pStats!.acceleration = AIR_ACCELERATION;
-            pStats.friction = DRAG;
+            pStats!.Acceleration = pStats.AirAcceleration;
+            pStats.Friction = pStats.Drag;
             return base.Update(actor, stats);
         }
     }

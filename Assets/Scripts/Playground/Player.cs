@@ -13,7 +13,6 @@ namespace playground
             actor = GetComponent<Actor>();
             actor.EnterState<Airborne>();
             actor.EnterState<MeleeArmed>();
-            actor.stats = new PlayerStats();
         }
     }
 }
