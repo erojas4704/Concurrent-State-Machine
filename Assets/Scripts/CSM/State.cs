@@ -18,7 +18,7 @@ namespace CSM
         /** Processes an update cycle, this method is called once every frame.
          *  Return: Can return a new set of stats for the actor, or null if no stat changes necessary.
          */
-        public virtual Stats Update(Actor actor, Stats stats) => null;
+        public virtual void Update(Actor actor, Stats stats) { }
         public virtual bool Process(Actor actor, Message message) => false;
         public virtual void End(Actor actor) { }
 

@@ -17,10 +17,10 @@ namespace Playground.States.Player
             actor.velocity.y = -10f;
         }
 
-        public override Stats Update(Actor actor, Stats stats)
+        public override void Update(Actor actor, Stats stats)
         {
             if (!controller.isGrounded) actor.EnterState<Airborne>();
-            return base.Update(actor, stats);
+            base.Update(actor, stats);
         }
 
         public override bool Process(Actor actor, Message message)

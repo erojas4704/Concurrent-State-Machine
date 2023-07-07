@@ -11,11 +11,10 @@ namespace Playground.States
     [Require(typeof(Grounded))]
     public class Sprint : State
     {
-        public override Stats Update(Actor actor, Stats stats)
+        public override void Update(Actor actor, Stats stats)
         {
             PlayerStats pStats = stats as PlayerStats;
             pStats.Speed = pStats.sprintSpeed;
-            return stats;
         }
 
         public override bool Process(Actor actor, Message message)

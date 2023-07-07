@@ -28,7 +28,7 @@ namespace playground
             controller.enabled = true;
         }
 
-        public override Stats Update(Actor actor, Stats stats)
+        public override void Update(Actor actor, Stats stats)
         {
             Vector2 axis = player.axis;
             if (ladder == null) Exit();
@@ -43,8 +43,6 @@ namespace playground
             //If i'm descending and my feet touch the ground, exit ladder state.
             if (axis.y < 0f && controller.isGrounded)
                 actor.EnterState<Grounded>();
-            
-            return null;
         }
 
         public override bool Process(Actor actor, Message message)

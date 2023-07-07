@@ -18,7 +18,7 @@ namespace Playground.States.Player
             controller = actor.GetComponent<CharacterController>();
         }
 
-        public override Stats Update(Actor actor, Stats stats)
+        public override void Update(Actor actor, Stats stats)
         {
             //TODO demo: We shouldn't use the axis here.
             PlayerStats pStats = stats as PlayerStats;
@@ -45,7 +45,6 @@ namespace Playground.States.Player
             actor.velocity.z = AccelerateWithClamping(accelerationThisFrame, actor.velocity.z, targetVelocity.z);
 
             controller.Move(actor.velocity * Time.deltaTime);
-            return stats;
         }
 
         public override bool Process(Actor actor, Message message)

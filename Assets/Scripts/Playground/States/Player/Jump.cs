@@ -15,7 +15,7 @@ namespace playground
             actor.velocity.y = 7.5f;
         }
 
-        public override Stats Update(Actor actor, Stats stats)
+        public override void Update(Actor actor, Stats stats)
         {
             if (actor.velocity.y < 0)
             {
@@ -24,8 +24,6 @@ namespace playground
                 else
                     Exit();
             }
-
-            return null;
         }
 
         public override bool Process(Actor actor, Message message)

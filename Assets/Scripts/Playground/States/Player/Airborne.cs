@@ -9,7 +9,7 @@ namespace Playground.States.Player
     public class Airborne : Movable
     {
 
-        public override Stats Update(Actor actor, Stats stats)
+        public override void Update(Actor actor, Stats stats)
         {
             actor.velocity.y += -9.8f * Time.deltaTime;
             actor.velocity.y = Mathf.Max(actor.velocity.y, -50f); //Clamp to -50 terminal velocity
@@ -18,7 +18,7 @@ namespace Playground.States.Player
             PlayerStats pStats = stats as PlayerStats;
             pStats!.Acceleration = pStats.AirAcceleration;
             pStats.Friction = pStats.Drag;
-            return base.Update(actor, stats);
+            base.Update(actor, stats);
         }
     }
 }

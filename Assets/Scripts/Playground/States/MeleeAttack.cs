@@ -19,12 +19,11 @@ namespace Playground.States
             combo = 0;
         }
 
-        public override Stats Update(Actor actor, Stats stats)
+        public override void Update(Actor actor, Stats stats)
         {
             PlayerStats pStats = stats as PlayerStats;
-            pStats.Speed *= 0.5f;
+            pStats!.Speed *= 0.5f;
             if (time >= .5f) Exit();
-            return stats;
         }
 
         public override bool Process(Actor actor, Message message)
