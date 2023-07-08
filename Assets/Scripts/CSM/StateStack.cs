@@ -151,7 +151,7 @@ namespace CSM
 
         public State this[Type key]
         {
-            get => throw new NotImplementedException();
+            get => dictionary[key];
             set => throw new NotImplementedException();
         }
 

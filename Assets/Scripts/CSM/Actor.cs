@@ -23,6 +23,7 @@ namespace CSM
 
         private List<State> ghostStates = new();
 
+        //TODO <- This may be better off delegated to a persistent stat. 
         public Vector3 velocity;
         private Stats stats;
 
@@ -39,7 +40,7 @@ namespace CSM
 
         public virtual void Update()
         {
-            stats.Reset();
+            if (stats) stats.Reset();
             foreach (State state in statesStack)
             {
                 state.time += Time.deltaTime;
@@ -56,7 +57,8 @@ namespace CSM
          */
         public void Persist(State state, float duration)
         {
-            //TODO: States can be persisted but not necessarily exited. This is a problem.
+            //TODO: z-52 Remove this method and take in a duration as part of a state's Exit() event method.
+            //TODO: z-52 States can be persisted but not necessarily exited. This is a problem.
             state.expiresAt = Time.time + duration;
 
             if (!ghostStates.Contains(state))
@@ -71,31 +73,12 @@ namespace CSM
         {
         }
 
-        public void EnterState<T>() where T : State
-        {
-            EnterState(typeof(T));
-        }
-
-        public void EnterState<T>(Message initiator) where T : State
-        {
-            EnterState(typeof(T), initiator);
-        }
-
-        private void EnterState(Type stateType)
-        {
-            EnterState(stateType, null);
-        }
-
-        private void EnterStateImmediately(Type stateType)
-        {
-            
-        }
-
         private void EnterState(Type stateType, Message initiator)
         {
-            statePool.TryGetValue(stateType, out State pooledState);
-            State newState = pooledState ?? (State)Activator.CreateInstance(stateType);
-            if (newState.Group > -1) ExitStateGroup(newState.Group);
+            State newState = GetOrCreateState(stateType);
+            if (newState.Group > -1)
+                ExitStateGroup(newState
+                    .Group); //TODO <- This needs to be revised in SettleStateDependencies or whatever.
 
             StateAndInitiator si = new(
                 newState, initiator
@@ -104,24 +87,15 @@ namespace CSM
             slatedForCreation.Enqueue(si);
         }
 
+        private State GetOrCreateState(Type stateType)
+        {
+            statePool.TryGetValue(stateType, out State pooledState);
+            return pooledState ?? (State)Activator.CreateInstance(stateType);
+        }
+
         private void ExitState(State state)
         {
             slatedForDeletion.Enqueue(state);
-        }
-
-        private void ExitState(Type stateType)
-        {
-            State state = null;
-            foreach (State s in statesStack)
-            {
-                if (s.GetType() == stateType)
-                {
-                    state = s;
-                    break;
-                }
-            }
-
-            if (state != null) ExitState(state);
         }
 
         /**Creates and deletes all states that are slated for creation or deletion. This method handles state pooling and
@@ -130,31 +104,29 @@ namespace CSM
         private void ProcessQueues()
         {
             bool changed = false;
+
+            while (slatedForCreation.Count > 0)
+            {
+                StateAndInitiator si = slatedForCreation.Dequeue();
+                List<State> statesToCreate = new(),
+                    statesToDestroy = new();
+
+                if (!ResolveStateDependencies(si.state, ref statesToCreate, ref statesToDestroy)) continue;
+                if (CreateState(si) == null) continue;
+                changed = true;
+                foreach (State partnerState in statesToCreate)
+                {
+                    CreateState(partnerState);
+                }
+            }
+
             while (slatedForDeletion.Count > 0)
             {
                 State state = slatedForDeletion.Dequeue();
                 statesStack.Remove(state);
                 statePool.Add(state.GetType(), state);
-                TearDownState(state);
+                StateTeardown(state);
                 state.End();
-                changed = true;
-            }
-
-            while (slatedForCreation.Count > 0)
-            {
-                //TODO extract methods here.
-                StateAndInitiator si = slatedForCreation.Dequeue();
-                State newState = si.state;
-                //TODO Z-62 Extract these following methods to -> ResolveDependencyStates.  
-                if (!HasRequirements(newState)) continue;
-                foreach (Type negatedState in newState.negatedStates) ExitState(negatedState);
-                foreach (Type partnerState in newState.partnerStates) EnterState(partnerState);
-                if (newState.solo) ExitAllStatesExcept(newState);
-                statesStack.Add(newState);
-                statePool.Remove(newState.GetType());
-                BuildState(newState);
-                newState.Init(si.initiator);
-                newState.time = 0;
                 changed = true;
             }
 
@@ -162,14 +134,56 @@ namespace CSM
                 OnStateChange(this);
         }
 
-        private void BuildState(State newState)
+        private State CreateState(State newState) => CreateState(new StateAndInitiator(newState, null));
+
+        private State CreateState(StateAndInitiator si)
+        {
+            State newState = si.state;
+            if (newState.solo) ExitAllStatesExcept(newState);
+            statesStack.Add(newState);
+            StateSetup(newState);
+            newState.Init(si.initiator);
+            newState.time = 0;
+            return newState;
+        }
+
+        private bool ResolveStateDependencies(State newState, ref List<State> statesToCreate,
+            ref List<State> statesToDestroy)
+        {
+            if (!ActorHasRequiredStatesFor(newState))
+            {
+                return false;
+            }
+
+            //TODO detect circular dependencies and short-circuit them.
+            foreach (Type partnerStateType in newState.partnerStates)
+            {
+                State newPartnerState = GetOrCreateState(partnerStateType);
+                if (ResolveStateDependencies(newPartnerState, ref statesToCreate, ref statesToDestroy))
+                {
+                    statesToCreate.Add(newPartnerState);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            foreach (Type negatedStates in newState.negatedStates)
+            {
+            }
+
+            return true;
+        }
+
+        private void StateSetup(State newState)
         {
             newState.OnExit += HandleStateExit;
             newState.SetStats(stats);
             newState.actor = this;
         }
 
-        private void TearDownState(State state)
+        private void StateTeardown(State state)
         {
             state.OnExit -= HandleStateExit;
         }
@@ -184,7 +198,7 @@ namespace CSM
         }
 
         // ReSharper disable Unity.PerformanceAnalysis
-        private bool HasRequirements(State state)
+        private bool ActorHasRequiredStatesFor(State state)
         {
             foreach (Type requiredState in state.requiredStates)
             {
@@ -231,7 +245,7 @@ namespace CSM
             foreach (State ghost in ghostStates)
             {
                 ghost.Process(message);
-                if (Time.time < ghost.expiresAt &! message.processed)
+                if (Time.time < ghost.expiresAt & !message.processed)
                 {
                     ghostStatesNextFrame.Add(ghost);
                 }
@@ -239,7 +253,7 @@ namespace CSM
 
             if (ShouldBufferMessage(message, buffer))
                 messageBuffer.Enqueue(message);
-            
+
             ghostStates = ghostStatesNextFrame;
             return message.processed;
         }
@@ -270,6 +284,34 @@ namespace CSM
                 this.initiator = initiator;
             }
         }
+
+        #region ExitState overloads
+
+        private void ExitState(Type stateType)
+        {
+            State state = statesStack[stateType];
+            if (state != null) ExitState(state);
+        }
+
+        public void ExitState<T>() where T : State => ExitState(typeof(T));
+
+        #endregion
+
+        #region EnterState overloads
+
+        public void EnterState<T>() where T : State => EnterState(typeof(T));
+
+        public void EnterState<T>(Message initiator) where T : State
+        {
+            EnterState(typeof(T), initiator);
+        }
+
+        private void EnterState(Type stateType)
+        {
+            EnterState(stateType, null);
+        }
+
+        #endregion
 
         #region ISerializationCallbackReceiver implementation
 
