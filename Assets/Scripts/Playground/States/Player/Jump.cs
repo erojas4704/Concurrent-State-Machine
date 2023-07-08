@@ -10,7 +10,6 @@ namespace playground
     public class Jump : State<PlayerStats>
     {
         private bool isHeld;
-        private const float HANG_TIME = 0.55f;
 
         public override void Init(Message initiator)
         {

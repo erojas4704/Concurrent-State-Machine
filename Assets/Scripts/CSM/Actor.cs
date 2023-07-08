@@ -56,7 +56,8 @@ namespace CSM
          */
         public void Persist(State state, float duration)
         {
-            state.expiresAt = DateTime.Now.Millisecond + duration * 1000;
+            //TODO: States can be persisted but not necessarily exited. This is a problem.
+            state.expiresAt = Time.time + duration;
 
             if (!ghostStates.Contains(state))
             {
@@ -83,6 +84,11 @@ namespace CSM
         private void EnterState(Type stateType)
         {
             EnterState(stateType, null);
+        }
+
+        private void EnterStateImmediately(Type stateType)
+        {
+            
         }
 
         private void EnterState(Type stateType, Message initiator)
@@ -139,7 +145,7 @@ namespace CSM
                 //TODO extract methods here.
                 StateAndInitiator si = slatedForCreation.Dequeue();
                 State newState = si.state;
-                //TODO Extract these following methods to -> ResolveDependencyStates.  
+                //TODO Z-62 Extract these following methods to -> ResolveDependencyStates.  
                 if (!HasRequirements(newState)) continue;
                 foreach (Type negatedState in newState.negatedStates) ExitState(negatedState);
                 foreach (Type partnerState in newState.partnerStates) EnterState(partnerState);
@@ -220,22 +226,21 @@ namespace CSM
                 if (messageBlocked) return message.processed;
             }
 
-            if (ShouldBufferMessage(message, buffer))
-                messageBuffer.Enqueue(message);
-
-
             //Process ghost states. Ghost states have no order and cannot block messages.
-            foreach (State s in ghostStates)
+            List<State> ghostStatesNextFrame = new();
+            foreach (State ghost in ghostStates)
             {
-                if (DateTime.Now.Millisecond * 0.001f > s.expiresAt)
+                ghost.Process(message);
+                if (Time.time < ghost.expiresAt &! message.processed)
                 {
-                    ghostStates.Remove(s);
-                    continue;
+                    ghostStatesNextFrame.Add(ghost);
                 }
-
-                s.Process(message);
             }
 
+            if (ShouldBufferMessage(message, buffer))
+                messageBuffer.Enqueue(message);
+            
+            ghostStates = ghostStatesNextFrame;
             return message.processed;
         }
 
