@@ -144,14 +144,11 @@ namespace CSM
             throw new NotImplementedException();
         }
 
-        public bool TryGetValue(Type key, out State value)
-        {
-            throw new NotImplementedException();
-        }
+        public bool TryGetValue(Type key, out State value) => dictionary.TryGetValue(key, out value);
 
         public State this[Type key]
         {
-            get => throw new NotImplementedException();
+            get => dictionary[key];
             set => throw new NotImplementedException();
         }
 
