@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -33,18 +34,16 @@ namespace CSM
 
         public virtual bool Process(Message message) => false;
 
-        public virtual void End()
-        {
-        }
+        public virtual void End() { }
 
         // ReSharper disable once InconsistentNaming
         public ExitStateHandler OnExit;
 
         protected void Exit() => OnExit?.Invoke(this);
 
-        public Type[] requiredStates = { };
-        public Type[] negatedStates = { };
-        public Type[] partnerStates = { };
+        public HashSet<Type> requiredStates = new();
+        public HashSet<Type> negatedStates = new();
+        public HashSet<Type> partnerStates = new();
 
         protected State()
         {
@@ -56,13 +55,13 @@ namespace CSM
             }
 
             Negate neg = (Negate)Attribute.GetCustomAttribute(GetType(), typeof(Negate));
-            if (neg != null) negatedStates = neg.states;
+            if (neg != null) negatedStates = new HashSet<Type>(neg.states);
 
             Require req = (Require)Attribute.GetCustomAttribute(GetType(), typeof(Require));
-            if (req != null) requiredStates = req.states;
+            if (req != null) requiredStates = new HashSet<Type>(req.states);
 
             With with = (With)Attribute.GetCustomAttribute(GetType(), typeof(With));
-            if (with != null) partnerStates = with.states;
+            if (with != null) partnerStates = new HashSet<Type>(with.states);
 
             Solo attrSolo = (Solo)Attribute.GetCustomAttribute(GetType(), typeof(Solo));
             if (attrSolo != null) solo = attrSolo.solo;

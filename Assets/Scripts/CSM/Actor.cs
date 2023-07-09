@@ -69,6 +69,11 @@ namespace CSM
 
         public bool Is<TState>() => statesStack.Contains(typeof(TState));
 
+        public StateStack GetStates()
+        {
+            return statesStack;
+        }
+
         private void OnStateChangeHandler(Actor actor)
         {
         }
@@ -77,8 +82,8 @@ namespace CSM
         {
             State newState = GetOrCreateState(stateType);
             if (newState.Group > -1)
-                ExitStateGroup(newState
-                    .Group); //TODO <- This needs to be revised in SettleStateDependencies or whatever.
+                ExitStateGroup(newState.Group);
+            //TODO <- This needs to be revised in SettleStateDependencies or whatever.
 
             StateAndInitiator si = new(
                 newState, initiator
@@ -111,22 +116,35 @@ namespace CSM
                 List<State> statesToCreate = new(),
                     statesToDestroy = new();
 
-                if (!ResolveStateDependencies(si.state, ref statesToCreate, ref statesToDestroy)) continue;
-                if (CreateState(si) == null) continue;
-                changed = true;
-                foreach (State partnerState in statesToCreate)
+                if (ResolveStateDependencies(si.state, ref statesToCreate, ref statesToDestroy) &&
+                    CreateState(si) != null)
                 {
-                    CreateState(partnerState);
+                    changed = true;
+                    foreach (State partnerState in statesToCreate)
+                    {
+                        CreateState(partnerState);
+                    }
+
+                    foreach (State stateToDestroy in statesToDestroy)
+                        slatedForDeletion.Enqueue(stateToDestroy);
                 }
             }
 
             while (slatedForDeletion.Count > 0)
             {
                 State state = slatedForDeletion.Dequeue();
+                if (!statesStack.Contains(state))
+                    continue;
+
                 statesStack.Remove(state);
-                statePool.Add(state.GetType(), state);
+                statePool.TryAdd(state.GetType(), state);
                 StateTeardown(state);
                 state.End();
+
+                //Find any states that require the removed state and remove them as well.
+                foreach (State dependentState in GetDependentStates(state))
+                    slatedForDeletion.Enqueue(dependentState);
+                
                 changed = true;
             }
 
@@ -139,7 +157,6 @@ namespace CSM
         private State CreateState(StateAndInitiator si)
         {
             State newState = si.state;
-            if (newState.solo) ExitAllStatesExcept(newState);
             statesStack.Add(newState);
             StateSetup(newState);
             newState.Init(si.initiator);
@@ -150,10 +167,17 @@ namespace CSM
         private bool ResolveStateDependencies(State newState, ref List<State> statesToCreate,
             ref List<State> statesToDestroy)
         {
+            if (newState.solo)
+            {
+                statesToDestroy.AddRange(statesStack.Values);
+                return true;
+            }
+
             if (!ActorHasRequiredStatesFor(newState))
             {
                 return false;
             }
+
 
             //TODO detect circular dependencies and short-circuit them.
             foreach (Type partnerStateType in newState.partnerStates)
@@ -169,8 +193,12 @@ namespace CSM
                 }
             }
 
-            foreach (Type negatedStates in newState.negatedStates)
+            foreach (Type negatedStateType in newState.negatedStates)
             {
+                if (statesStack.TryGetValue(negatedStateType, out State negatedState))
+                {
+                    statesToDestroy.Add(negatedState);
+                }
             }
 
             return true;
@@ -268,9 +296,19 @@ namespace CSM
                     ExitState(state.GetType());
         }
 
-        public StateStack GetStates()
+        private List<State> GetDependentStates(State state)
         {
-            return statesStack;
+            List<State> dependentStates = new();
+            foreach (State activeState in statesStack)
+            {
+                if (activeState.requiredStates.Contains(state.GetType()) ||
+                    activeState.partnerStates.Contains(state.GetType()))
+                {
+                    dependentStates.Add(activeState);
+                }
+            }
+
+            return dependentStates;
         }
 
         private class StateAndInitiator
