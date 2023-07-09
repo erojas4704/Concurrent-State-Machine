@@ -105,7 +105,7 @@ namespace CSM
             foreach (Type requiredStateType in requirements)
             {
                 object[] attributes = requiredStateType.GetCustomAttributes(true);
-                if (attributes.Cast<StateDescriptor>().Any(descriptor => descriptor.group == Group))
+                if (attributes.OfType<StateDescriptor>().Any(descriptor => descriptor.group == Group))
                 {
                     throw new CsmException(
                         $"State {this} requires state {requiredStateType}, but they are in the same grouping",
