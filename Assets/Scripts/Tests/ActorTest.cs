@@ -1,8 +1,7 @@
 using CSM;
-using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.TestTools;
+using Object = UnityEngine.Object;
 
 namespace Tests
 {
@@ -105,9 +104,12 @@ namespace Tests
             actor.EnterState<State1>();
             actor.EnterState<State2>();
             actor.EnterState<State11>();
+            
+            
             //TODO <- State requirements should check the incoming state queue too.
             //This might fail until we address this
-
+            
+            actor.Update();
             Assert.IsTrue(actor.Is<State1>());
             Assert.IsTrue(actor.Is<State2>());
             Assert.IsTrue(actor.Is<State11>());
@@ -183,11 +185,10 @@ namespace Tests
             actor.EnterState<State1>();
             actor.ExitState<State1>();
             actor.Update();
-            
+
             Assert.IsFalse(actor.Is<State0>());
             Assert.IsFalse(actor.Is<State1>());
             Assert.AreEqual(actor.GetStates().Count, 0);
-
         }
 
         //TODO: Test grouping and priority.
@@ -196,10 +197,10 @@ namespace Tests
         {
             actor.EnterState<State22>();
             actor.Update();
-            
+
             Assert.IsTrue(actor.Is<State22>());
             actor.EnterState<State23>();
-            
+
             actor.Update();
             Assert.IsFalse(actor.Is<State22>());
             Assert.IsTrue(actor.Is<State23>());
@@ -220,6 +221,12 @@ namespace Tests
             Assert.Throws<CsmException>(() => actor.EnterState<State16>());
             Assert.Throws<CsmException>(() => actor.EnterState<State17>());
             Assert.Throws<CsmException>(() => actor.EnterState<State18>());
+        }
+
+        [Test]
+        public void TestImpossibleStateGroupShouldThrowException()
+        {
+            Assert.Throws<CsmException>(() => actor.EnterState<State30>());
         }
 
         [Test]
@@ -256,15 +263,39 @@ namespace Tests
             actor.EnterState<State11>();
 
             actor.Update();
+            Assert.IsTrue(actor.Is<State0>()); // Included by State1
             Assert.IsTrue(actor.Is<State1>());
-            Assert.IsTrue(actor.Is<State2>()); // State 1 Includes 2 and 3
-            Assert.IsTrue(actor.Is<State3>()); // Included by State1
+            Assert.IsTrue(actor.Is<State2>()); // State 1 Includes 0 and 3
             Assert.IsTrue(actor.Is<State11>());
 
             actor.ExitState<State1>();
             actor.Update();
 
             Assert.IsFalse(actor.Is<State11>()); //Actor should have exited State11 after exiting State1.
+        }
+
+        [Test]
+        public void TestExitRequiredStateWithComplexDependencies()
+        {
+            actor.EnterState<State24>();
+            actor.EnterState<State25>();
+            actor.EnterState<State26>();
+            actor.EnterState<State27>();
+
+            actor.Update();
+            Assert.IsTrue(actor.Is<State24>());
+            Assert.IsTrue(actor.Is<State25>());
+            Assert.IsTrue(actor.Is<State26>());
+            Assert.IsTrue(actor.Is<State27>());
+
+            actor.ExitState<State24>();
+
+            actor.Update();
+            Assert.IsFalse(actor.Is<State24>());
+            Assert.IsFalse(actor.Is<State25>());
+            Assert.IsFalse(actor.Is<State26>());
+            Assert.IsFalse(actor.Is<State27>());
+            Assert.AreEqual(actor.GetStates().Count, 0);
         }
 
         [Test]
@@ -279,12 +310,29 @@ namespace Tests
             Assert.AreEqual(actor.GetStates().Count, 1);
         }
 
+        [Test]
+        public void TestGroupedStatesWithRequirements()
+        {
+            actor.EnterState<State22>();
+            actor.EnterState<State28>();
+            actor.EnterState<State29>();
+
+            actor.Update();
+            actor.EnterState<State23>();
+
+            actor.Update();
+            Assert.IsFalse(actor.Is<State22>());
+            Assert.IsFalse(actor.Is<State28>());
+            Assert.IsFalse(actor.Is<State29>());
+            Assert.IsTrue(actor.Is<State23>());
+        }
+
         /** State0 Has no Requirements */
         private class State0 : State
         {
         }
 
-        /** State1 Includes State2 and State3. */
+        /** State1 Includes State0 and State2. */
         [With(typeof(State0), typeof(State2))]
         private class State1 : State
         {
@@ -406,13 +454,50 @@ namespace Tests
         [StateDescriptor(group = 1)]
         private class State22 : State
         {
-            
         }
 
         [StateDescriptor(group = 1)]
         private class State23 : State
         {
-            
+        }
+
+        private class State24 : State
+        {
+        }
+
+        [Require(typeof(State24))]
+        private class State25 : State
+        {
+        }
+
+        [Require(typeof(State24))]
+        private class State26 : State
+        {
+        }
+
+        [Require(typeof(State25))]
+        private class State27 : State
+        {
+        }
+
+        [Require(typeof(State22))]
+        private class State28 : State
+        {
+        }
+
+        [Require(typeof(State22))]
+        private class State29 : State
+        {
+        }
+
+        [With(typeof(State31)), StateDescriptor(group = 1)]
+        private class State30 : State
+        {
+        }
+
+        [StateDescriptor(group = 1)]
+        private class State31 : State
+        {
         }
     }
 }
