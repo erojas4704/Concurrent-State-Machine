@@ -212,6 +212,7 @@ namespace Tests
         {
             //Should throw CSM Exception.
             Assert.Throws<CsmException>(() => { actor.EnterState<State13>(); });
+            Assert.AreEqual(actor.GetStates().Count, 0);
         }
 
         [Test]

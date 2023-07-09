@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace CSM
@@ -10,10 +11,10 @@ namespace CSM
         private StateStack statesStack = new();
 
         /**States scheduled to be deleted this frame. This work is done at the end of an update cycle.*/
-        private readonly Queue<State> slatedForDeletion = new();
+        private Queue<State> slatedForDeletion = new();
 
         /**States scheduled to be initialized this frame. This work is done at the end of an update cycle. */
-        private readonly Queue<StateAndInitiator> slatedForCreation = new();
+        private Queue<StateAndInitiator> slatedForCreation = new();
 
         /** Buffered messages for player input buffering. */
         private readonly Queue<Message> messageBuffer = new();
@@ -81,15 +82,21 @@ namespace CSM
         private void EnterState(Type stateType, Message initiator)
         {
             State newState = GetOrCreateState(stateType);
+
+            //TODO This needs to be revised in SettleStateDependencies or whatever.
             if (newState.Group > -1)
                 ExitStateGroup(newState.Group);
-            //TODO <- This needs to be revised in SettleStateDependencies or whatever.
 
             StateAndInitiator si = new(
                 newState, initiator
             );
 
             slatedForCreation.Enqueue(si);
+
+            //TODO Z-67. Wildly inefficient use of queues. Redesign the list.
+            //If the state we are creating is slated for deletion, we make sure it isn't.
+            slatedForDeletion =
+                new Queue<State>(slatedForDeletion.ToList().Where(state => state.GetType() != stateType));
         }
 
         private State GetOrCreateState(Type stateType)
@@ -98,8 +105,8 @@ namespace CSM
             if (pooledState != null)
             {
                 return pooledState;
-            } 
-            
+            }
+
             State newState = (State)Activator.CreateInstance(stateType);
             newState.ValidateRequirements();
             return newState;
@@ -108,7 +115,9 @@ namespace CSM
         private void ExitState(State state)
         {
             slatedForDeletion.Enqueue(state);
+            //If this state is in the addStateQueue, short-circuit it.
         }
+
 
         /**Creates and deletes all states that are slated for creation or deletion. This method handles state pooling and
          * resolving dependencies.
@@ -123,7 +132,10 @@ namespace CSM
                 List<State> statesToCreate = new(),
                     statesToDestroy = new();
 
-                if (ResolveStateDependencies(si.state, ref statesToCreate, ref statesToDestroy) &&
+                HashSet<Type> stateTypesProcessed = new();
+
+                if (ResolveStateDependencies(si.state, ref statesToCreate, ref statesToDestroy,
+                        ref stateTypesProcessed) &&
                     CreateState(si) != null)
                 {
                     changed = true;
@@ -151,7 +163,7 @@ namespace CSM
                 //Find any states that require the removed state and remove them as well.
                 foreach (State dependentState in GetDependentStates(state))
                     slatedForDeletion.Enqueue(dependentState);
-                
+
                 changed = true;
             }
 
@@ -172,8 +184,16 @@ namespace CSM
         }
 
         private bool ResolveStateDependencies(State newState, ref List<State> statesToCreate,
-            ref List<State> statesToDestroy)
+            ref List<State> statesToDestroy, ref HashSet<Type> stateTypesProcessed)
         {
+            //Avoids circular dependencies.
+            if (stateTypesProcessed.Contains(newState.GetType()))
+            {
+                return true;
+            }
+
+            stateTypesProcessed.Add(newState.GetType());
+
             if (newState.solo)
             {
                 statesToDestroy.AddRange(statesStack.Values);
@@ -185,12 +205,11 @@ namespace CSM
                 return false;
             }
 
-
-            //TODO detect circular dependencies and short-circuit them.
             foreach (Type partnerStateType in newState.partnerStates)
             {
                 State newPartnerState = GetOrCreateState(partnerStateType);
-                if (ResolveStateDependencies(newPartnerState, ref statesToCreate, ref statesToDestroy))
+                if (ResolveStateDependencies(newPartnerState, ref statesToCreate, ref statesToDestroy,
+                        ref stateTypesProcessed))
                 {
                     statesToCreate.Add(newPartnerState);
                 }
@@ -223,14 +242,8 @@ namespace CSM
             state.OnExit -= HandleStateExit;
         }
 
-        private void HandleStateExit(State state) => ExitState(state);
+        private void HandleStateExit(State state) => ExitState(state.GetType());
 
-        private void ExitAllStatesExcept(State state)
-        {
-            foreach (State s in statesStack)
-                if (!Equals(s, state))
-                    ExitState(s);
-        }
 
         // ReSharper disable Unity.PerformanceAnalysis
         private bool ActorHasRequiredStatesFor(State state)
@@ -334,8 +347,14 @@ namespace CSM
 
         private void ExitState(Type stateType)
         {
-            State state = statesStack[stateType];
-            if (state != null) ExitState(state);
+            if (statesStack.TryGetValue(stateType, out State state))
+            {
+                ExitState(state);
+            }
+
+            //TODO Completely Refactor Queuing System. This is wildly inefficient.
+            slatedForCreation = new Queue<StateAndInitiator>(slatedForCreation.ToList()
+                .Where(stateAndInitiator => stateAndInitiator.state.GetType() != stateType).ToList());
         }
 
         public void ExitState<T>() where T : State => ExitState(typeof(T));
