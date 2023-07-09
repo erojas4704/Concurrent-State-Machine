@@ -99,6 +99,7 @@ namespace CSM
             }
         }
 
+        //TODO Z-67: do not run these checks in production builds
         private void CheckGroupsInRequirements(HashSet<Type> requirements)
         {
             foreach (Type requiredStateType in requirements)

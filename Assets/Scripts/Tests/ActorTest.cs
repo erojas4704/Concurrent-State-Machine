@@ -1,3 +1,4 @@
+using System;
 using CSM;
 using NUnit.Framework;
 using UnityEngine;
@@ -104,11 +105,11 @@ namespace Tests
             actor.EnterState<State1>();
             actor.EnterState<State2>();
             actor.EnterState<State11>();
-            
-            
+
+
             //TODO <- State requirements should check the incoming state queue too.
             //This might fail until we address this
-            
+
             actor.Update();
             Assert.IsTrue(actor.Is<State1>());
             Assert.IsTrue(actor.Is<State2>());
@@ -191,6 +192,22 @@ namespace Tests
             Assert.AreEqual(actor.GetStates().Count, 0);
         }
 
+        [Test]
+        public void TestRapidStateChangesWithComplexNegation()
+        {
+            actor.EnterState<State35>(); //Includes 36. 36 requires 35.
+            actor.EnterState<State32>(); //Includes 33. 33 Includes 34.  34 Negates 35.
+
+            actor.Update();
+            //35 and 36 should be gone.
+            Assert.IsFalse(actor.Is<State35>());
+            Assert.IsFalse(actor.Is<State36>());
+            Assert.IsTrue(actor.Is<State32>());
+            Assert.IsTrue(actor.Is<State33>());
+            Assert.IsTrue(actor.Is<State34>());
+            Assert.AreEqual(actor.GetStates().Count, 3);
+        }
+
         //TODO: Test grouping and priority.
         [Test]
         public void TestGroupedStates()
@@ -211,7 +228,8 @@ namespace Tests
         public void TestUnsolvableDependencyChain()
         {
             //Should throw CSM Exception.
-            Assert.Throws<CsmException>(() => { actor.EnterState<State13>(); });
+            actor.EnterState<State13>();
+            Assert.Throws<CsmException>(() => { actor.Update(); });
             Assert.AreEqual(actor.GetStates().Count, 0);
         }
 
@@ -326,6 +344,19 @@ namespace Tests
             Assert.IsFalse(actor.Is<State28>());
             Assert.IsFalse(actor.Is<State29>());
             Assert.IsTrue(actor.Is<State23>());
+        }
+
+        [Test]
+        public void TestNegatedStatesShouldBeInaccessible()
+        {
+            actor.EnterState<State15>();
+            actor.Update();
+
+            actor.EnterState<State14>();
+            actor.Update();
+
+            Assert.IsTrue(actor.Is<State15>());
+            Assert.IsFalse(actor.Is<State14>());
         }
 
         /** State0 Has no Requirements */
@@ -498,6 +529,31 @@ namespace Tests
 
         [StateDescriptor(group = 1)]
         private class State31 : State
+        {
+        }
+
+        [With(typeof(State33))]
+        private class State32 : State
+        {
+        }
+
+        [With(typeof(State34))]
+        private class State33 : State
+        {
+        }
+
+        [Negate(typeof(State35))]
+        private class State34 : State
+        {
+        }
+
+        [With(typeof(State36))]
+        private class State35 : State
+        {
+        }
+
+        [Require(typeof(State35))]
+        private class State36 : State
         {
         }
     }

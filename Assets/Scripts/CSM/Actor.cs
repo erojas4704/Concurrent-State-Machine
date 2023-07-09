@@ -81,8 +81,19 @@ namespace CSM
 
         private void EnterState(Type stateType, Message initiator)
         {
-            State newState = GetOrCreateState(stateType);
+            //TODO Z-67 pending new StateRelationship. For now we brute force it. This is wildly inefficient.
+            foreach (State state in statesStack)
+            {
+                if (state.negatedStates.Contains(stateType))
+                {
+                    // ReSharper disable once Unity.PerformanceCriticalCodeInvocation
+                    Debug.LogWarning(
+                        $"Actor {name} tried to enter state {stateType}, but it is negated by state {state}.");
+                    return;
+                }
+            }
 
+            State newState = GetOrCreateState(stateType);
             //TODO This needs to be revised in SettleStateDependencies or whatever.
             if (newState.Group > -1)
                 ExitStateGroup(newState.Group);
@@ -138,6 +149,13 @@ namespace CSM
                         ref stateTypesProcessed) &&
                     CreateState(si) != null)
                 {
+                    if (statesToCreate.Intersect(statesToDestroy).Any())
+                    {
+                        throw new CsmException(
+                            "Invalid state configuration. Unsolvable dependency chain! Dependent states are being negated by their dependencies!",
+                            si.state.GetType());
+                    }
+
                     changed = true;
                     foreach (State partnerState in statesToCreate)
                     {
@@ -186,6 +204,7 @@ namespace CSM
         private bool ResolveStateDependencies(State newState, ref List<State> statesToCreate,
             ref List<State> statesToDestroy, ref HashSet<Type> stateTypesProcessed)
         {
+            //TODO Z-67 This method is spaghetti 
             //Avoids circular dependencies.
             if (stateTypesProcessed.Contains(newState.GetType()))
             {
@@ -221,6 +240,15 @@ namespace CSM
 
             foreach (Type negatedStateType in newState.negatedStates)
             {
+                if (newState.GetType() == negatedStateType ||
+                    statesToCreate.Any(state => state.GetType() == negatedStateType))
+                {
+                    throw new CsmException(
+                        "Invalid state configuration. Unsolvable dependency chain! Dependent states are being negated by their dependencies!",
+                        newState.GetType());
+                }
+
+
                 if (statesStack.TryGetValue(negatedStateType, out State negatedState))
                 {
                     statesToDestroy.Add(negatedState);
