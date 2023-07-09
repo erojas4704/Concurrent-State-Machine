@@ -2912,7 +2912,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   velocity: {x: 0, y: 0, z: 0}
-  actionTimer: 0.75
+  actionTimer: 0.015
   stateArray: []
   axis: {x: 0, y: 0}
   actionMap:
