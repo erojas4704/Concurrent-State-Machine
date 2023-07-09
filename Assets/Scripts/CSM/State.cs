@@ -34,7 +34,9 @@ namespace CSM
 
         public virtual bool Process(Message message) => false;
 
-        public virtual void End() { }
+        public virtual void End()
+        {
+        }
 
         // ReSharper disable once InconsistentNaming
         public ExitStateHandler OnExit;
@@ -65,6 +67,50 @@ namespace CSM
 
             Solo attrSolo = (Solo)Attribute.GetCustomAttribute(GetType(), typeof(Solo));
             if (attrSolo != null) solo = attrSolo.solo;
+        }
+
+        public void ValidateRequirements()
+        {
+            if (solo)
+            {
+                if (partnerStates.Count > 0 || requiredStates.Count > 0)
+                {
+                    throw new CsmException(
+                        $"State {this} is a solo state, but requires {partnerStates.Count + requiredStates.Count} other states.",
+                        GetType());
+                }
+            }
+
+            if (partnerStates.Contains(GetType()) || requiredStates.Contains(GetType()))
+            {
+                throw new CsmException($"State {this} requires itself. This behavior is not supported.",
+                    GetType());
+            }
+
+            if (negatedStates.Contains(GetType()))
+            {
+                throw new CsmException($"State {this} negates itself.", GetType());
+            }
+
+            if (Group >= 0)
+            {
+                CheckGroupsInRequirements(partnerStates);
+                CheckGroupsInRequirements(requiredStates);
+            }
+        }
+
+        private void CheckGroupsInRequirements(HashSet<Type> requirements)
+        {
+            foreach (Type requiredStateType in requirements)
+            {
+                object[] attributes = requiredStateType.GetCustomAttributes(true);
+                if (attributes.Cast<StateDescriptor>().Any(descriptor => descriptor.group == Group))
+                {
+                    throw new CsmException(
+                        $"State {this} requires state {requiredStateType}, but they are in the same grouping",
+                        GetType());
+                }
+            }
         }
 
         public override bool Equals(object obj)
@@ -99,7 +145,7 @@ namespace CSM
             }
             else
             {
-                throw new InvalidOperationException("Invalid stats type for this state");
+                throw new CsmException("Invalid stats type for this state.", GetType());
             }
         }
     }

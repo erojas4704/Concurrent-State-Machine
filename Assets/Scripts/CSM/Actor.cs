@@ -95,7 +95,14 @@ namespace CSM
         private State GetOrCreateState(Type stateType)
         {
             statePool.TryGetValue(stateType, out State pooledState);
-            return pooledState ?? (State)Activator.CreateInstance(stateType);
+            if (pooledState != null)
+            {
+                return pooledState;
+            } 
+            
+            State newState = (State)Activator.CreateInstance(stateType);
+            newState.ValidateRequirements();
+            return newState;
         }
 
         private void ExitState(State state)
