@@ -24,6 +24,8 @@ namespace CSM
 
         private List<State> ghostStates = new();
 
+        private Dictionary<string, Message> heldMessages = new();
+
         //TODO <- This may be better off delegated to a persistent stat. 
         public Vector3 velocity;
         private Stats stats;
@@ -312,7 +314,7 @@ namespace CSM
             Message firstMessage = messageBuffer.Peek();
             firstMessage.timer += Time.deltaTime;
 
-            if (PropagateAction(firstMessage, false))
+            if (PropagateMessage(firstMessage, false))
             {
                 messageBuffer.Dequeue();
             }
@@ -322,7 +324,7 @@ namespace CSM
             }
         }
 
-        public bool PropagateAction(Message message, bool buffer = true)
+        public bool PropagateMessage(Message message, bool buffer = true)
         {
             if (statesStack.Count < 1)
             {

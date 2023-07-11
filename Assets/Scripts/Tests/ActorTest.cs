@@ -372,14 +372,14 @@ namespace Tests
             actor.EnterState<MessagingState0>();
 
             actor.Update();
-            actor.PropagateAction(message1);
+            actor.PropagateMessage(message1);
 
             actor.Update();
             Assert.IsTrue(message1.processed);
             Assert.IsTrue(actor.Is<MessagingState1>());
             Assert.IsFalse(actor.Is<MessagingState0>());
 
-            actor.PropagateAction(message2);
+            actor.PropagateMessage(message2);
             actor.Update();
             Assert.IsFalse(message2.processed);
         }
@@ -399,7 +399,7 @@ namespace Tests
             Assert.IsFalse(actor.Is<MessagingState0>());
             Assert.IsTrue(actor.Is<MessagingState1>());
 
-            actor.PropagateAction(message1);
+            actor.PropagateMessage(message1);
             actor.Update();
 
             Assert.IsTrue(message1.processed);
@@ -414,7 +414,7 @@ namespace Tests
             actor.EnterState<Grounded>();
 
             actor.Update();
-            actor.PropagateAction(message1); //"Jump" is sent to grounded.
+            actor.PropagateMessage(message1); //"Jump" is sent to grounded.
 
             actor.Update(); //This update needs to be the one to resolve Jump, Airborne, but not Grounded.
             
@@ -426,7 +426,7 @@ namespace Tests
             Assert.IsTrue(actor.Is<Jump>());
 
             actor.Update();
-            actor.PropagateAction(message2);
+            actor.PropagateMessage(message2);
             
             actor.Update();
             Assert.IsTrue(message1.processed);
@@ -450,7 +450,7 @@ namespace Tests
             
             actor.Update();
             Assert.IsFalse(actor.Is<Grounded>());
-            actor.PropagateAction(message1);
+            actor.PropagateMessage(message1);
             
             actor.Update();
             Assert.IsFalse(actor.Is<Grounded>());
