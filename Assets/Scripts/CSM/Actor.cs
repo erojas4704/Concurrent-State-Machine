@@ -44,7 +44,7 @@ namespace CSM
         public virtual void Update()
         {
             if (stats) stats.Reset();
-
+            
             ProcessQueues();
             ProcessActionBuffer();
 
@@ -143,6 +143,8 @@ namespace CSM
             while (slatedForCreation.Count > 0)
             {
                 StateAndInitiator si = slatedForCreation.Dequeue();
+                if (statesStack.Contains(si.state)) continue;
+                
                 List<State> statesToCreate = new(),
                     statesToDestroy = new();
 
