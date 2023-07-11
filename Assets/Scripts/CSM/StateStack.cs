@@ -78,9 +78,8 @@ namespace CSM
             throw new NotImplementedException();
         }
 
-
         public ICollection<Type> Keys => dictionary.Keys;
-        public ICollection<State> Values => dictionary.Values;
+        public ICollection<State> Values => list;
 
         public bool Remove(State item) => item != null && Remove(item.GetType());
 
@@ -97,29 +96,14 @@ namespace CSM
 
             for (int i = 0; i < list.Count; i++)
             {
-                if (i == list.Count - 1)
+                if (newState.Priority >= list[i].Priority)
                 {
-                    list.Add(newState);
-                    break;
+                    list.Insert(i, newState);
+                    return;
                 }
-
-                State nextState = list[i + 1];
-                if (i == 0)
-                {
-                    if (newState.Priority > nextState.Priority)
-                    {
-                        list.Insert(0, newState);
-                        break;
-                    }
-
-                    continue;
-                }
-
-                State lastState = list[i - 1];
-                if (newState.Priority <= lastState.Priority || newState.Priority >= nextState.Priority) continue;
-                list.Insert(i, newState);
-                break;
             }
+
+            list.Add(newState);
         }
 
         #region Unimplemented Methods
