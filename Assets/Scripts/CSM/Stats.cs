@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace CSM
 {
-    public abstract class Stats : MonoBehaviour
+    public class Stats : MonoBehaviour
     {
         public virtual void Reset()
         {

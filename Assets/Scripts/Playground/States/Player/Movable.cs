@@ -6,7 +6,7 @@ using Debug = System.Diagnostics.Debug;
 namespace Playground.States.Player
 {
     [StateDescriptor(priority = 1)]
-    public abstract class Movable : State
+    public abstract class Movable : State<PlayerStats>
     {
         private PlayerActor player;
         protected CharacterController controller;
@@ -21,12 +21,11 @@ namespace Playground.States.Player
         public override void Update()
         {
             //TODO demo: We shouldn't use the axis here.
-            PlayerStats pStats = stats as PlayerStats;
             
              Vector3 targetVelocity = new()
             {
-                x = player.axis.x * pStats!.Speed,
-                z = player.axis.y * pStats.Speed
+                x = player.axis.x * stats.Speed,
+                z = player.axis.y * stats.Speed
             };
             
 
@@ -36,8 +35,8 @@ namespace Playground.States.Player
 
             //Figure ot whether to use friction or acceleration
             float accelerationFactor = targetVelocity.magnitude > planarVelocity.magnitude
-                ? pStats.Acceleration
-                : pStats.Friction;
+                ? stats.Acceleration
+                : stats.Friction;
 
             //Every update, apply the acceleration * time to speed.
             float accelerationThisFrame = accelerationFactor * Time.deltaTime;

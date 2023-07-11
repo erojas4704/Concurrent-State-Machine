@@ -14,6 +14,8 @@ namespace Playground.States.Player
         [SerializeField] private float drag;
         [SerializeField] private float friction;
         [SerializeField] private float ladderClimbSpeed;
-        [SerializeField] private float jumpHangTime;
+        [SerializeField] private float jumpHangTime = 0.55f;
+        [SerializeField] private float coyoteTime = 0.015f;
+        [SerializeField] private float jumpForce = 7.5f;
     }
 }
