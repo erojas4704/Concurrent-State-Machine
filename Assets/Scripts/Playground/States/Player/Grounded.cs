@@ -63,7 +63,7 @@ namespace Playground.States.Player
                 }
             }
 
-            if (message.phase == Message.Phase.Held || message.phase == Message.Phase.Started)
+            if (message.phase is Message.Phase.Held or Message.Phase.Started)
             {
                 switch (message.name)
                 {
