@@ -11,7 +11,7 @@ namespace CSM
         private void OnAction(InputAction.CallbackContext context)
         {
             Message message = new(context);
-            PropagateAction(message);
+            PropagateMessage(message);
         }
 
         private void OnEnable()
@@ -31,7 +31,7 @@ namespace CSM
             ITrigger trigger = other.GetComponent<ITrigger>();
             if (trigger != null)
             {
-                PropagateAction(new Message(trigger.GetTriggerAction(), trigger), false);
+                PropagateMessage(new Message(trigger.GetTriggerAction(), trigger), false);
             }
         }
 
@@ -40,7 +40,7 @@ namespace CSM
             ITrigger trigger = other.GetComponent<ITrigger>();
             if (trigger != null)
             {
-                PropagateAction(new Message(trigger.GetTriggerAction(), trigger, Message.Phase.Ended),
+                PropagateMessage(new Message(trigger.GetTriggerAction(), trigger, Message.Phase.Ended),
                     false);
             }
         }

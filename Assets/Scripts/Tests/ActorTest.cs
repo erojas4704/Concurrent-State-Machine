@@ -361,6 +361,33 @@ namespace Tests
         }
 
         #endregion
+        
+        [Test]
+        public void TestEnterStateCheckRequirementsSameCycle()
+        {
+            //Requirements should be met from incoming states
+            actor.EnterState<Sprint>(); 
+            actor.EnterState<Grounded>();
+            
+            actor.Update();
+            Assert.IsTrue(actor.Is<Sprint>());
+            Assert.IsTrue(actor.Is<Grounded>());
+        }
+        
+        [Test]
+        public void TestMultipleEnterStateCalls()
+        {
+            actor.EnterState<Grounded>();
+            
+            actor.Update();
+            actor.EnterState<Sprint>(); 
+            actor.EnterState<Sprint>(); 
+            
+            actor.Update();
+            Assert.IsTrue(actor.Is<Sprint>());
+            Assert.IsTrue(actor.Is<Grounded>());
+        }
+
 
         #region messaging tests
 
@@ -372,14 +399,14 @@ namespace Tests
             actor.EnterState<MessagingState0>();
 
             actor.Update();
-            actor.PropagateAction(message1);
+            actor.PropagateMessage(message1);
 
             actor.Update();
             Assert.IsTrue(message1.processed);
             Assert.IsTrue(actor.Is<MessagingState1>());
             Assert.IsFalse(actor.Is<MessagingState0>());
 
-            actor.PropagateAction(message2);
+            actor.PropagateMessage(message2);
             actor.Update();
             Assert.IsFalse(message2.processed);
         }
@@ -399,7 +426,7 @@ namespace Tests
             Assert.IsFalse(actor.Is<MessagingState0>());
             Assert.IsTrue(actor.Is<MessagingState1>());
 
-            actor.PropagateAction(message1);
+            actor.PropagateMessage(message1);
             actor.Update();
 
             Assert.IsTrue(message1.processed);
@@ -414,7 +441,7 @@ namespace Tests
             actor.EnterState<Grounded>();
 
             actor.Update();
-            actor.PropagateAction(message1); //"Jump" is sent to grounded.
+            actor.PropagateMessage(message1); //"Jump" is sent to grounded.
 
             actor.Update(); //This update needs to be the one to resolve Jump, Airborne, but not Grounded.
             
@@ -426,7 +453,7 @@ namespace Tests
             Assert.IsTrue(actor.Is<Jump>());
 
             actor.Update();
-            actor.PropagateAction(message2);
+            actor.PropagateMessage(message2);
             
             actor.Update();
             Assert.IsTrue(message1.processed);
@@ -450,7 +477,7 @@ namespace Tests
             
             actor.Update();
             Assert.IsFalse(actor.Is<Grounded>());
-            actor.PropagateAction(message1);
+            actor.PropagateMessage(message1);
             
             actor.Update();
             Assert.IsFalse(actor.Is<Grounded>());
@@ -459,6 +486,42 @@ namespace Tests
             Assert.IsTrue(message1.processed);
         }
 
+        [Test]
+        public void TestHeldInputShouldBeProcessedByNewState()
+        {            
+            Message message1 = new("Sprint", Message.Phase.Started);
+            Message message2 = new("Sprint", Message.Phase.Held);
+            Message message3 = new("Sprint", Message.Phase.Ended);
+            Message message4 = new("Jump", Message.Phase.Started);
+            actor.EnterState<Grounded>();
+            
+            actor.Update();
+            actor.PropagateMessage(message1); //Press Sprint
+            
+            actor.Update();
+            actor.PropagateMessage(message2); //Holding Sprint
+
+            Assert.IsTrue(actor.Is<Sprint>());
+            actor.PropagateMessage(message4); //Press Jump
+            actor.Update();
+            
+            Assert.IsTrue(actor.Is<Airborne>());
+            Assert.IsFalse(actor.Is<Sprint>());
+            
+            actor.Update();
+            actor.EnterState<Grounded>(); 
+            
+            actor.Update(); //Landed
+            Assert.IsTrue(actor.Is<Sprint>());
+            Assert.IsTrue(actor.Is<Grounded>());
+
+            actor.PropagateMessage(message3);
+            actor.Update();
+            
+            Assert.IsFalse(actor.Is<Sprint>());
+            Assert.IsTrue(actor.Is<Grounded>());
+        }
+        
         #endregion
 
         #region dependency states
@@ -728,6 +791,17 @@ namespace Tests
                     }
                 }
 
+                if (message.phase != Message.Phase.Ended)
+                {
+                    switch (message.name)
+                    {
+                        case "Sprint":
+                            actor.EnterState<Sprint>();
+                            message.processed = true;
+                            break;
+                    }
+                }
+
                 return false;
             }
         }
@@ -742,6 +816,22 @@ namespace Tests
                     Grounded groundedState = state as Grounded;
                     groundedState.isTouchingGround = false;
                 }
+            }
+        }
+
+        [Require(typeof(Grounded))]
+        [StateDescriptor(group=3)]
+        private class Sprint : State
+        {
+            public override bool Process(Message message)
+            {
+                if (message.name == "Sprint" && message.phase == Message.Phase.Ended)
+                {
+                    message.processed = true;
+                    Exit();
+                }
+
+                return false;
             }
         }
 

@@ -24,6 +24,8 @@ namespace CSM
 
         private List<State> ghostStates = new();
 
+        private Dictionary<string, Message> heldMessages = new();
+
         //TODO <- This may be better off delegated to a persistent stat. 
         public Vector3 velocity;
         private Stats stats;
@@ -141,6 +143,8 @@ namespace CSM
             while (slatedForCreation.Count > 0)
             {
                 StateAndInitiator si = slatedForCreation.Dequeue();
+                if (statesStack.Contains(si.state)) continue;
+
                 List<State> statesToCreate = new(),
                     statesToDestroy = new();
 
@@ -158,9 +162,9 @@ namespace CSM
                     }
 
                     changed = true;
-                    foreach (State partnerState in statesToCreate)
+                    foreach (State stateToCreate in statesToCreate)
                     {
-                        CreateState(partnerState);
+                        CreateState(stateToCreate);
                     }
 
                     foreach (State stateToDestroy in statesToDestroy)
@@ -200,6 +204,7 @@ namespace CSM
             newState.Init(si.initiator);
             newState.time = 0;
             newState.expiresAt = 0;
+            foreach (Message message in heldMessages.Values) newState.Process(message); //Process held messages
             return newState;
         }
 
@@ -233,7 +238,29 @@ namespace CSM
                 return true;
             }
 
-            if (!ActorHasRequiredStatesFor(newState))
+            //Check incoming states to see if any of our dependencies are there.
+            //TODO Z-62 clean this unholy godawful method up
+            foreach (StateAndInitiator stateAndInitiator in slatedForCreation)
+            {
+                foreach (Type requiredStateType in newState.requiredStates)
+                {
+                    if (stateAndInitiator.state.GetType() == requiredStateType)
+                    {
+                        State requiredState = GetOrCreateState(requiredStateType);
+                        if (ResolveStateDependencies(requiredState, ref statesToCreate,
+                                ref statesToDestroy, ref stateTypesProcessed))
+                        {
+                            statesToCreate.Add(requiredState);
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            if (!ActorHasRequiredStatesFor(newState, statesToCreate))
             {
                 return false;
             }
@@ -244,7 +271,7 @@ namespace CSM
                 {
                     continue;
                 }
-                
+
                 State newPartnerState = GetOrCreateState(partnerStateType);
                 if (ResolveStateDependencies(newPartnerState, ref statesToCreate, ref statesToDestroy,
                         ref stateTypesProcessed))
@@ -293,11 +320,24 @@ namespace CSM
 
 
         // ReSharper disable Unity.PerformanceAnalysis
-        private bool ActorHasRequiredStatesFor(State state)
+        private bool ActorHasRequiredStatesFor(State state, List<State> statesCreatedThisFrame)
         {
             foreach (Type requiredState in state.requiredStates)
             {
-                if (statesStack.Contains(requiredState)) continue;
+                bool requirementExists = false;
+                requirementExists = statesStack.Contains(requiredState);
+
+                //TODO Z-67... you already know
+                foreach (State incomingState in statesCreatedThisFrame)
+                    if (incomingState.GetType() == requiredState)
+                    {
+                        requirementExists = true;
+                        break;
+                    }
+
+                if (requirementExists)
+                    continue;
+
                 Debug.LogWarning($"Not entering state {state} because dependency {requiredState} is missing!");
                 return false;
             }
@@ -312,7 +352,7 @@ namespace CSM
             Message firstMessage = messageBuffer.Peek();
             firstMessage.timer += Time.deltaTime;
 
-            if (PropagateAction(firstMessage, false))
+            if (PropagateMessage(firstMessage, false))
             {
                 messageBuffer.Dequeue();
             }
@@ -322,7 +362,7 @@ namespace CSM
             }
         }
 
-        public bool PropagateAction(Message message, bool buffer = true)
+        public bool PropagateMessage(Message message, bool buffer = true)
         {
             if (statesStack.Count < 1)
             {
@@ -333,6 +373,15 @@ namespace CSM
             {
                 bool messageBlocked = s.Process(message);
                 if (messageBlocked) return message.processed;
+            }
+
+            if (message.phase == Message.Phase.Held)
+            {
+                heldMessages[message.name] = message;
+            }
+            else if (message.phase == Message.Phase.Ended)
+            {
+                heldMessages.Remove(message.name);
             }
 
             //Process ghost states. Ghost states have no order and cannot block messages.

@@ -131,7 +131,11 @@ namespace CSM
 
         public void CopyTo(KeyValuePair<Type, State>[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            int i = 0;
+            while (i++ < list.Count - 1)
+            {
+                array[i + arrayIndex] = new(list[i].GetType(), list[i]);
+            }
         }
 
         public bool Remove(KeyValuePair<Type, State> item)
