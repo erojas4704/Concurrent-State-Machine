@@ -44,7 +44,7 @@ namespace CSM
         public virtual void Update()
         {
             if (stats) stats.Reset();
-            
+
             ProcessQueues();
             ProcessActionBuffer();
 
@@ -144,7 +144,7 @@ namespace CSM
             {
                 StateAndInitiator si = slatedForCreation.Dequeue();
                 if (statesStack.Contains(si.state)) continue;
-                
+
                 List<State> statesToCreate = new(),
                     statesToDestroy = new();
 
@@ -162,9 +162,9 @@ namespace CSM
                     }
 
                     changed = true;
-                    foreach (State partnerState in statesToCreate)
+                    foreach (State stateToCreate in statesToCreate)
                     {
-                        CreateState(partnerState);
+                        CreateState(stateToCreate);
                     }
 
                     foreach (State stateToDestroy in statesToDestroy)
@@ -238,7 +238,29 @@ namespace CSM
                 return true;
             }
 
-            if (!ActorHasRequiredStatesFor(newState))
+            //Check incoming states to see if any of our dependencies are there.
+            //TODO Z-62 clean this unholy godawful method up
+            foreach (StateAndInitiator stateAndInitiator in slatedForCreation)
+            {
+                foreach (Type requiredStateType in newState.requiredStates)
+                {
+                    if (stateAndInitiator.state.GetType() == requiredStateType)
+                    {
+                        State requiredState = GetOrCreateState(requiredStateType);
+                        if (ResolveStateDependencies(requiredState, ref statesToCreate,
+                                ref statesToDestroy, ref stateTypesProcessed))
+                        {
+                            statesToCreate.Add(requiredState);
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            if (!ActorHasRequiredStatesFor(newState, statesToCreate))
             {
                 return false;
             }
@@ -298,11 +320,24 @@ namespace CSM
 
 
         // ReSharper disable Unity.PerformanceAnalysis
-        private bool ActorHasRequiredStatesFor(State state)
+        private bool ActorHasRequiredStatesFor(State state, List<State> statesCreatedThisFrame)
         {
             foreach (Type requiredState in state.requiredStates)
             {
-                if (statesStack.Contains(requiredState)) continue;
+                bool requirementExists = false;
+                requirementExists = statesStack.Contains(requiredState);
+
+                //TODO Z-67... you already know
+                foreach (State incomingState in statesCreatedThisFrame)
+                    if (incomingState.GetType() == requiredState)
+                    {
+                        requirementExists = true;
+                        break;
+                    }
+
+                if (requirementExists)
+                    continue;
+
                 Debug.LogWarning($"Not entering state {state} because dependency {requiredState} is missing!");
                 return false;
             }
