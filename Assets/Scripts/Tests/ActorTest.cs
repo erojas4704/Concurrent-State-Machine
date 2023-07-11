@@ -24,6 +24,8 @@ namespace Tests
             actor = null;
         }
 
+        #region dependency tests
+
         [Test]
         public void TestActorSimpleState()
         {
@@ -358,6 +360,109 @@ namespace Tests
             Assert.IsFalse(actor.Is<State14>());
         }
 
+        #endregion
+
+        #region messaging tests
+
+        [Test]
+        public void TestGhostStateShouldNotTriggerWhenStateIsReplaced()
+        {
+            Message message1 = new("End", Message.Phase.Started);
+            Message message2 = new("End", Message.Phase.Started);
+            actor.EnterState<MessagingState0>();
+
+            actor.Update();
+            actor.PropagateAction(message1);
+
+            actor.Update();
+            Assert.IsTrue(message1.processed);
+            Assert.IsTrue(actor.Is<MessagingState1>());
+            Assert.IsFalse(actor.Is<MessagingState0>());
+
+            actor.PropagateAction(message2);
+            actor.Update();
+            Assert.IsFalse(message2.processed);
+        }
+
+        [Test]
+        public void TestGhostStateShouldProcessMessageAfterExit()
+        {
+            Message message1 = new("End", Message.Phase.Started);
+            actor.EnterState<MessagingState0>();
+
+            actor.Update();
+            MessagingState0 messagingState0 = actor.GetStates()[typeof(MessagingState0)] as MessagingState0;
+            messagingState0.shouldEndAndEnterMessagingState1 = true;
+            actor.Update(); //This update makes sure the State processes the above prompt.
+
+            actor.Update();
+            Assert.IsFalse(actor.Is<MessagingState0>());
+            Assert.IsTrue(actor.Is<MessagingState1>());
+
+            actor.PropagateAction(message1);
+            actor.Update();
+
+            Assert.IsTrue(message1.processed);
+            Assert.LessOrEqual(messagingState0.updates, 2);
+        }
+
+        [Test]
+        public void TestGhostStateShouldNotProcessMessageAfterCancelledByGroup()
+        {
+            Message message1 = new("Jump", Message.Phase.Started);
+            Message message2 = new("Jump", Message.Phase.Started);
+            actor.EnterState<Grounded>();
+
+            actor.Update();
+            actor.PropagateAction(message1); //"Jump" is sent to grounded.
+
+            actor.Update(); //This update needs to be the one to resolve Jump, Airborne, but not Grounded.
+            
+            //Grounded forces actor to enter Jump, which forces Airborne.
+            //This should have cancelled Grounded.
+            
+            Assert.IsFalse(actor.Is<Grounded>());
+            Assert.IsTrue(actor.Is<Airborne>());
+            Assert.IsTrue(actor.Is<Jump>());
+
+            actor.Update();
+            actor.PropagateAction(message2);
+            
+            actor.Update();
+            Assert.IsTrue(message1.processed);
+            Assert.IsFalse(message2.processed);
+            Assert.AreEqual(actor.GetStates().Count, 2);
+        }
+        
+        [Test]
+        public void GhostStateShouldProcessJump()
+        {            
+            Message message1 = new("Jump", Message.Phase.Started);
+            actor.EnterState<Grounded>();
+            
+            actor.Update();
+            Grounded groundedState = actor.GetState<Grounded>();
+            groundedState.isTouchingGround = false;
+            
+            actor.Update();
+            //The State will not be removed until the 2nd update later because it removes itself. 
+            //Should we raise a concern over this?
+            
+            actor.Update();
+            Assert.IsFalse(actor.Is<Grounded>());
+            actor.PropagateAction(message1);
+            
+            actor.Update();
+            Assert.IsFalse(actor.Is<Grounded>());
+            Assert.IsTrue(actor.Is<Jump>());
+            Assert.IsTrue(actor.Is<Airborne>());
+            Assert.IsTrue(message1.processed);
+        }
+
+        #endregion
+
+        #region dependency states
+
         /** State0 Has no Requirements */
         private class State0 : State
         {
@@ -555,5 +660,96 @@ namespace Tests
         private class State36 : State
         {
         }
+
+        #endregion
+
+        #region messaging states
+
+        [StateDescriptor(group = 1)]
+        private class MessagingState0 : State
+        {
+            public bool shouldEndAndEnterMessagingState1;
+            public int updates;
+
+            public override void Update()
+            {
+                updates++;
+                if (shouldEndAndEnterMessagingState1)
+                {
+                    actor.EnterState<MessagingState1>();
+                    actor.Persist(this, 2f);
+                }
+            }
+
+            public override bool Process(Message message)
+            {
+                if (message.phase == Message.Phase.Started)
+                {
+                    if (message.name == "End")
+                    {
+                        actor.EnterState<MessagingState1>();
+                        message.processed = true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        [StateDescriptor(group = 1)]
+        private class MessagingState1 : State
+        {
+        }
+
+        [StateDescriptor(group = 1)]
+        private class Grounded : State
+        {
+            public bool isTouchingGround = true;
+
+            public override void Update()
+            {
+                if (!isTouchingGround)
+                {
+                    actor.EnterState<Airborne>();
+                    actor.Persist(this, 2f);
+                }
+            }
+
+            public override bool Process(Message message)
+            {
+                if (message.phase == Message.Phase.Started)
+                {
+                    switch (message.name)
+                    {
+                        case "Jump":
+                            actor.EnterState<Jump>();
+                            message.processed = true;
+                            break;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        [StateDescriptor(group = 1)]
+        private class Airborne : State
+        {
+            public override void Update()
+            {
+                if (actor.GetStates().TryGetValue(typeof(Grounded), out State state))
+                {
+                    Grounded groundedState = state as Grounded;
+                    groundedState.isTouchingGround = false;
+                }
+            }
+        }
+
+        [With(typeof(Airborne))]
+        private class Jump : State
+        {
+        }
+
+        #endregion
     }
 }
