@@ -202,6 +202,7 @@ namespace CSM
             newState.Init(si.initiator);
             newState.time = 0;
             newState.expiresAt = 0;
+            foreach (Message message in heldMessages.Values) newState.Process(message); //Process held messages
             return newState;
         }
 
@@ -246,7 +247,7 @@ namespace CSM
                 {
                     continue;
                 }
-                
+
                 State newPartnerState = GetOrCreateState(partnerStateType);
                 if (ResolveStateDependencies(newPartnerState, ref statesToCreate, ref statesToDestroy,
                         ref stateTypesProcessed))
@@ -335,6 +336,15 @@ namespace CSM
             {
                 bool messageBlocked = s.Process(message);
                 if (messageBlocked) return message.processed;
+            }
+
+            if (message.phase == Message.Phase.Held)
+            {
+                heldMessages[message.name] = message;
+            }
+            else if (message.phase == Message.Phase.Ended)
+            {
+                heldMessages.Remove(message.name);
             }
 
             //Process ghost states. Ghost states have no order and cannot block messages.
