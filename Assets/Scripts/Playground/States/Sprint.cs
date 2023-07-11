@@ -14,7 +14,6 @@ namespace Playground.States
         public override void Update()
         {
             stats.Speed = stats.sprintSpeed;
-            stats.CoyoteTime = 2f;
         }
 
         public override bool Process(Message message)
