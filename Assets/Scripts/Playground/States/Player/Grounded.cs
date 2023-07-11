@@ -52,10 +52,6 @@ namespace Playground.States.Player
 
                         actor.EnterState<Jump>();
                         break;
-                    case "Sprint":
-                        message.processed = true;
-                        actor.EnterState<Sprint>();
-                        break;
                     case "Ladder":
                         message.processed = true;
                         if (CanClimb(actor, message.GetInitiator<Ladder>()))
@@ -63,6 +59,17 @@ namespace Playground.States.Player
                             actor.EnterState<Climb>(message);
                         }
 
+                        break;
+                }
+            }
+
+            if (message.phase == Message.Phase.Held || message.phase == Message.Phase.Started)
+            {
+                switch (message.name)
+                {
+                    case "Sprint":
+                        message.processed = true;
+                        actor.EnterState<Sprint>();
                         break;
                 }
             }
