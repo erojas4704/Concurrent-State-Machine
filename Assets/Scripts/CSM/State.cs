@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CSM
 {
@@ -11,30 +13,41 @@ namespace CSM
         public bool solo;
         public int Priority { get; init; }
         public int Group { get; init; } = -1;
-        public float time;
+
+        public float time; //TODO z-61. Keep a reference to start time.
+        public float expiresAt;
+
         public Stats stats;
+
+        public bool IsGhost => expiresAt > Time.time;
 
         public delegate void ExitStateHandler(State state);
 
-        public virtual void Init(Message initiator) { }
+        public virtual void Init(Message initiator)
+        {
+        }
 
         /** Processes an update cycle, this method is called once every frame.
          *  Return: Can return a new set of stats for the actor, or null if no stat changes necessary.
          */
-        public virtual void Update() { }
+        public virtual void Update()
+        {
+        }
 
         public virtual bool Process(Message message) => false;
 
-        public virtual void End() { }
+        public virtual void End()
+        {
+        }
 
         // ReSharper disable once InconsistentNaming
         public ExitStateHandler OnExit;
 
         protected void Exit() => OnExit?.Invoke(this);
 
-        public Type[] requiredStates = { };
-        public Type[] negatedStates = { };
-        public Type[] partnerStates = { };
+        public HashSet<Type> requiredStates = new();
+        public HashSet<Type> negatedStates = new();
+        public HashSet<Type> partnerStates = new();
 
         protected State()
         {
@@ -46,16 +59,61 @@ namespace CSM
             }
 
             Negate neg = (Negate)Attribute.GetCustomAttribute(GetType(), typeof(Negate));
-            if (neg != null) negatedStates = neg.states;
+            if (neg != null) negatedStates = new HashSet<Type>(neg.states);
 
             Require req = (Require)Attribute.GetCustomAttribute(GetType(), typeof(Require));
-            if (req != null) requiredStates = req.states;
+            if (req != null) requiredStates = new HashSet<Type>(req.states);
 
             With with = (With)Attribute.GetCustomAttribute(GetType(), typeof(With));
-            if (with != null) partnerStates = with.states;
+            if (with != null) partnerStates = new HashSet<Type>(with.states);
 
             Solo attrSolo = (Solo)Attribute.GetCustomAttribute(GetType(), typeof(Solo));
             if (attrSolo != null) solo = attrSolo.solo;
+        }
+
+        public void ValidateRequirements()
+        {
+            if (solo)
+            {
+                if (partnerStates.Count > 0 || requiredStates.Count > 0)
+                {
+                    throw new CsmException(
+                        $"State {this} is a solo state, but requires {partnerStates.Count + requiredStates.Count} other states.",
+                        GetType());
+                }
+            }
+
+            if (partnerStates.Contains(GetType()) || requiredStates.Contains(GetType()))
+            {
+                throw new CsmException($"State {this} requires itself. This behavior is not supported.",
+                    GetType());
+            }
+
+            if (negatedStates.Contains(GetType()))
+            {
+                throw new CsmException($"State {this} negates itself.", GetType());
+            }
+
+            if (Group >= 0)
+            {
+                CheckGroupsInRequirements(partnerStates);
+                CheckGroupsInRequirements(requiredStates);
+            }
+        }
+
+        //TODO Z-67: do not run these checks in production builds
+        private void CheckGroupsInRequirements(HashSet<Type> requirements)
+        {
+            foreach (Type requiredStateType in requirements)
+            {
+                object[] attributes = requiredStateType.GetCustomAttributes(true);
+                if (attributes.OfType<StateDescriptor>().Any(descriptor => descriptor.group == Group))
+                {
+                    throw new CsmException(
+                        $"State {this} requires state {requiredStateType}, but they are in the same grouping",
+                        GetType());
+                }
+            }
         }
 
         public override bool Equals(object obj)
@@ -74,11 +132,25 @@ namespace CSM
         {
             return GetType().ToString().Split('.').Last();
         }
+
+        public virtual void SetStats(Stats actorStats) => stats = actorStats;
     }
 
     public abstract class State<TStatType> : State where TStatType : Stats
     {
         public new TStatType stats;
+
+        public override void SetStats(Stats actorStats)
+        {
+            if (actorStats is TStatType castStats)
+            {
+                stats = castStats;
+            }
+            else
+            {
+                throw new CsmException("Invalid stats type for this state.", GetType());
+            }
+        }
     }
 }
 

@@ -10,16 +10,24 @@ namespace Playground.States.Player
         /** How accurately must a player be facing a ladder to be able to climb it.**/
         private const float CLIMB_ANGLE_MIN = 0.85f;
 
+        private float lastSurfaceHeight;
+
         public override void Init(Message initiator)
         {
             base.Init(initiator);
             controller = actor.GetComponent<CharacterController>();
-            actor.velocity.y = -10f;
+            actor.velocity.y = -1f;
         }
 
         public override void Update()
         {
-            if (!controller.isGrounded) actor.EnterState<Airborne>();
+            if (!controller.isGrounded)
+            {
+                actor.Persist(this, stats.CoyoteTime);
+                actor.EnterState<Airborne>();
+                lastSurfaceHeight = actor.transform.position.y;
+            }
+
             base.Update();
         }
 
@@ -29,8 +37,19 @@ namespace Playground.States.Player
             {
                 switch (message.name)
                 {
+                    //TODO Consume("Jump", () => {}) pattern ?
                     case "Jump":
                         message.processed = true;
+                        //if ghost, we will reset the actor's Y position to the last position they were at.
+                        //actor.transform.position.y = lastSurfaceHeight; //Obviously circumvent the character controller or work with it.
+                        if (IsGhost)
+                        {
+                            Vector3 position = actor.transform.position;
+                            Vector3 moveDelta = new Vector3(position.x,
+                                lastSurfaceHeight, position.z) - position;
+                            controller.Move(moveDelta);
+                        }
+
                         actor.EnterState<Jump>();
                         break;
                     case "Sprint":
@@ -47,7 +66,7 @@ namespace Playground.States.Player
                         break;
                 }
             }
-            
+
             return base.Process(message);
         }
 

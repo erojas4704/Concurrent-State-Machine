@@ -2912,7 +2912,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   velocity: {x: 0, y: 0, z: 0}
-  actionTimer: 0.75
+  actionTimer: 0.015
   stateArray: []
   axis: {x: 0, y: 0}
   actionMap:
@@ -3144,6 +3144,8 @@ MonoBehaviour:
   friction: 45
   ladderClimbSpeed: 5
   jumpHangTime: 0
+  coyoteTime: 0.15
+  jumpForce: 7.5
 --- !u!1 &318749672
 GameObject:
   m_ObjectHideFlags: 0

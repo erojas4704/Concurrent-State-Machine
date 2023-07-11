@@ -9,12 +9,12 @@ namespace Playground.States
     [UsedImplicitly]
     [StateDescriptor(group = 3, priority = 5)]
     [Require(typeof(Grounded))]
-    public class Sprint : State
+    public class Sprint : State<PlayerStats>
     {
         public override void Update()
         {
-            PlayerStats pStats = stats as PlayerStats;
-            pStats.Speed = pStats.sprintSpeed;
+            stats.Speed = stats.sprintSpeed;
+            stats.CoyoteTime = 2f;
         }
 
         public override bool Process(Message message)

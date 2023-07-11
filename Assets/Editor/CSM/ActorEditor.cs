@@ -3,6 +3,7 @@ using UnityEditor;
 using CSM;
 using System.Reflection;
 using System.Collections.Generic;
+using UnityEngine;
 
 [CustomEditor(typeof(Actor), true)]
 public class ActorEditor : Editor
@@ -12,10 +13,15 @@ public class ActorEditor : Editor
         DrawDefaultInspector();
 
         StateStack states = ((Actor)target).GetStates();
-        FieldInfo fi = typeof(Actor).GetField("actionBuffer",
+        FieldInfo fi = typeof(Actor).GetField("messageBuffer",
             BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
-        Queue<Message> actionBuffer = fi.GetValue(target) as Queue<Message>;
+        FieldInfo fiGhostStates = typeof(Actor).GetField("ghostStates",
+            BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+        List<State> ghostStates = fiGhostStates!.GetValue(target) as List<State>;
+
+        Queue<Message> messageBuffer = fi.GetValue(target) as Queue<Message>;
 
         foreach (State state in states)
         {
@@ -23,9 +29,15 @@ public class ActorEditor : Editor
                 $"[State ({state.Group}): {state}] Priority: {state.Priority} Active: {state.time}");
         }
 
-        foreach (Message action in actionBuffer)
+        foreach (Message message in messageBuffer)
         {
-            EditorGUILayout.LabelField($"[Action: {action}]");
+            EditorGUILayout.LabelField($"[Message: {message}]");
+        }
+
+        EditorGUILayout.Space();
+        foreach (State ghostState in ghostStates)
+        {
+            EditorGUILayout.LabelField($"Ghost State {ghostState}. Expires in {ghostState.expiresAt - Time.time}");
         }
     }
 }
