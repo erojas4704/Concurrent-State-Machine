@@ -25,7 +25,12 @@ namespace CSM
             actionMap.actionTriggered -= OnAction;
             actionMap.Disable();
         }
-
+        
+        private void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            PropagateMessage(new("ControllerCollision", hit, Message.Phase.Started), false);
+        }
+        
         public void OnTriggerEnter(Collider other)
         {
             ITrigger trigger = other.GetComponent<ITrigger>();
