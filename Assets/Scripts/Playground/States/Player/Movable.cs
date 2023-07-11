@@ -28,12 +28,21 @@ namespace Playground.States.Player
                 z = player.axis.y * stats.Speed
             };
             
+             //Target Velocity will be 5 if we are airborne from a Sprint. Our base velocity will be 8.
+             //in this case we should ignore target velocity and use drag.
 
             //Use a flat version of our movement vector so the Y axis doesn't factor into the length calculation.
             Vector3 planarVelocity = actor.velocity;
             planarVelocity.y = 0;
 
-            //Figure ot whether to use friction or acceleration
+            //Figure to whether to use friction or acceleration, based on whichever is greater.
+            //If the target velocity is greater than current velocity, we will use acceleration.
+            //Otherwise, we will use friction to decelerate.
+            
+            //The issue lies in situations where we need to turn around and our speed is temporarily increased by an action, such as sprinting.
+            //The max speed will be set to 5, but our own speed is greater than that. If we want to turn completely around and go 5 in the other
+            //direction, it will use friction, because 5 is less than the applied sprinting speed of 8. 
+            //We need to incorporate the difference in axis somehow. 
             float accelerationFactor = targetVelocity.magnitude > planarVelocity.magnitude
                 ? stats.Acceleration
                 : stats.Friction;
