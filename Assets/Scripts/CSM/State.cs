@@ -19,6 +19,8 @@ namespace CSM
 
         public Stats stats;
 
+        public bool IsGhost => expiresAt > Time.time;
+
         public delegate void ExitStateHandler(State state);
 
         public virtual void Init(Message initiator)

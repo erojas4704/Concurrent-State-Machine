@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace CSM
 {
@@ -12,8 +12,8 @@ namespace CSM
         public StateStack()
         {
             IsReadOnly = true;
-            dictionary = new Dictionary<Type, State>();
-            list = new List<State>();
+            dictionary = new();
+            list = new();
         }
 
         IEnumerator<KeyValuePair<Type, State>> IEnumerable<KeyValuePair<Type, State>>.GetEnumerator() =>
@@ -23,6 +23,7 @@ namespace CSM
 
         IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
+        //TODO Z-67: Add in a clause that checks state groups. We will have a separate list for groupings and methods to extract them easily. 
         public void Add(State newState)
         {
             if (newState == null) throw new NullReferenceException("Actor trying to enter null state");
@@ -71,6 +72,7 @@ namespace CSM
 
             return false;
         }
+
         public void Add(KeyValuePair<Type, State> item)
         {
             throw new NotImplementedException();
@@ -109,6 +111,7 @@ namespace CSM
                         list.Insert(0, newState);
                         break;
                     }
+
                     continue;
                 }
 
@@ -118,8 +121,9 @@ namespace CSM
                 break;
             }
         }
-        
+
         #region Unimplemented Methods
+
         public bool Contains(KeyValuePair<Type, State> item)
         {
             throw new NotImplementedException();
@@ -134,6 +138,7 @@ namespace CSM
         {
             throw new NotImplementedException();
         }
+
         public void Add(Type key, State value)
         {
             throw new NotImplementedException();
@@ -172,6 +177,7 @@ namespace CSM
             get => throw new NotImplementedException();
             set => throw new NotImplementedException();
         }
+
         #endregion
     }
 }

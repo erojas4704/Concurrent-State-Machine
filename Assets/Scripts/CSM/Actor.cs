@@ -32,7 +32,7 @@ namespace CSM
 
         public event StateChangeHandler OnStateChange;
 
-        public float actionTimer = .75f;
+        public float actionTimer = 0.05f;
 
         private void Awake()
         {
@@ -42,16 +42,20 @@ namespace CSM
         public virtual void Update()
         {
             if (stats) stats.Reset();
+
+            ProcessQueues();
+            ProcessActionBuffer();
+
             foreach (State state in statesStack)
             {
                 state.time += Time.deltaTime;
                 state.Update();
                 //TODO Z-56 keep record of all stat changes.
             }
-
-            ProcessQueues();
-            ProcessActionBuffer();
         }
+
+        //TODO Z-67: What happens if we call this with a state that does not exist in the stack?
+        public T GetState<T>() where T : State => (T)statesStack[typeof(T)];
 
         /**Persist a state as a 'ghost'. Ghost states will be treated as the bottom of the stack but will still
          * be able to process messages. This is useful for implementing features like "coyote-time".
@@ -81,7 +85,7 @@ namespace CSM
 
         private void EnterState(Type stateType, Message initiator)
         {
-            //TODO Z-67 pending new StateRelationship. For now we brute force it. This is wildly inefficient.
+            //TODO Z-67 pending new StateRelationship. For now we brute force it. This is wildly inefficient. O(N^2)
             foreach (State state in statesStack)
             {
                 if (state.negatedStates.Contains(stateType))
@@ -94,9 +98,6 @@ namespace CSM
             }
 
             State newState = GetOrCreateState(stateType);
-            //TODO This needs to be revised in SettleStateDependencies or whatever.
-            if (newState.Group > -1)
-                ExitStateGroup(newState.Group);
 
             StateAndInitiator si = new(
                 newState, initiator
@@ -198,6 +199,7 @@ namespace CSM
             StateSetup(newState);
             newState.Init(si.initiator);
             newState.time = 0;
+            newState.expiresAt = 0;
             return newState;
         }
 
@@ -209,6 +211,18 @@ namespace CSM
             if (stateTypesProcessed.Contains(newState.GetType()))
             {
                 return true;
+            }
+
+            if (newState.Group > -1)
+            {
+                //TODO Z-67, Implement a method to get grouped state from StateStack.
+                foreach (State state in statesStack)
+                {
+                    if (state.Group == newState.Group)
+                    {
+                        statesToDestroy.Add(state);
+                    }
+                }
             }
 
             stateTypesProcessed.Add(newState.GetType());
@@ -226,6 +240,11 @@ namespace CSM
 
             foreach (Type partnerStateType in newState.partnerStates)
             {
+                if (statesStack.Contains(partnerStateType))
+                {
+                    continue;
+                }
+                
                 State newPartnerState = GetOrCreateState(partnerStateType);
                 if (ResolveStateDependencies(newPartnerState, ref statesToCreate, ref statesToDestroy,
                         ref stateTypesProcessed))
@@ -303,11 +322,11 @@ namespace CSM
             }
         }
 
-        protected bool PropagateAction(Message message, bool buffer = true)
+        public bool PropagateAction(Message message, bool buffer = true)
         {
             if (statesStack.Count < 1)
             {
-                throw new Exception("This Actor has no states!");
+                throw new("This Actor has no states!");
             }
 
             foreach (State s in statesStack)
@@ -320,10 +339,13 @@ namespace CSM
             List<State> ghostStatesNextFrame = new();
             foreach (State ghost in ghostStates)
             {
-                ghost.Process(message);
-                if (Time.time < ghost.expiresAt & !message.processed)
+                if (Time.time < ghost.expiresAt)
                 {
-                    ghostStatesNextFrame.Add(ghost);
+                    ghost.Process(message);
+                    if (!message.processed)
+                    {
+                        ghostStatesNextFrame.Add(ghost);
+                    }
                 }
             }
 
@@ -336,13 +358,6 @@ namespace CSM
 
         private static bool ShouldBufferMessage(Message message, bool buffer) =>
             !message.processed && buffer && message.phase == Message.Phase.Started;
-
-        private void ExitStateGroup(int group)
-        {
-            foreach (State state in statesStack)
-                if (state.Group == group)
-                    ExitState(state.GetType());
-        }
 
         private List<State> GetDependentStates(State state)
         {
