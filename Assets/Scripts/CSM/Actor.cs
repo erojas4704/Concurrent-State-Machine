@@ -354,7 +354,7 @@ namespace CSM
             if (messageBuffer.Count < 1) return;
 
             Message firstMessage = messageBuffer.Peek();
-            firstMessage.timer += Time.deltaTime;
+            firstMessage.timer += Time.deltaTime; //TODO <- make a field for this that uses Time.time instead of having to increment it every time.
 
             if (PropagateMessage(firstMessage, false))
             {
@@ -372,6 +372,11 @@ namespace CSM
             {
                 throw new("This Actor has no states!");
             }
+            
+            if (message.phase == Message.Phase.Ended)
+            {
+                heldMessages.Remove(message.name);
+            }
 
             foreach (State s in statesStack)
             {
@@ -382,10 +387,6 @@ namespace CSM
             if (message.phase == Message.Phase.Held)
             {
                 heldMessages[message.name] = message;
-            }
-            else if (message.phase == Message.Phase.Ended)
-            {
-                heldMessages.Remove(message.name);
             }
 
             //Process ghost states. Ghost states have no order and cannot block messages.
