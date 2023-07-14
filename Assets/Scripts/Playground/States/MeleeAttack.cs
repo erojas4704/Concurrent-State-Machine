@@ -7,23 +7,31 @@ namespace Playground.States
 {
     [UsedImplicitly]
     [StateDescriptor(group = 3, priority = 5)]
-    public class MeleeAttack : State
+    public class MeleeAttack : State<PlayerStats>
     {
         private int combo;
-        private Vector2 axis;
         private PlayerActor player;
+        private Animator animator;
+        private static readonly int attack = Animator.StringToHash("attack");
+        private static readonly int attackSpeed = Animator.StringToHash("attackSpeed");
 
         public override void Init(Message initiator)
         {
             player = (PlayerActor)actor;
             combo = 0;
+            animator = actor.GetComponent<Animator>();
+            Attack();
         }
 
         public override void Update()
         {
-            PlayerStats pStats = stats as PlayerStats;
-            pStats!.Speed *= 0.5f;
-            if (time >= .5f) Exit();
+            stats.Speed *= 0.5f;
+            stats.TurnSpeed *= 0.3f;
+            if (time > 0.15f)
+            {
+                if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
+                    Exit();
+            }
         }
 
         public override bool Process(Message message)
@@ -34,20 +42,24 @@ namespace Playground.States
                 {
                     message.processed = true;
                     combo++;
+                    Attack();
                 }
             }
+
             if (message.name == "Move")
             {
-                message.processed = true;
-                axis = message.axis;
+                //Allow passthrough so we can make minor movements.
+                return false;
             }
+
             return true; //Stop all states below from processing inputs.
         }
 
-        public override void End()
+        private void Attack()
         {
-            player.axis = axis;
-            base.End();
+            animator.SetFloat(attackSpeed, stats.AttackSpeed);
+            animator.SetTrigger(attack);
         }
+
     }
 }
