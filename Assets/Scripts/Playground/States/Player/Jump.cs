@@ -20,7 +20,7 @@ namespace playground
         {
             if (actor.velocity.y < 0)
             {
-                if (isHeld && time < stats.JumpHangTime)
+                if (isHeld && Timer < stats.JumpHangTime)
                     actor.velocity.y = 0f;
                 else
                     Exit();
