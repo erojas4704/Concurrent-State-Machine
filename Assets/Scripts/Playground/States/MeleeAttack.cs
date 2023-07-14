@@ -27,7 +27,7 @@ namespace Playground.States
         {
             stats.Speed *= 0.5f;
             stats.TurnSpeed *= 0.3f;
-            if (time > 0.15f)
+            if (Timer > 0.15f)
             {
                 if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
                     Exit();

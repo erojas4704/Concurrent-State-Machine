@@ -13,7 +13,7 @@ namespace CSM
         public int Priority { get; init; }
         public int Group { get; init; } = -1;
 
-        public float time; //TODO z-61. Keep a reference to start time.
+        public float startTime;
         public float expiresAt;
 
         public Stats stats;
@@ -22,22 +22,16 @@ namespace CSM
 
         public delegate void ExitStateHandler(State state);
 
-        public virtual void Init(Message initiator)
-        {
-        }
+        public virtual void Init(Message initiator) { }
 
         /** Processes an update cycle, this method is called once every frame.
          *  Return: Can return a new set of stats for the actor, or null if no stat changes necessary.
          */
-        public virtual void Update()
-        {
-        }
+        public virtual void Update() { }
 
         public virtual bool Process(Message message) => false;
 
-        public virtual void End()
-        {
-        }
+        public virtual void End() { }
 
         // ReSharper disable once InconsistentNaming
         public ExitStateHandler OnExit;
@@ -115,6 +109,8 @@ namespace CSM
             }
         }
 
+        public float Timer => Time.time - startTime;
+
         public override bool Equals(object obj)
         {
             if (obj == null)
@@ -156,7 +152,5 @@ namespace CSM
 //! hack
 namespace System.Runtime.CompilerServices
 {
-    internal static class IsExternalInit
-    {
-    }
+    internal static class IsExternalInit { }
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CSM
 {
@@ -24,7 +25,7 @@ namespace CSM
 
         private List<State> ghostStates = new();
 
-        private Dictionary<string, Message> heldMessages = new();
+        private readonly Dictionary<string, Message> heldMessages = new();
 
         //TODO <- This may be better off delegated to a persistent stat. 
         public Vector3 velocity;
@@ -34,7 +35,8 @@ namespace CSM
 
         public event StateChangeHandler OnStateChange;
 
-        public float actionTimer = 0.05f;
+        /**How long messages are buffered for, in seconds. */
+        public float messageBufferDurationSeconds = 0.05f;
 
         private void Awake()
         {
@@ -50,7 +52,6 @@ namespace CSM
 
             foreach (State state in statesStack)
             {
-                state.time += Time.deltaTime;
                 state.Update();
                 //TODO Z-56 keep record of all stat changes.
             }
@@ -204,7 +205,7 @@ namespace CSM
             statesStack.Add(newState);
             StateSetup(newState);
             newState.Init(si.initiator);
-            newState.time = 0;
+            newState.startTime = Time.time;
             newState.expiresAt = 0;
             //TODO Z-67: Nasty way of handling. Also potential InvalidOperationException. Break this down into a method
             foreach (Message message in heldMessages.Values) newState.Process(message); //Process held messages
@@ -359,7 +360,7 @@ namespace CSM
             {
                 messageBuffer.Dequeue();
             }
-            else if (firstMessage.timer >= actionTimer)
+            else if (firstMessage.timer >= messageBufferDurationSeconds)
             {
                 messageBuffer.Dequeue();
             }

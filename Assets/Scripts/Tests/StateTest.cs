@@ -74,16 +74,16 @@ namespace Tests
             State[] states = actor.GetStates().Values.ToArray();
             Assert.IsInstanceOf<Grounded>(states[0]);
             Assert.IsInstanceOf<Movable>(states[1]);
-            
-            actor.EnterState<Jump>();            
-            
+
+            actor.EnterState<Jump>();
+
             actor.Update();
             states = actor.GetStates().Values.ToArray();
             Assert.IsInstanceOf<DoubleJump>(states[0]);
             Assert.IsInstanceOf<Jump>(states[1]);
             Assert.IsInstanceOf<Airborne>(states[2]);
             Assert.IsInstanceOf<Movable>(states[3]);
-            
+
             Assert.IsFalse(actor.Is<Grounded>());
             Assert.IsTrue(actor.Is<Movable>());
             Assert.IsTrue(actor.Is<Jump>());
@@ -91,7 +91,7 @@ namespace Tests
             Assert.IsTrue(actor.Is<Airborne>());
             Assert.AreEqual(actor.GetStates().Count, 4);
         }
-
+        
         [StateDescriptor(priority = 0)]
         private class State0 : State { }
 
@@ -127,5 +127,6 @@ namespace Tests
 
         [StateDescriptor(priority = 7)]
         private class DoubleJump : State { }
+
     }
 }
