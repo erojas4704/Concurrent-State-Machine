@@ -1,7 +1,7 @@
 using CSM;
 using JetBrains.Annotations;
 
-namespace Playground.States
+namespace Playground.States.Player
 {
     [UsedImplicitly]
     [StateDescriptor(priority = 2, group = 4)]

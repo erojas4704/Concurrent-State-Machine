@@ -1,15 +1,13 @@
-using System.Diagnostics;
 using CSM;
 using JetBrains.Annotations;
-using Playground.States.Player;
 
-namespace Playground.States
+namespace Playground.States.Player
 {
 
     [UsedImplicitly]
     [StateDescriptor(group = 3, priority = 5)]
     [Require(typeof(Grounded))]
-    public class Sprint : State<PlayerStats>
+    public class Sprint : State<Playground.PlayerStats>
     {
         public override void Update()
         {

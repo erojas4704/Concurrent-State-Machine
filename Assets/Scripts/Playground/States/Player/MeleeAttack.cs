@@ -1,13 +1,12 @@
 using CSM;
 using JetBrains.Annotations;
-using Playground.States.Player;
 using UnityEngine;
 
-namespace Playground.States
+namespace Playground.States.Player
 {
     [UsedImplicitly]
     [StateDescriptor(group = 3, priority = 5)]
-    public class MeleeAttack : State<PlayerStats>
+    public class MeleeAttack : State<Playground.PlayerStats>
     {
         private int combo;
         private PlayerActor player;
