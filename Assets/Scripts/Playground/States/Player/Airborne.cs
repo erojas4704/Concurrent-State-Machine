@@ -19,5 +19,15 @@ namespace Playground.States.Player
             stats.Friction = stats.Drag;
             base.Update();
         }
+
+        public override bool Process(Message message)
+        {
+            if (message.name == "Attack" && message.phase == Message.Phase.Started)
+            {
+                message.processed = true;
+                return true;
+            }
+            return base.Process(message);
+        }
     }
 }
