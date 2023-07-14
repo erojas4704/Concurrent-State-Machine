@@ -23,7 +23,7 @@ namespace Playground.States.Player
         {
             if (!controller.isGrounded)
             {
-                actor.Persist(this, stats.CoyoteTime);
+                Exit(stats.CoyoteTime, "Jump");
                 actor.EnterState<Airborne>();
                 lastSurfaceHeight = actor.transform.position.y;
             }
