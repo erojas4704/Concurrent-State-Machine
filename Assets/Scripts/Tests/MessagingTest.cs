@@ -229,6 +229,33 @@ namespace Tests
             Assert.AreEqual(movementAxis, movingState.axis);
         }
 
+        [Test]
+        public void TestHeldAxisShouldPassAfterBlockingStateEnds()
+        {
+            Message axisMessage = new("Axis", Message.Phase.Held);
+            Vector2 movementAxis = new(-1f, 0f);
+            axisMessage.SetValue(movementAxis);
+            actor.EnterState<GroundedState>();
+            
+            actor.Update();
+            actor.EnterState<BlockingState>();
+            
+            actor.Update();
+            actor.PropagateMessage(axisMessage);
+
+            actor.Update();
+            Assert.IsFalse(axisMessage.processed);
+            actor.ExitState<BlockingState>();
+            
+            actor.Update();
+            Assert.IsFalse(actor.Is<BlockingState>());
+            Assert.IsTrue(actor.Is<GroundedState>());
+            Assert.IsTrue(actor.Is<MovingState>());
+            
+            MovingState movingState = actor.GetState<MovingState>();
+            Assert.AreEqual(movementAxis, movingState.axis);
+        }
+
         [StateDescriptor(group = 2, priority = 99)]
         [Require(typeof(GroundedState))]
         private class AttackState : State
@@ -321,6 +348,15 @@ namespace Tests
 
         [StateDescriptor(group = 1, priority = 6)]
         private class ClimbState : State
+        {
+            public override bool Process(Message message)
+            {
+                return true;
+            }
+        }
+
+        [StateDescriptor(priority = 99)]
+        private class BlockingState : State
         {
             public override bool Process(Message message)
             {
