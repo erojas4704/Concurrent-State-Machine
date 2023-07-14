@@ -19,9 +19,13 @@ public class ActorEditor : Editor
         FieldInfo fiGhostStates = typeof(Actor).GetField("ghostStates",
             BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
+        FieldInfo fiHeldMessages = typeof(Actor).GetField("heldMessages",
+            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+
         List<State> ghostStates = fiGhostStates!.GetValue(target) as List<State>;
 
         Queue<Message> messageBuffer = fi.GetValue(target) as Queue<Message>;
+        Dictionary<string, Message> heldMessages = fiHeldMessages.GetValue(target) as Dictionary<string, Message>;
 
         foreach (State state in states)
         {
@@ -35,9 +39,10 @@ public class ActorEditor : Editor
         }
 
         EditorGUILayout.Space();
-        foreach (State ghostState in ghostStates)
-        {
-            EditorGUILayout.LabelField($"Ghost State {ghostState}. Expires in {ghostState.expiresAt - Time.time}");
-        }
+        if (heldMessages != null)
+            foreach (KeyValuePair<string, Message> keyValuePair in heldMessages)
+            {
+                EditorGUILayout.LabelField($"[{keyValuePair.Key}] {keyValuePair.Value}");
+            }
     }
 }

@@ -20,7 +20,7 @@ namespace CSM
 
         public bool IsGhost => expiresAt > Time.time;
 
-        public delegate void ExitStateHandler(State state);
+        public delegate void ExitStateHandler(State state, float persistDuration, params string[] messagesToListenFor);
 
         public virtual void Init(Message initiator) { }
 
@@ -36,7 +36,8 @@ namespace CSM
         // ReSharper disable once InconsistentNaming
         public ExitStateHandler OnExit;
 
-        protected void Exit() => OnExit?.Invoke(this);
+        protected void Exit(float persistDuration = 0f, params string[] messagesToListenFor) =>
+            OnExit?.Invoke(this, persistDuration, messagesToListenFor);
 
         public HashSet<Type> requiredStates = new();
         public HashSet<Type> negatedStates = new();

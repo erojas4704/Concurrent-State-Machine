@@ -23,7 +23,7 @@ namespace CSM
         /** Pool of states that have been removed. This prevents GC running on expired states. */
         private readonly Dictionary<Type, State> statePool = new();
 
-        private List<State> ghostStates = new();
+        private readonly Dictionary<Type, GhostState> ghostStates = new();
 
         private readonly Dictionary<string, Message> heldMessages = new();
 
@@ -59,21 +59,6 @@ namespace CSM
 
         //TODO Z-67: What happens if we call this with a state that does not exist in the stack?
         public T GetState<T>() where T : State => (T)statesStack[typeof(T)];
-
-        /**Persist a state as a 'ghost'. Ghost states will be treated as the bottom of the stack but will still
-         * be able to process messages. This is useful for implementing features like "coyote-time".
-         */
-        public void Persist(State state, float duration)
-        {
-            //TODO: z-52 Remove this method and take in a duration as part of a state's Exit() event method.
-            //TODO: z-52 States can be persisted but not necessarily exited. This is a problem.
-            state.expiresAt = Time.time + duration;
-
-            if (!ghostStates.Contains(state))
-            {
-                ghostStates.Add(state);
-            }
-        }
 
         public bool Is<TState>() => statesStack.Contains(typeof(TState));
 
@@ -320,7 +305,22 @@ namespace CSM
             state.OnExit -= HandleStateExit;
         }
 
-        private void HandleStateExit(State state) => ExitState(state.GetType());
+        private void HandleStateExit(State state, float persistDuration = 0f, params string[] messagesToListenFor)
+        {
+            if (persistDuration > 0f)
+            {
+                state.expiresAt = Time.time + persistDuration;
+                GhostState ghostState = new()
+                {
+                    state = state,
+                    messagesToListenFor = new(messagesToListenFor)
+                };
+
+                ghostStates[state.GetType()] = ghostState;
+            }
+
+            ExitState(state.GetType());
+        }
 
 
         // ReSharper disable Unity.PerformanceAnalysis
@@ -354,7 +354,8 @@ namespace CSM
             if (messageBuffer.Count < 1) return;
 
             Message firstMessage = messageBuffer.Peek();
-            firstMessage.timer += Time.deltaTime;
+            firstMessage.timer +=
+                Time.deltaTime; //TODO <- make a field for this that uses Time.time instead of having to increment it every time.
 
             if (PropagateMessage(firstMessage, false))
             {
@@ -373,31 +374,34 @@ namespace CSM
                 throw new("This Actor has no states!");
             }
 
+            if (message.phase == Message.Phase.Ended)
+            {
+                heldMessages.Remove(message.name);
+            }
+            else if (message.phase == Message.Phase.Held)
+            {
+                heldMessages[message.name] = message;
+            }
+
             foreach (State s in statesStack)
             {
                 bool messageBlocked = s.Process(message);
                 if (messageBlocked) return message.processed;
             }
 
-            if (message.phase == Message.Phase.Held)
-            {
-                heldMessages[message.name] = message;
-            }
-            else if (message.phase == Message.Phase.Ended)
-            {
-                heldMessages.Remove(message.name);
-            }
 
             //Process ghost states. Ghost states have no order and cannot block messages.
-            List<State> ghostStatesNextFrame = new();
-            foreach (State ghost in ghostStates)
+            GhostState[] ghostStateValues = ghostStates.Values.ToArray();
+            foreach (GhostState ghost in ghostStateValues)
             {
-                if (Time.time < ghost.expiresAt)
+                if (ghost.messagesToListenFor.Count > 0 && !ghost.messagesToListenFor.Contains(message.name)) continue;
+                State ghostState = ghost.state;
+                if (Time.time < ghostState.expiresAt)
                 {
-                    ghost.Process(message);
-                    if (!message.processed)
+                    ghostState.Process(message);
+                    if (message.processed)
                     {
-                        ghostStatesNextFrame.Add(ghost);
+                        ghostStates.Remove(ghostState.GetType());
                     }
                 }
             }
@@ -405,7 +409,6 @@ namespace CSM
             if (ShouldBufferMessage(message, buffer))
                 messageBuffer.Enqueue(message);
 
-            ghostStates = ghostStatesNextFrame;
             return message.processed;
         }
 
@@ -437,6 +440,12 @@ namespace CSM
                 this.state = state;
                 this.initiator = initiator;
             }
+        }
+
+        private class GhostState
+        {
+            public State state;
+            public HashSet<string> messagesToListenFor;
         }
 
         #region ExitState overloads

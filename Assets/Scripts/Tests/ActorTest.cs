@@ -740,7 +740,7 @@ namespace Tests
                 if (shouldEndAndEnterMessagingState1)
                 {
                     actor.EnterState<MessagingState1>();
-                    actor.Persist(this, 2f);
+                    Exit(2f);
                 }
             }
 
@@ -773,8 +773,8 @@ namespace Tests
             {
                 if (!isTouchingGround)
                 {
+                    Exit(2f);
                     actor.EnterState<Airborne>();
-                    actor.Persist(this, 2f);
                 }
             }
 
