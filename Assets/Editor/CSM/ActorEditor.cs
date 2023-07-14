@@ -39,12 +39,6 @@ public class ActorEditor : Editor
         }
 
         EditorGUILayout.Space();
-        foreach (State ghostState in ghostStates)
-        {
-            EditorGUILayout.LabelField($"Ghost State {ghostState}. Expires in {ghostState.expiresAt - Time.time}");
-        }
-        
-        EditorGUILayout.Space();
         if (heldMessages != null)
             foreach (KeyValuePair<string, Message> keyValuePair in heldMessages)
             {
