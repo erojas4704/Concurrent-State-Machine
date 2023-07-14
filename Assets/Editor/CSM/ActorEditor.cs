@@ -26,7 +26,7 @@ public class ActorEditor : Editor
         foreach (State state in states)
         {
             EditorGUILayout.LabelField(
-                $"[State ({state.Group}): {state}] Priority: {state.Priority} Active: {state.time}");
+                $"[State ({state.Group}): {state}] Priority: {state.Priority} Active: {state.Timer}");
         }
 
         foreach (Message message in messageBuffer)
