@@ -81,9 +81,7 @@ namespace CSM
             return statesStack;
         }
 
-        private void OnStateChangeHandler(Actor actor)
-        {
-        }
+        private void OnStateChangeHandler(Actor actor) { }
 
         private void EnterState(Type stateType, Message initiator)
         {
@@ -190,8 +188,12 @@ namespace CSM
                 changed = true;
             }
 
-            if (changed && OnStateChange != null)
-                OnStateChange(this);
+            if (changed)
+            {
+                OnStateChange?.Invoke(this);
+                Message[] messageArray = heldMessages.Values.ToArray();
+                foreach (Message heldMessage in messageArray) PropagateMessage(heldMessage);
+            }
         }
 
         private State CreateState(State newState) => CreateState(new StateAndInitiator(newState, null));
@@ -204,6 +206,7 @@ namespace CSM
             newState.Init(si.initiator);
             newState.time = 0;
             newState.expiresAt = 0;
+            //TODO Z-67: Nasty way of handling. Also potential InvalidOperationException. Break this down into a method
             foreach (Message message in heldMessages.Values) newState.Process(message); //Process held messages
             return newState;
         }

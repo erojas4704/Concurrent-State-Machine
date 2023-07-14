@@ -20,7 +20,7 @@ namespace Playground.States
         {
             player = (PlayerActor)actor;
             combo = 0;
-            animator = actor.GetComponent<Animator>();                    
+            animator = actor.GetComponent<Animator>();
             Attack();
         }
 
@@ -28,8 +28,11 @@ namespace Playground.States
         {
             stats.Speed *= 0.5f;
             stats.TurnSpeed *= 0.3f;
-            if (!animator.GetCurrentAnimatorStateInfo(0).IsName("attack"))
-                Exit();
+            if (time > 0.15f)
+            {
+                if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
+                    Exit();
+            }
         }
 
         public override bool Process(Message message)
@@ -43,11 +46,13 @@ namespace Playground.States
                     Attack();
                 }
             }
+
             if (message.name == "Move")
             {
                 message.processed = true;
                 player.axis = message.axis;
             }
+
             return true; //Stop all states below from processing inputs.
         }
 

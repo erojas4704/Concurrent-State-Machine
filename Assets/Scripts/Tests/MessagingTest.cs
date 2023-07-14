@@ -60,6 +60,7 @@ namespace Tests
             AttackState attackState = actor.GetState<AttackState>();
             attackState.shouldEnd = true;
             actor.Update();
+            actor.Update();
 
             Assert.IsFalse(actor.Is<AttackState>());
             Assert.IsTrue(actor.Is<SprintState>());
