@@ -110,6 +110,31 @@ namespace Tests
         }
 
         [Test]
+        public void TestGhostStatesShouldNotProcessMessagesMoreThanOnce()
+        {
+            Message message1 = new("Jump", Message.Phase.Started);
+            Message message2 = new Message("Jump", Message.Phase.Started);
+            actor.EnterState<GroundedState>();
+                
+            actor.Update();
+            GroundedState groundedState = actor.GetState<GroundedState>();
+            groundedState.isTouchingGround = false;
+            
+            actor.Update();
+            actor.Update();
+            Assert.IsFalse(actor.Is<GroundedState>());
+            Assert.IsTrue(actor.Is<AirborneState>());
+            actor.PropagateMessage(message1);
+            
+            actor.Update();
+            Assert.IsTrue(actor.Is<JumpState>());
+            actor.PropagateMessage(message2);
+            
+            Assert.IsTrue(message1.processed);
+            Assert.IsFalse(message2.processed);
+        }
+
+        [Test]
         public void TestMessageShouldNotEndGhostState()
         {
             actor.EnterState<GroundedState>();
@@ -124,6 +149,7 @@ namespace Tests
             Assert.IsTrue(actor.Is<AirborneState>());
 
             Message message = new("Jump", Message.Phase.Started);
+            actor.PropagateMessage(new("Axis", Message.Phase.Started));
             actor.PropagateMessage(new("Axis", Message.Phase.Held));
             actor.PropagateMessage(message);
 
