@@ -115,21 +115,21 @@ namespace Tests
             Message message1 = new("Jump", Message.Phase.Started);
             Message message2 = new Message("Jump", Message.Phase.Started);
             actor.EnterState<GroundedState>();
-                
+
             actor.Update();
             GroundedState groundedState = actor.GetState<GroundedState>();
             groundedState.isTouchingGround = false;
-            
+
             actor.Update();
             actor.Update();
             Assert.IsFalse(actor.Is<GroundedState>());
             Assert.IsTrue(actor.Is<AirborneState>());
             actor.PropagateMessage(message1);
-            
+
             actor.Update();
             Assert.IsTrue(actor.Is<JumpState>());
             actor.PropagateMessage(message2);
-            
+
             Assert.IsTrue(message1.processed);
             Assert.IsFalse(message2.processed);
         }
@@ -149,8 +149,12 @@ namespace Tests
             Assert.IsTrue(actor.Is<AirborneState>());
 
             Message message = new("Jump", Message.Phase.Started);
-            actor.PropagateMessage(new("Axis", Message.Phase.Started));
-            actor.PropagateMessage(new("Axis", Message.Phase.Held));
+            Message axisMessage0 = new("Axis", Message.Phase.Started);
+            Message axisMessage1 = new("Axis", Message.Phase.Held);
+            axisMessage0.SetValue(Vector2.up);
+            axisMessage1.SetValue(Vector2.up);
+            actor.PropagateMessage(axisMessage0);
+            actor.PropagateMessage(axisMessage1);
             actor.PropagateMessage(message);
 
             actor.Update();
@@ -159,15 +163,15 @@ namespace Tests
         }
 
         [Test]
-        public void TestBlockingStatesShouldNotKeepInputs() 
+        public void TestBlockingStatesShouldNotKeepInputs()
         {
-            //Z-90
+            //Addresses bug in Z-90
             actor.EnterState<GroundedState>();
 
             actor.Update();
             actor.PropagateMessage(new("Sprint", Message.Phase.Started));
             actor.PropagateMessage(new("Sprint", Message.Phase.Held));
-            
+
             actor.Update();
             Assert.IsTrue(actor.Is<SprintState>());
             actor.PropagateMessage(new("Attack", Message.Phase.Started));
@@ -175,7 +179,7 @@ namespace Tests
             actor.Update();
             Assert.IsTrue(actor.Is<AttackState>());
             Assert.IsFalse(actor.Is<SprintState>());
-            
+
             actor.Update();
             actor.PropagateMessage(new("Sprint", Message.Phase.Ended));
 
@@ -183,11 +187,46 @@ namespace Tests
             Assert.IsFalse(actor.Is<SprintState>());
             AttackState attackState = actor.GetState<AttackState>();
             attackState.shouldEnd = true;
-            
+
             actor.Update(); //Attack State Ends 
             actor.Update(); //Actor removes attack state
             actor.Update(); //Actor processes held input
             Assert.IsFalse(actor.Is<SprintState>());
+        }
+
+        [Test]
+        public void TestHeldAxisShouldPropagateToMovementState()
+        {
+            Message axisMessage = new("Axis", Message.Phase.Started);
+            Vector2 movementAxis = new(-1f, 0f);
+            axisMessage.SetValue(movementAxis);
+            actor.EnterState<GroundedState>();
+
+            actor.Update();
+            actor.PropagateMessage(axisMessage);
+            MovingState movingState = actor.GetState<MovingState>();
+            Assert.AreEqual(movementAxis, movingState.axis);
+            Assert.IsTrue(actor.Is<MovingState>());
+            Assert.IsTrue(actor.Is<GroundedState>());
+        }
+
+        [Test]
+        public void TestHeldAxisShouldPropagateToIncomingState()
+        {
+            Message axisMessage = new("Axis", Message.Phase.Held);
+            Vector2 movementAxis = new(-1f, 0f);
+            axisMessage.SetValue(movementAxis);
+            actor.EnterState<ClimbState>();
+
+            actor.Update();
+            actor.PropagateMessage(axisMessage);
+
+            actor.Update();
+            actor.EnterState<GroundedState>();
+
+            actor.Update();
+            MovingState movingState = actor.GetState<MovingState>();
+            Assert.AreEqual(movementAxis, movingState.axis);
         }
 
         [StateDescriptor(group = 2, priority = 99)]
@@ -265,6 +304,28 @@ namespace Tests
         [StateDescriptor(group = 1)]
         private class AirborneState : State { }
 
-        private class MovingState : State { }
+        private class MovingState : State
+        {
+            public Vector2 axis;
+
+            public override bool Process(Message message)
+            {
+                if (message.name == "Axis" && message.phase is Message.Phase.Started or Message.Phase.Held)
+                {
+                    axis = message.GetValue<Vector2>();
+                }
+
+                return false;
+            }
+        }
+
+        [StateDescriptor(group = 1, priority = 6)]
+        private class ClimbState : State
+        {
+            public override bool Process(Message message)
+            {
+                return true;
+            }
+        }
     }
 }
