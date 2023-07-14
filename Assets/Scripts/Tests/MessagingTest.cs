@@ -86,11 +86,56 @@ namespace Tests
             Assert.IsTrue(actor.Is<GroundedState>());
         }
 
+        [Test]
+        public void TestGhostStateProcessesMessage()
+        {
+            actor.EnterState<GroundedState>();
+
+            actor.Update();
+            GroundedState groundedState = actor.GetState<GroundedState>();
+            groundedState.isTouchingGround = false;
+
+            actor.Update();
+            actor.Update();
+            Assert.IsFalse(actor.Is<GroundedState>());
+            Assert.IsTrue(actor.Is<AirborneState>());
+
+            Message message = new("Jump", Message.Phase.Started);
+            actor.PropagateMessage(message);
+
+            actor.Update();
+            Assert.IsTrue(actor.Is<JumpState>());
+            Assert.IsTrue(message.processed);
+        }
+
+        [Test]
+        public void TestMessageShouldNotEndGhostState()
+        {
+            actor.EnterState<GroundedState>();
+
+            actor.Update();
+            GroundedState groundedState = actor.GetState<GroundedState>();
+            groundedState.isTouchingGround = false;
+
+            actor.Update();
+            actor.Update();
+            Assert.IsFalse(actor.Is<GroundedState>());
+            Assert.IsTrue(actor.Is<AirborneState>());
+
+            Message message = new("Jump", Message.Phase.Started);
+            actor.PropagateMessage(new("Axis", Message.Phase.Held));
+            actor.PropagateMessage(message);
+
+            actor.Update();
+            Assert.IsTrue(actor.Is<JumpState>());
+            Assert.IsTrue(message.processed);
+        }
+
         [StateDescriptor(group = 2, priority = 99)]
         [Require(typeof(GroundedState))]
         private class AttackState : State
         {
-            public bool shouldEnd = false;
+            public bool shouldEnd;
 
             public override void Update()
             {
@@ -108,8 +153,20 @@ namespace Tests
         private class SprintState : State { }
 
         [With(typeof(MovingState))]
+        [StateDescriptor(group = 1)]
         private class GroundedState : State
         {
+            public bool isTouchingGround = true;
+
+            public override void Update()
+            {
+                if (!isTouchingGround)
+                {
+                    actor.EnterState<AirborneState>();
+                    actor.Persist(this, 2f);
+                }
+            }
+
             public override bool Process(Message message)
             {
                 if (message.phase is Message.Phase.Started or Message.Phase.Held)
@@ -129,6 +186,11 @@ namespace Tests
                     if (message.name == "Jump")
                     {
                         actor.EnterState<JumpState>();
+                        message.processed = true;
+                    }
+
+                    if (message.name == "Axis")
+                    {
                         message.processed = true;
                     }
                 }
