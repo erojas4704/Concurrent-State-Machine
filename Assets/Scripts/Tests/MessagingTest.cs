@@ -61,6 +61,7 @@ namespace Tests
             attackState.shouldEnd = true;
             actor.Update();
             actor.Update();
+            actor.Update();
 
             Assert.IsFalse(actor.Is<AttackState>());
             Assert.IsTrue(actor.Is<SprintState>());
@@ -129,6 +130,38 @@ namespace Tests
             actor.Update();
             Assert.IsTrue(actor.Is<JumpState>());
             Assert.IsTrue(message.processed);
+        }
+
+        [Test]
+        public void TestBlockingStatesShouldNotKeepInputs() 
+        {
+            //Z-90
+            actor.EnterState<GroundedState>();
+
+            actor.Update();
+            actor.PropagateMessage(new("Sprint", Message.Phase.Started));
+            actor.PropagateMessage(new("Sprint", Message.Phase.Held));
+            
+            actor.Update();
+            Assert.IsTrue(actor.Is<SprintState>());
+            actor.PropagateMessage(new("Attack", Message.Phase.Started));
+
+            actor.Update();
+            Assert.IsTrue(actor.Is<AttackState>());
+            Assert.IsFalse(actor.Is<SprintState>());
+            
+            actor.Update();
+            actor.PropagateMessage(new("Sprint", Message.Phase.Ended));
+
+            actor.Update();
+            Assert.IsFalse(actor.Is<SprintState>());
+            AttackState attackState = actor.GetState<AttackState>();
+            attackState.shouldEnd = true;
+            
+            actor.Update(); //Attack State Ends 
+            actor.Update(); //Actor removes attack state
+            actor.Update(); //Actor processes held input
+            Assert.IsFalse(actor.Is<SprintState>());
         }
 
         [StateDescriptor(group = 2, priority = 99)]
