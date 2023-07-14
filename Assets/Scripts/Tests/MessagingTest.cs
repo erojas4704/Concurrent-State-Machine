@@ -222,7 +222,7 @@ namespace Tests
                 if (!isTouchingGround)
                 {
                     actor.EnterState<AirborneState>();
-                    Exit(2f);
+                    Exit(2f, "Jump");
                 }
             }
 
