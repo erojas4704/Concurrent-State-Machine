@@ -389,23 +389,27 @@ namespace CSM
             }
 
             //Process ghost states. Ghost states have no order and cannot block messages.
-            List<State> ghostStatesNextFrame = new();
-            foreach (State ghost in ghostStates)
+            if (message.phase == Message.Phase.Started)
             {
-                if (Time.time < ghost.expiresAt)
+                List<State> ghostStatesNextFrame = new();
+                foreach (State ghost in ghostStates)
                 {
-                    ghost.Process(message);
-                    if (!message.processed)
+                    if (Time.time < ghost.expiresAt)
                     {
-                        ghostStatesNextFrame.Add(ghost);
+                        ghost.Process(message);
+                        if (!message.processed)
+                        {
+                            ghostStatesNextFrame.Add(ghost);
+                        }
                     }
                 }
+                
+                ghostStates = ghostStatesNextFrame;
             }
 
             if (ShouldBufferMessage(message, buffer))
                 messageBuffer.Enqueue(message);
 
-            ghostStates = ghostStatesNextFrame;
             return message.processed;
         }
 
