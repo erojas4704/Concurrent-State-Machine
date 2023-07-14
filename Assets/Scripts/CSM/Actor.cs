@@ -391,8 +391,8 @@ namespace CSM
             }
 
             //Process ghost states. Ghost states have no order and cannot block messages.
-
-            foreach (GhostState ghost in ghostStates.Values)
+            GhostState[] ghostStateValues = ghostStates.Values.ToArray();
+            foreach (GhostState ghost in ghostStateValues)
             {
                 if (ghost.messagesToListenFor.Count > 0 && !ghost.messagesToListenFor.Contains(message.name)) continue;
                 State ghostState = ghost.state;
