@@ -10,7 +10,6 @@ namespace Playground.States
     public class MeleeAttack : State<PlayerStats>
     {
         private int combo;
-        private Vector2 axis;
         private PlayerActor player;
         private Animator animator;
         private static readonly int attack = Animator.StringToHash("attack");
@@ -49,8 +48,8 @@ namespace Playground.States
 
             if (message.name == "Move")
             {
-                message.processed = true;
-                player.axis = message.axis;
+                //Allow passthrough so we can make minor movements.
+                return false;
             }
 
             return true; //Stop all states below from processing inputs.
@@ -62,10 +61,5 @@ namespace Playground.States
             animator.SetTrigger(attack);
         }
 
-        public override void End()
-        {
-            player.axis = axis;
-            base.End();
-        }
     }
 }
