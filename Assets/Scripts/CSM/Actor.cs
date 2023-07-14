@@ -378,6 +378,10 @@ namespace CSM
             {
                 heldMessages.Remove(message.name);
             }
+            else if (message.phase == Message.Phase.Held)
+            {
+                heldMessages[message.name] = message;
+            }
 
             foreach (State s in statesStack)
             {
@@ -385,10 +389,6 @@ namespace CSM
                 if (messageBlocked) return message.processed;
             }
 
-            if (message.phase == Message.Phase.Held)
-            {
-                heldMessages[message.name] = message;
-            }
 
             //Process ghost states. Ghost states have no order and cannot block messages.
             GhostState[] ghostStateValues = ghostStates.Values.ToArray();
