@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 namespace Playground.States
 {
     [UsedImplicitly]
-    [StateDescriptor(priority = 4, group = 4)]
+    [StateDescriptor(priority = 2, group = 4)]
     public class MeleeArmed : State
     {
         public override bool Process(Message message)
