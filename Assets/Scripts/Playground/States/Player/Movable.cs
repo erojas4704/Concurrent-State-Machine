@@ -61,12 +61,24 @@ namespace Playground.States.Player
                 accelerationFactor = stats.Acceleration;
             }
 
+            if (planarVelocity.magnitude > 0.2f)
+            {
+                Quaternion headingDirection = Quaternion.LookRotation(planarVelocity);
+                Quaternion currentRotation = actor.transform.rotation;
+                Quaternion newRotation =
+                    Quaternion.Slerp(currentRotation, headingDirection, stats.TurnSpeed * Time.deltaTime);
+                actor.transform.rotation = newRotation;
+            }
+
             //Every update, apply the acceleration * time to speed.
-            float accelerationThisFrame = accelerationFactor * Time.deltaTime;
+            float accelerationThisFrame = accelerationFactor * 0.5f * Time.deltaTime;
             actor.velocity.x = AccelerateWithClamping(accelerationThisFrame, actor.velocity.x, targetVelocity.x);
             actor.velocity.z = AccelerateWithClamping(accelerationThisFrame, actor.velocity.z, targetVelocity.z);
 
             controller.Move(actor.velocity * Time.deltaTime);
+
+            actor.velocity.x = AccelerateWithClamping(accelerationThisFrame, actor.velocity.x, targetVelocity.x);
+            actor.velocity.z = AccelerateWithClamping(accelerationThisFrame, actor.velocity.z, targetVelocity.z);
         }
 
         public override bool Process(Message message)
