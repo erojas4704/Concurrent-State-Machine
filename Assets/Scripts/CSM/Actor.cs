@@ -74,6 +74,11 @@ namespace CSM
 
         private void EnterState(Type stateType, Message initiator)
         {
+            if (!stateType.IsSubclassOf(typeof(State)))
+            {
+                throw new CsmException("Actor {name} tried to enter invalid state {stateType}.");
+            }
+
             //TODO Z-67 pending new StateRelationship. For now we brute force it. This is wildly inefficient. O(N^2)
             foreach (State state in statesStack)
             {
@@ -375,7 +380,7 @@ namespace CSM
         {
             if (statesStack.Count < 1)
             {
-                throw new("This Actor has no states!");
+                Debug.LogWarning($"Actor {name} has no states!");
             }
 
             if (message.phase == Message.Phase.Ended)

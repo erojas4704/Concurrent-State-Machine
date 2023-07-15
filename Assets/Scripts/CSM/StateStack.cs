@@ -26,7 +26,7 @@ namespace CSM
         //TODO Z-67: Add in a clause that checks state groups. We will have a separate list for groupings and methods to extract them easily. 
         public void Add(State newState)
         {
-            if (newState == null) throw new NullReferenceException("Actor trying to enter null state");
+            if (newState == null) throw new CsmException("Actor trying to enter null state");
             if (dictionary.ContainsKey(newState.GetType()))
                 return;
 
