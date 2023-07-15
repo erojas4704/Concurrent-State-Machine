@@ -18737,6 +18737,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 205209593}
+    - target: {fileID: 6224496397821324031, guid: e49477745ebc6a346aa4595c5db05d47, type: 3}
+      propertyPath: defaultState
+      value: Playground.States.Player.Grounded
+      objectReference: {fileID: 0}
     - target: {fileID: 7444740825029566461, guid: e49477745ebc6a346aa4595c5db05d47, type: 3}
       propertyPath: m_Name
       value: HeadingPointer

@@ -2,7 +2,7 @@ using CSM;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace Playground.States
+namespace Playground.States.Common
 {
     [Solo]
     [UsedImplicitly]
