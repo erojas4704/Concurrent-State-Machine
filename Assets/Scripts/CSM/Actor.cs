@@ -491,7 +491,7 @@ namespace CSM
             EnterState(typeof(T), initiator);
         }
 
-        private void EnterState(Type stateType)
+        public void EnterState(Type stateType)
         {
             EnterState(stateType, null);
         }
