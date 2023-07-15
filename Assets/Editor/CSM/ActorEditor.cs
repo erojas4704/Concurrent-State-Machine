@@ -11,27 +11,38 @@ public class ActorEditor : Editor
 {
     private static List<Type> stateTypes;
     private static List<String> stateTypeNames;
-    
+    private static string[] namespaces;
+
     private int selectedIndex;
+    private int selectedNamespaceIndex;
     private SerializedProperty defaultStateProperty;
 
     [InitializeOnLoadMethod]
     private static void InitializeStateTypes()
     {
         stateTypes = GetAllStateTypes();
-        stateTypes = GetAllStateTypes();
-        
+        namespaces = stateTypes.Select(type => type.Namespace)
+            .Distinct()
+            .OrderBy(ns => ns)
+            .ToArray();
+
         stateTypeNames = stateTypes
             .Select(type => type.FullName)
             .ToList();
     }
-    
+
     private void OnEnable()
     {
         defaultStateProperty = serializedObject.FindProperty("defaultState");
-        
+
         string currentStateName = defaultStateProperty.stringValue;
-        selectedIndex = stateTypeNames.IndexOf(currentStateName);
+
+        Type selectedStateType = stateTypes.FirstOrDefault(type => type.FullName == currentStateName);
+        if (selectedStateType != null)
+            selectedNamespaceIndex = Array.IndexOf(namespaces, selectedStateType.Namespace);
+        else
+            selectedNamespaceIndex = -1;
+
 
         if (selectedIndex < 0)
             selectedIndex = 0;
@@ -39,9 +50,23 @@ public class ActorEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        selectedIndex = EditorGUILayout.Popup("Default State", selectedIndex, stateTypeNames.ToArray());
-        defaultStateProperty.stringValue = stateTypeNames[selectedIndex];
+        selectedNamespaceIndex = EditorGUILayout.Popup("Behavior Set", selectedNamespaceIndex, namespaces);
+        Type[] namespaceFilteredStateTypes = stateTypes
+            .Where(type => type.Namespace == namespaces[selectedNamespaceIndex])
+            .ToArray();
+
+        string currentStateName = defaultStateProperty.stringValue;
+        Type selectedStateType = stateTypes.FirstOrDefault(type => type.FullName == currentStateName);
+
+        selectedIndex = Array.IndexOf(namespaceFilteredStateTypes, selectedStateType);
+
+        selectedIndex = EditorGUILayout.Popup("Default State", selectedIndex,
+            namespaceFilteredStateTypes.Select(type => type.Name).ToArray());
+        if (selectedIndex >= 0)
+            defaultStateProperty.stringValue = stateTypeNames[selectedIndex];
+        
         serializedObject.ApplyModifiedProperties();
+
         DrawDefaultInspector();
 
         serializedObject.Update();
