@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 
+//TODO z-57 - - Clean this up
 [CustomEditor(typeof(Actor), true)]
 public class ActorEditor : Editor
 {

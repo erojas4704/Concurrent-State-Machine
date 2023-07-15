@@ -3755,19 +3755,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 940a1a759a434cdb96dee71d8b033ed7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 0
-  acceleration: 0
-  airAcceleration: 0
-  sprintSpeed: 0
-  attackSpeed: 0
-  drag: 0
-  friction: 0
-  ladderClimbSpeed: 0
-  jumpHangTime: 0.55
-  coyoteTime: 0.015
-  jumpForce: 7.5
-  turnSpeed: 10
-  crazyFactor: 1
 --- !u!1 &385152072
 GameObject:
   m_ObjectHideFlags: 0
@@ -17900,6 +17887,237 @@ Transform:
   m_Father: {fileID: 64985405}
   m_RootOrder: 30
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2028911361 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2687149650872564001, guid: e49477745ebc6a346aa4595c5db05d47, type: 3}
+  m_PrefabInstance: {fileID: 8414711814536484228}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2028911369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2028911361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 936292257576eed44aa092bc82a95693, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultState: Playground.States.Player.Grounded
+  velocity: {x: 0, y: 0, z: 0}
+  messageBufferDurationSeconds: 0.05
+  stateArray: []
+  axis: {x: 0, y: 0}
+  actionMap:
+    m_Name: Action Map
+    m_Id: 62e5721d-76b0-40b8-999f-1346c472d1d9
+    m_Asset: {fileID: 0}
+    m_Actions:
+    - m_Name: Jump
+      m_Type: 1
+      m_ExpectedControlType: Button
+      m_Id: 528750ff-9d6b-4bfe-bef3-c74ad439e242
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    - m_Name: Move
+      m_Type: 0
+      m_ExpectedControlType: Vector2
+      m_Id: f09e522b-8f78-4ec5-8891-8c4f3a33fdbb
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 1
+    - m_Name: Attack
+      m_Type: 1
+      m_ExpectedControlType: Button
+      m_Id: 126be07b-ce0a-4da3-aeb3-7f9fa05400be
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    - m_Name: Sprint
+      m_Type: 1
+      m_ExpectedControlType: Button
+      m_Id: fb394054-e745-4ff8-9f1d-609e907da4c6
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Bindings:
+    - m_Name: 
+      m_Id: 78468191-d2e0-4e01-aa80-b85769e3901a
+      m_Path: <Keyboard>/space
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Jump
+      m_Flags: 0
+    - m_Name: 
+      m_Id: e61e6150-5bfd-4ecf-9c9d-6cf72d3823b5
+      m_Path: <Gamepad>/buttonSouth
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Jump
+      m_Flags: 0
+    - m_Name: 
+      m_Id: bb2afc19-209c-40df-b156-3cbb807170a6
+      m_Path: <Gamepad>/rightTrigger
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Gamepad
+      m_Action: Attack
+      m_Flags: 0
+    - m_Name: 
+      m_Id: be839eb7-4902-40aa-8b0d-0da83b9f77d1
+      m_Path: <Mouse>/leftButton
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Attack
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 68c709a2-c5b0-4380-b556-1bd6a0ca2918
+      m_Path: <Touchscreen>/primaryTouch/tap
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Touch
+      m_Action: Attack
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 544da969-a7cb-4cc2-bf84-553d0b510599
+      m_Path: <Joystick>/trigger
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: Joystick
+      m_Action: Attack
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 47766c5e-3972-4ffc-aad9-b51253189ccb
+      m_Path: <XRController>/{PrimaryAction}
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: XR
+      m_Action: Attack
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 838ed29e-80d3-4bd4-bf72-f9ddf1dc12ae
+      m_Path: <Keyboard>/shift
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Sprint
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 2166cd1d-f360-4304-9620-a582987b3c4f
+      m_Path: <Gamepad>/leftShoulder
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Sprint
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 6175f234-280d-43e0-b2d5-e8810adec27e
+      m_Path: <Gamepad>/leftStick
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Gamepad
+      m_Action: Move
+      m_Flags: 0
+    - m_Name: WASD
+      m_Id: ecaef3ba-bd74-4393-8bf2-7c89dd0d9d39
+      m_Path: Dpad
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Move
+      m_Flags: 4
+    - m_Name: up
+      m_Id: 4b953d0a-3dcf-40f0-ae61-a8f7e83de623
+      m_Path: <Keyboard>/w
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: up
+      m_Id: 60303285-27f3-4ec7-a35d-f83e14427c12
+      m_Path: <Keyboard>/upArrow
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: down
+      m_Id: 39bd13b5-5fd8-4904-8925-f1f409ac7523
+      m_Path: <Keyboard>/s
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: down
+      m_Id: 227811e1-6148-482a-8880-5a18635e3b09
+      m_Path: <Keyboard>/downArrow
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: left
+      m_Id: 7d078588-ed42-4190-b949-77d6e258517a
+      m_Path: <Keyboard>/a
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: left
+      m_Id: be1dab0f-0cd2-439a-9dab-9be690dec499
+      m_Path: <Keyboard>/leftArrow
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: right
+      m_Id: edf46420-7a89-41fb-85f3-49457265fb22
+      m_Path: <Keyboard>/d
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: right
+      m_Id: b5e2ef24-88ca-464c-8d2e-54f77cc29353
+      m_Path: <Keyboard>/rightArrow
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: ;Keyboard&Mouse
+      m_Action: Move
+      m_Flags: 8
+    - m_Name: 
+      m_Id: bf397ef5-2292-4804-8467-124ba77f1f0b
+      m_Path: <XRController>/{Primary2DAxis}
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: XR
+      m_Action: Move
+      m_Flags: 0
+    - m_Name: 
+      m_Id: e9564d38-4fd1-4f49-a083-be192916eb7c
+      m_Path: <Joystick>/stick
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: Joystick
+      m_Action: Move
+      m_Flags: 0
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &2037522219
 GameObject:
   m_ObjectHideFlags: 0
@@ -18749,8 +18967,12 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 205209593}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6224496397821324031, guid: e49477745ebc6a346aa4595c5db05d47, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2687149650872564001, guid: e49477745ebc6a346aa4595c5db05d47, type: 3}
+      insertIndex: 5
+      addedObject: {fileID: 2028911369}
   m_SourcePrefab: {fileID: 100100000, guid: e49477745ebc6a346aa4595c5db05d47, type: 3}
