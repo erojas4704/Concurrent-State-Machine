@@ -27,8 +27,7 @@ namespace CSM
 
         private readonly Dictionary<string, Message> heldMessages = new();
 
-        [SerializeField, HideInInspector]
-        private string defaultState;
+        [SerializeField, HideInInspector] private string defaultState;
 
         //TODO <- This may be better off delegated to a persistent stat. 
         public Vector3 velocity;
@@ -44,6 +43,7 @@ namespace CSM
         private void Awake()
         {
             stats = GetComponent<Stats>();
+            EnterDefaultState();
         }
 
         public virtual void Update()
@@ -182,6 +182,7 @@ namespace CSM
                 OnStateChange?.Invoke(this);
                 Message[] messageArray = heldMessages.Values.ToArray();
                 foreach (Message heldMessage in messageArray) PropagateMessage(heldMessage);
+                if (statesStack.Count < 1) EnterDefaultState();
             }
         }
 
@@ -431,6 +432,18 @@ namespace CSM
             }
 
             return dependentStates;
+        }
+
+        private void EnterDefaultState()
+        {
+            if (string.IsNullOrEmpty(defaultState)) return;
+            Type defaultStateType = ActorUtils.FindType(defaultState);
+            if (defaultStateType == null)
+            {
+                throw new CsmException($"Default state for {gameObject.name} is invalid!");
+            }
+
+            EnterState(defaultStateType);
         }
 
         private class StateAndInitiator

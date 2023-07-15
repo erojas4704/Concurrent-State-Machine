@@ -1,6 +1,5 @@
 ﻿using CSM;
 using JetBrains.Annotations;
-using playground;
 using UnityEngine;
 
 namespace Playground.States.Player

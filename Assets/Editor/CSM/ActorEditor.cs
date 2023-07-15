@@ -4,7 +4,6 @@ using CSM;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 [CustomEditor(typeof(Actor), true)]
 public class ActorEditor : Editor
