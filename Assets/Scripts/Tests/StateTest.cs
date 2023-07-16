@@ -127,7 +127,7 @@ namespace Tests
             actor.Update();
             actor.PropagateMessage(new("Jump", Message.Phase.Started));
             actor.PropagateMessage(new("Jump", Message.Phase.Held));
-            
+
             actor.ExitState<Grounded>();
             actor.ExitState<Movable>();
 
@@ -148,13 +148,40 @@ namespace Tests
         public void TestActorShouldEnterPartnerStateWithBackRequirement()
         {
             actor.EnterState<MasterState>();
-            
+
             actor.Update();
             Assert.IsTrue(actor.Is<MasterState>());
             Assert.IsTrue(actor.Is<AssistState>());
         }
-        
-        
+
+        [Test]
+        public void TestSoloStatesShouldKnockoutOtherStatesAddedInSameCycle()
+        {
+            actor.EnterState<SoloState>();
+            actor.EnterState<Grounded>();
+
+            actor.Update();
+            Assert.IsTrue(actor.Is<SoloState>());
+            Assert.IsFalse(actor.Is<Grounded>());
+            Assert.AreEqual(1, actor.GetStates().Count);
+        }
+
+        [Test]
+        public void TestSoloStatesShouldKnockoutOtherStatesAddedInSameCycleOrderAgnostic()
+        {
+            actor.EnterState<Grounded>();
+            actor.EnterState<SoloState>();
+            actor.EnterState<Jump>();
+            
+            actor.Update();
+            Assert.IsTrue(actor.Is<SoloState>());
+            Assert.IsFalse(actor.Is<Grounded>());
+            Assert.IsFalse(actor.Is<Jump>());
+            Assert.IsFalse(actor.Is<Airborne>());
+            Assert.AreEqual(1, actor.GetStates().Count);
+        }
+
+
         private void SetDefaultStateAndInitialize(string defaultStateReference)
         {
             FieldInfo defaultStateField = typeof(Actor).GetField("defaultState",
@@ -170,11 +197,15 @@ namespace Tests
         }
 
         #region test states
-        [Require(typeof(Airborne))]
-        private class AssistState : State {}
-        
+
+        [Solo]
+        private class SoloState : State { }
+
+        [Require(typeof(MasterState))]
+        private class AssistState : State { }
+
         [With(typeof(AssistState))]
-        private class MasterState : State {}
+        private class MasterState : State { }
 
         [StateDescriptor(priority = 0)]
         private class State0 : State { }
