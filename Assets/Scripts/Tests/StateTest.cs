@@ -127,7 +127,7 @@ namespace Tests
             actor.Update();
             actor.PropagateMessage(new("Jump", Message.Phase.Started));
             actor.PropagateMessage(new("Jump", Message.Phase.Held));
-            
+
             actor.ExitState<Grounded>();
             actor.ExitState<Movable>();
 
@@ -142,6 +142,75 @@ namespace Tests
         public void TestActorShouldNotEnterInvalidStates()
         {
             Assert.Throws<CsmException>(() => { actor.EnterState(typeof(void)); });
+        }
+
+        [Test]
+        public void TestActorShouldEnterPartnerStateWithBackRequirement()
+        {
+            actor.EnterState<MasterState>();
+
+            actor.Update();
+            Assert.IsTrue(actor.Is<MasterState>());
+            Assert.IsTrue(actor.Is<AssistState>());
+        }
+
+        [Test]
+        public void TestSoloStatesShouldKnockoutOtherStatesAddedInSameCycle()
+        {
+            actor.EnterState<SoloState>();
+            actor.EnterState<Grounded>();
+
+            actor.Update();
+            Assert.IsTrue(actor.Is<SoloState>());
+            Assert.IsFalse(actor.Is<Grounded>());
+            Assert.AreEqual(1, actor.GetStates().Count);
+        }
+
+        [Test]
+        public void TestSoloStatesShouldKnockoutOtherStatesAddedInSameCycleOrderAgnostic()
+        {
+            actor.EnterState<Grounded>();
+            actor.EnterState<SoloState>();
+            actor.EnterState<Jump>();
+
+            actor.Update();
+            Assert.IsTrue(actor.Is<SoloState>());
+            Assert.IsFalse(actor.Is<Grounded>());
+            Assert.IsFalse(actor.Is<Jump>());
+            Assert.IsFalse(actor.Is<Airborne>());
+            Assert.AreEqual(1, actor.GetStates().Count);
+        }
+
+        [Test]
+        public void TestSoloStatesShouldKnockoutOldStates()
+        {
+            actor.EnterState<Grounded>();
+            actor.EnterState<State1>();
+            actor.Update();
+
+            actor.EnterState<SoloState>();
+            actor.Update();
+
+            Assert.IsTrue(actor.Is<SoloState>());
+            Assert.IsFalse(actor.Is<Grounded>());
+            Assert.IsFalse(actor.Is<State1>());
+            Assert.AreEqual(1, actor.GetStates().Count);
+        }
+
+        [Test]
+        public void TestIncomingStatesShouldBeBlockedBySoloStates()
+        {
+            actor.EnterState<SoloState>();
+
+            actor.Update();
+            actor.EnterState<Grounded>();
+            actor.EnterState<State1>();
+            
+            actor.Update();
+            Assert.IsTrue(actor.Is<SoloState>());
+            Assert.IsFalse(actor.Is<Grounded>());
+            Assert.IsFalse(actor.Is<State1>());
+            Assert.AreEqual(1, actor.GetStates().Count);
         }
 
         private void SetDefaultStateAndInitialize(string defaultStateReference)
@@ -159,6 +228,15 @@ namespace Tests
         }
 
         #region test states
+
+        [Solo]
+        private class SoloState : State { }
+
+        [Require(typeof(MasterState))]
+        private class AssistState : State { }
+
+        [With(typeof(AssistState))]
+        private class MasterState : State { }
 
         [StateDescriptor(priority = 0)]
         private class State0 : State { }

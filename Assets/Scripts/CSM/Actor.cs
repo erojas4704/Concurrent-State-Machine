@@ -133,17 +133,21 @@ namespace CSM
 
             while (slatedForCreation.Count > 0)
             {
+                if (HasSoloState())
+                {
+                    slatedForCreation.Clear();
+                    break;
+                }
                 StateAndInitiator si = slatedForCreation.Dequeue();
                 if (statesStack.Contains(si.state)) continue;
 
-                List<State> statesToCreate = new(),
-                    statesToDestroy = new();
+                List<State> statesToCreate = new() { si.state };
+                List<State> statesToDestroy = new();
 
                 HashSet<Type> stateTypesProcessed = new();
 
                 if (ResolveStateDependencies(si.state, ref statesToCreate, ref statesToDestroy,
-                        ref stateTypesProcessed) &&
-                    CreateState(si) != null)
+                        ref stateTypesProcessed))
                 {
                     if (statesToCreate.Intersect(statesToDestroy).Any())
                     {
@@ -152,6 +156,17 @@ namespace CSM
                             si.state.GetType());
                     }
 
+                    if (si.state.solo)
+                    {
+                        //Destroy absolutely everything else and terminate the loop
+                        foreach (State negatedBySolo in statesStack.Values)
+                        {
+                            slatedForDeletion.Enqueue(negatedBySolo);
+                        }
+                        
+                        slatedForCreation.Clear();
+                    }
+                    
                     changed = true;
                     foreach (State stateToCreate in statesToCreate)
                     {
@@ -189,6 +204,8 @@ namespace CSM
                 if (statesStack.Count < 1) EnterDefaultState();
             }
         }
+
+        private bool HasSoloState() => statesStack.Values.Any(state => state.solo);
 
         private State CreateState(State newState) => CreateState(new StateAndInitiator(newState, null));
 
@@ -229,11 +246,6 @@ namespace CSM
 
             stateTypesProcessed.Add(newState.GetType());
 
-            if (newState.solo)
-            {
-                statesToDestroy.AddRange(statesStack.Values);
-                return true;
-            }
 
             //Check incoming states to see if any of our dependencies are there.
             //TODO Z-62 clean this unholy godawful method up
@@ -336,7 +348,7 @@ namespace CSM
         {
             foreach (Type requiredState in state.requiredStates)
             {
-                bool requirementExists = false;
+                bool requirementExists;
                 requirementExists = statesStack.Contains(requiredState);
 
                 //TODO Z-67... you already know
@@ -410,7 +422,7 @@ namespace CSM
                     ghostStates.Remove(ghostState.GetType());
                     continue;
                 }
-                
+
                 if (Time.time < ghostState.expiresAt)
                 {
                     ghostState.Process(message);

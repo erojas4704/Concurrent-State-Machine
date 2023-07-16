@@ -325,8 +325,8 @@ namespace Tests
             actor.EnterState<State21>();
 
             actor.Update();
-            Assert.IsFalse(actor.Is<State8>());
-            Assert.IsTrue(actor.Is<State21>());
+            Assert.IsFalse(actor.Is<State21>());
+            Assert.IsTrue(actor.Is<State8>());
             Assert.AreEqual(actor.GetStates().Count, 1);
         }
 
@@ -462,7 +462,7 @@ namespace Tests
         }
         
         [Test]
-        public void GhostStateShouldProcessJump()
+        public void TestGhostStateShouldProcessJump()
         {            
             Message message1 = new("Jump", Message.Phase.Started);
             actor.EnterState<Grounded>();
