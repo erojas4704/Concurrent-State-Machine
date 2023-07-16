@@ -138,6 +138,7 @@ namespace CSM
                     slatedForCreation.Clear();
                     break;
                 }
+
                 StateAndInitiator si = slatedForCreation.Dequeue();
                 if (statesStack.Contains(si.state)) continue;
 
@@ -163,14 +164,14 @@ namespace CSM
                         {
                             slatedForDeletion.Enqueue(negatedBySolo);
                         }
-                        
+
                         slatedForCreation.Clear();
                     }
-                    
+
                     changed = true;
                     foreach (State stateToCreate in statesToCreate)
                     {
-                        CreateState(stateToCreate);
+                        CreateState(stateToCreate, si.initiator);
                     }
 
                     foreach (State stateToDestroy in statesToDestroy)
@@ -207,14 +208,12 @@ namespace CSM
 
         private bool HasSoloState() => statesStack.Values.Any(state => state.solo);
 
-        private State CreateState(State newState) => CreateState(new StateAndInitiator(newState, null));
 
-        private State CreateState(StateAndInitiator si)
+        private State CreateState(State newState, Message initiator = null)
         {
-            State newState = si.state;
             statesStack.Add(newState);
             StateSetup(newState);
-            newState.Init(si.initiator);
+            newState.Init(initiator);
             newState.startTime = Time.time;
             newState.expiresAt = 0;
             //TODO Z-67: Nasty way of handling. Also potential InvalidOperationException. Break this down into a method
@@ -344,12 +343,14 @@ namespace CSM
 
 
         // ReSharper disable Unity.PerformanceAnalysis
-        private bool ActorHasRequiredStatesFor(State state, List<State> statesCreatedThisFrame, HashSet<Type> statesProcessedRecursively) //statesProcessedRecursively added as a HACK
+        private bool ActorHasRequiredStatesFor(State state, List<State> statesCreatedThisFrame,
+            HashSet<Type> statesProcessedRecursively) //statesProcessedRecursively added as a HACK
         {
             foreach (Type requiredState in state.requiredStates)
             {
                 bool requirementExists;
-                requirementExists = statesStack.Contains(requiredState) || statesProcessedRecursively.Contains(requiredState);
+                requirementExists = statesStack.Contains(requiredState) ||
+                                    statesProcessedRecursively.Contains(requiredState);
 
                 //TODO Z-67... you already know
                 foreach (State incomingState in statesCreatedThisFrame)
@@ -474,7 +475,7 @@ namespace CSM
             public readonly State state;
             public readonly Message initiator;
 
-            public StateAndInitiator(State state, Message initiator)
+            public StateAndInitiator(State state, Message initiator = null)
             {
                 this.state = state;
                 this.initiator = initiator;
@@ -506,6 +507,8 @@ namespace CSM
         #endregion
 
         #region EnterState overloads
+
+        public void EnterState<T>(object initiator) where T : State => EnterState<T>(new("", initiator));
 
         public void EnterState<T>() where T : State => EnterState(typeof(T));
 
