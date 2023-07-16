@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Reflection;
 using CSM;
 using NUnit.Framework;
 using UnityEngine;
@@ -91,7 +92,74 @@ namespace Tests
             Assert.IsTrue(actor.Is<Airborne>());
             Assert.AreEqual(actor.GetStates().Count, 4);
         }
-        
+
+        [Test]
+        public void TestActorDefaultState()
+        {
+            SetDefaultStateAndInitialize("Tests.DefaultState");
+            actor.Update();
+            Assert.IsTrue(actor.Is<DefaultState>());
+        }
+
+        [Test]
+        public void TestActorShouldEnterDefaultStateIfStateless()
+        {
+            SetDefaultStateAndInitialize("Tests.DefaultState");
+            actor.EnterState<Grounded>(); //<- Grounded knocks out DefaultState
+
+            actor.Update();
+            actor.ExitState<Grounded>();
+            actor.ExitState<Movable>();
+
+            actor.Update(); // Clears 2 previous states
+            actor.Update(); // Enters Default State
+            Assert.AreEqual(1, actor.GetStates().Count);
+            Assert.IsFalse(actor.Is<Grounded>());
+            Assert.IsTrue(actor.Is<DefaultState>());
+        }
+
+        [Test]
+        public void TestActorShouldEnterDefaultStateWithHeldMessages()
+        {
+            SetDefaultStateAndInitialize("Tests.DefaultState");
+            actor.EnterState<Grounded>(); //<- Grounded knocks out DefaultState
+
+            actor.Update();
+            actor.PropagateMessage(new("Jump", Message.Phase.Started));
+            actor.PropagateMessage(new("Jump", Message.Phase.Held));
+            
+            actor.ExitState<Grounded>();
+            actor.ExitState<Movable>();
+
+            actor.Update();
+            actor.Update();
+            Assert.AreEqual(1, actor.GetStates().Count);
+            Assert.IsFalse(actor.Is<Grounded>());
+            Assert.IsTrue(actor.Is<DefaultState>());
+        }
+
+        [Test]
+        public void TestActorShouldNotEnterInvalidStates()
+        {
+            Assert.Throws<CsmException>(() => { actor.EnterState(typeof(void)); });
+        }
+
+        private void SetDefaultStateAndInitialize(string defaultStateReference)
+        {
+            FieldInfo defaultStateField = typeof(Actor).GetField("defaultState",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+            MethodInfo awakeMethod = typeof(Actor).GetMethod("Awake",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+
+            Assert.NotNull(defaultStateField);
+            Assert.NotNull(awakeMethod);
+
+            defaultStateField.SetValue(actor, defaultStateReference);
+            awakeMethod.Invoke(actor, null);
+        }
+
+        #region test states
+
         [StateDescriptor(priority = 0)]
         private class State0 : State { }
 
@@ -128,5 +196,10 @@ namespace Tests
         [StateDescriptor(priority = 7)]
         private class DoubleJump : State { }
 
+        #endregion
     }
+
+    // ReSharper disable once MemberCanBePrivate.Global
+    [StateDescriptor(group = 1)]
+    public class DefaultState : State { }
 }

@@ -6,7 +6,7 @@ using Debug = System.Diagnostics.Debug;
 namespace Playground.States.Player
 {
     [StateDescriptor(priority = 1)]
-    public abstract class Movable : State<PlayerStats>
+    public abstract class Movable : State<Playground.PlayerStats>
     {
         private PlayerActor player;
         protected CharacterController controller;

@@ -509,7 +509,7 @@ GameObject:
   - component: {fileID: 7071634718206260575}
   - component: {fileID: 121439006011819620}
   - component: {fileID: 5100034031159509107}
-  - component: {fileID: 6224496397821324031}
+  - component: {fileID: 149817911921091500}
   - component: {fileID: 7208198322255408189}
   - component: {fileID: 1414545694791708644}
   m_Layer: 0
@@ -635,7 +635,7 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6224496397821324031
+--- !u!114 &149817911921091500
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -644,11 +644,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 2687149650872564001}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4680c6208564be3b69c45af1a1d311a, type: 3}
+  m_Script: {fileID: 11500000, guid: 936292257576eed44aa092bc82a95693, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultState: Playground.States.Player.Grounded
   velocity: {x: 0, y: 0, z: 0}
-  actionTimer: 0.015
+  messageBufferDurationSeconds: 0.15
   stateArray: []
   axis: {x: 0, y: 0}
   actionMap:
@@ -970,9 +971,8 @@ GameObject:
   - component: {fileID: 2777291361836796764}
   - component: {fileID: 7241650895526187110}
   - component: {fileID: 7935154070907712481}
-  - component: {fileID: 5372220185031288220}
   m_Layer: 0
-  m_Name: e
+  m_Name: HeadingPointer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -986,8 +986,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7444740825029566461}
   m_LocalRotation: {x: 0.70710546, y: -0.0012745932, z: 0.0012745971, w: 0.7071059}
-  m_LocalPosition: {x: -0.169, y: 0.248, z: 0.792}
-  m_LocalScale: {x: 0.24870001, y: 0.24870001, z: 0.2487}
+  m_LocalPosition: {x: -0.13, y: 0, z: 0.91}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4726562847208576462}
@@ -1449,7 +1449,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 12
+  m_VersionIndex: 18
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1503,28 +1503,6 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7444740825029566461}
-  m_Mesh: {fileID: 0}
---- !u!64 &5372220185031288220
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7444740825029566461}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
   m_Mesh: {fileID: 0}
 --- !u!1 &8095598067003543860
 GameObject:

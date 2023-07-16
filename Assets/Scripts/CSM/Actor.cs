@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace CSM
 {
@@ -27,6 +26,8 @@ namespace CSM
 
         private readonly Dictionary<string, Message> heldMessages = new();
 
+        [SerializeField, HideInInspector] private string defaultState;
+
         //TODO <- This may be better off delegated to a persistent stat. 
         public Vector3 velocity;
         private Stats stats;
@@ -41,6 +42,7 @@ namespace CSM
         private void Awake()
         {
             stats = GetComponent<Stats>();
+            EnterDefaultState();
         }
 
         public virtual void Update()
@@ -71,6 +73,11 @@ namespace CSM
 
         private void EnterState(Type stateType, Message initiator)
         {
+            if (!stateType.IsSubclassOf(typeof(State)))
+            {
+                throw new CsmException("Actor {name} tried to enter invalid state {stateType}.");
+            }
+
             //TODO Z-67 pending new StateRelationship. For now we brute force it. This is wildly inefficient. O(N^2)
             foreach (State state in statesStack)
             {
@@ -179,6 +186,7 @@ namespace CSM
                 OnStateChange?.Invoke(this);
                 Message[] messageArray = heldMessages.Values.ToArray();
                 foreach (Message heldMessage in messageArray) PropagateMessage(heldMessage);
+                if (statesStack.Count < 1) EnterDefaultState();
             }
         }
 
@@ -371,7 +379,7 @@ namespace CSM
         {
             if (statesStack.Count < 1)
             {
-                throw new("This Actor has no states!");
+                Debug.LogWarning($"Actor {name} has no states!");
             }
 
             if (message.phase == Message.Phase.Ended)
@@ -391,11 +399,18 @@ namespace CSM
 
 
             //Process ghost states. Ghost states have no order and cannot block messages.
+            //TODO Z-67...
             GhostState[] ghostStateValues = ghostStates.Values.ToArray();
             foreach (GhostState ghost in ghostStateValues)
             {
                 if (ghost.messagesToListenFor.Count > 0 && !ghost.messagesToListenFor.Contains(message.name)) continue;
                 State ghostState = ghost.state;
+                if (statesStack.Contains(ghost.state.GetType()))
+                {
+                    ghostStates.Remove(ghostState.GetType());
+                    continue;
+                }
+                
                 if (Time.time < ghostState.expiresAt)
                 {
                     ghostState.Process(message);
@@ -428,6 +443,18 @@ namespace CSM
             }
 
             return dependentStates;
+        }
+
+        private void EnterDefaultState()
+        {
+            if (string.IsNullOrEmpty(defaultState)) return;
+            Type defaultStateType = ActorUtils.FindType(defaultState);
+            if (defaultStateType == null)
+            {
+                throw new CsmException($"Default state for {gameObject.name} is invalid!");
+            }
+
+            EnterState(defaultStateType);
         }
 
         private class StateAndInitiator
@@ -475,7 +502,7 @@ namespace CSM
             EnterState(typeof(T), initiator);
         }
 
-        private void EnterState(Type stateType)
+        public void EnterState(Type stateType)
         {
             EnterState(stateType, null);
         }

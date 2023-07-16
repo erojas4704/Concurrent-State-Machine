@@ -1,13 +1,12 @@
 ﻿using CSM;
 using JetBrains.Annotations;
-using Playground.States.Player;
 using UnityEngine;
 
-namespace playground
+namespace Playground.States.Player
 {
     [UsedImplicitly]
     [StateDescriptor(group = 0, priority = 99)]
-    public class Climb : State<PlayerStats>
+    public class Climb : State<Playground.PlayerStats>
     {
         private const float TOLERANCE = 0.98f;
         private float climbSpeed = 5f;

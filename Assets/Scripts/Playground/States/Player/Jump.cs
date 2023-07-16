@@ -1,13 +1,12 @@
 using CSM;
 using JetBrains.Annotations;
-using Playground.States.Player;
 
-namespace playground
+namespace Playground.States.Player
 {
     [UsedImplicitly]
     [StateDescriptor(priority = 2, group = 2)]
     [With(typeof(Airborne))]
-    public class Jump : State<PlayerStats>
+    public class Jump : State<Playground.PlayerStats>
     {
         private bool isHeld;
 

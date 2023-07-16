@@ -2,7 +2,7 @@ using System;
 using CSM;
 using UnityEngine;
 
-namespace Playground.States.Player
+namespace Playground
 {
     [Serializable]
     public partial class PlayerStats : Stats
