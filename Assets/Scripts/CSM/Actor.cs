@@ -133,6 +133,11 @@ namespace CSM
 
             while (slatedForCreation.Count > 0)
             {
+                if (HasSoloState())
+                {
+                    slatedForCreation.Clear();
+                    break;
+                }
                 StateAndInitiator si = slatedForCreation.Dequeue();
                 if (statesStack.Contains(si.state)) continue;
 
@@ -151,6 +156,17 @@ namespace CSM
                             si.state.GetType());
                     }
 
+                    if (si.state.solo)
+                    {
+                        //Destroy absolutely everything else and terminate the loop
+                        foreach (State negatedBySolo in statesStack.Values)
+                        {
+                            slatedForDeletion.Enqueue(negatedBySolo);
+                        }
+                        
+                        slatedForCreation.Clear();
+                    }
+                    
                     changed = true;
                     foreach (State stateToCreate in statesToCreate)
                     {
@@ -188,6 +204,8 @@ namespace CSM
                 if (statesStack.Count < 1) EnterDefaultState();
             }
         }
+
+        private bool HasSoloState() => statesStack.Values.Any(state => state.solo);
 
         private State CreateState(State newState) => CreateState(new StateAndInitiator(newState, null));
 
@@ -228,12 +246,6 @@ namespace CSM
 
             stateTypesProcessed.Add(newState.GetType());
 
-            if (newState.solo)
-            {
-                statesToCreate = new() { newState };
-                statesToDestroy.AddRange(statesStack.Values);
-                return true;
-            }
 
             //Check incoming states to see if any of our dependencies are there.
             //TODO Z-62 clean this unholy godawful method up
