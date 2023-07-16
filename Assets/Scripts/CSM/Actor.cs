@@ -138,20 +138,18 @@ namespace CSM
                     slatedForCreation.Clear();
                     break;
                 }
-
                 StateAndInitiator si = slatedForCreation.Dequeue();
                 if (statesStack.Contains(si.state)) continue;
 
-                List<StateAndInitiator> statesToCreate = new() { new(si.state) };
+                List<State> statesToCreate = new() { si.state };
                 List<State> statesToDestroy = new();
 
                 HashSet<Type> stateTypesProcessed = new();
 
-                if (ResolveStateDependencies(si, ref statesToCreate, ref statesToDestroy,
+                if (ResolveStateDependencies(si.state, ref statesToCreate, ref statesToDestroy,
                         ref stateTypesProcessed))
                 {
-                    if (statesToCreate.Select(stateAndInitiator => stateAndInitiator.state).Intersect(statesToDestroy)
-                        .Any())
+                    if (statesToCreate.Intersect(statesToDestroy).Any())
                     {
                         throw new CsmException(
                             "Invalid state configuration. Unsolvable dependency chain! Dependent states are being negated by their dependencies!",
@@ -165,12 +163,12 @@ namespace CSM
                         {
                             slatedForDeletion.Enqueue(negatedBySolo);
                         }
-
+                        
                         slatedForCreation.Clear();
                     }
-
+                    
                     changed = true;
-                    foreach (StateAndInitiator stateToCreate in statesToCreate)
+                    foreach (State stateToCreate in statesToCreate)
                     {
                         CreateState(stateToCreate);
                     }
@@ -224,17 +222,9 @@ namespace CSM
             return newState;
         }
 
-        private bool ResolveStateDependencies(State newState, ref List<StateAndInitiator> statesToCreate,
-            ref List<State> statesToDestroy, ref HashSet<Type> stateTypesProcessed) => ResolveStateDependencies(
-            new StateAndInitiator(newState, null), ref statesToCreate,
-            ref statesToDestroy, ref stateTypesProcessed);
-        //TODO .... Z-67... Why would you write this?
-
-        private bool ResolveStateDependencies(StateAndInitiator targetStateInitiator,
-            ref List<StateAndInitiator> statesToCreate,
+        private bool ResolveStateDependencies(State newState, ref List<State> statesToCreate,
             ref List<State> statesToDestroy, ref HashSet<Type> stateTypesProcessed)
         {
-            State newState = targetStateInitiator.state;
             //TODO Z-67 This method is spaghetti 
             //Avoids circular dependencies.
             if (stateTypesProcessed.Contains(newState.GetType()))
@@ -269,7 +259,7 @@ namespace CSM
                         if (ResolveStateDependencies(requiredState, ref statesToCreate,
                                 ref statesToDestroy, ref stateTypesProcessed))
                         {
-                            statesToCreate.Add(new StateAndInitiator(requiredState));
+                            statesToCreate.Add(requiredState);
                         }
                         else
                         {
@@ -295,7 +285,7 @@ namespace CSM
                 if (ResolveStateDependencies(newPartnerState, ref statesToCreate, ref statesToDestroy,
                         ref stateTypesProcessed))
                 {
-                    statesToCreate.Add(new(newPartnerState));
+                    statesToCreate.Add(newPartnerState);
                 }
                 else
                 {
@@ -354,17 +344,15 @@ namespace CSM
 
 
         // ReSharper disable Unity.PerformanceAnalysis
-        private bool ActorHasRequiredStatesFor(State state, List<StateAndInitiator> statesCreatedThisFrame,
-            HashSet<Type> statesProcessedRecursively) //statesProcessedRecursively added as a HACK
+        private bool ActorHasRequiredStatesFor(State state, List<State> statesCreatedThisFrame, HashSet<Type> statesProcessedRecursively) //statesProcessedRecursively added as a HACK
         {
             foreach (Type requiredState in state.requiredStates)
             {
                 bool requirementExists;
-                requirementExists = statesStack.Contains(requiredState) ||
-                                    statesProcessedRecursively.Contains(requiredState);
+                requirementExists = statesStack.Contains(requiredState) || statesProcessedRecursively.Contains(requiredState);
 
                 //TODO Z-67... you already know
-                foreach (State incomingState in statesCreatedThisFrame.Select(si => si.state))
+                foreach (State incomingState in statesCreatedThisFrame)
                     if (incomingState.GetType() == requiredState)
                     {
                         requirementExists = true;
@@ -486,22 +474,10 @@ namespace CSM
             public readonly State state;
             public readonly Message initiator;
 
-            public StateAndInitiator(State state, Message initiator = null)
+            public StateAndInitiator(State state, Message initiator)
             {
                 this.state = state;
                 this.initiator = initiator;
-            }
-
-            public override bool Equals(object obj) => state == ((StateAndInitiator)obj)?.state;
-
-            protected bool Equals(StateAndInitiator other)
-            {
-                return Equals(state, other.state) && Equals(initiator, other.initiator);
-            }
-
-            public override int GetHashCode()
-            {
-                return state.GetHashCode();
             }
         }
 
@@ -532,8 +508,6 @@ namespace CSM
         #region EnterState overloads
 
         public void EnterState<T>() where T : State => EnterState(typeof(T));
-
-        public void EnterState<T>(object initiator) where T : State => EnterState<T>(new("", initiator));
 
         public void EnterState<T>(Message initiator) where T : State
         {
