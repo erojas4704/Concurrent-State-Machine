@@ -155,6 +155,23 @@ namespace Tests
         }
 
         [Test]
+        public void TestActorShouldEnterPartnerStateWithBackRequirementWithMessage()
+        {
+            actor.EnterState<PreliminaryState>();
+            
+            actor.Update();
+            actor.PropagateMessage(new("Next", Message.Phase.Started));
+            
+            actor.Update();
+            actor.Update();
+            Assert.IsTrue(actor.Is<MasterState>());
+            Assert.IsTrue(actor.Is<AssistState>());
+            Assert.IsTrue(actor.Is<PartnerState>());
+            Assert.IsFalse(actor.Is<PreliminaryState>());
+            Assert.AreEqual(3, actor.GetStates().Count);
+        }
+
+        [Test]
         public void TestSoloStatesShouldKnockoutOtherStatesAddedInSameCycle()
         {
             actor.EnterState<SoloState>();
@@ -205,7 +222,7 @@ namespace Tests
             actor.Update();
             actor.EnterState<Grounded>();
             actor.EnterState<State1>();
-            
+
             actor.Update();
             Assert.IsTrue(actor.Is<SoloState>());
             Assert.IsFalse(actor.Is<Grounded>());
@@ -232,6 +249,27 @@ namespace Tests
         [Solo]
         private class SoloState : State { }
 
+        [StateDescriptor(group = 5)]
+        private class PreliminaryState : State
+        {
+            public override bool Process(Message message)
+            {
+                if (message.phase is Message.Phase.Held or Message.Phase.Started)
+                {
+                    if (message.name == "Next")
+                    {
+                        actor.EnterState<PartnerState>();
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        [With(typeof(MasterState))]
+        private class PartnerState : State { }
+
+        [StateDescriptor(group = 5)]
         [Require(typeof(MasterState))]
         private class AssistState : State { }
 

@@ -269,7 +269,7 @@ namespace CSM
                 }
             }
 
-            if (!ActorHasRequiredStatesFor(newState, statesToCreate))
+            if (!ActorHasRequiredStatesFor(newState, statesToCreate, stateTypesProcessed))
             {
                 return false;
             }
@@ -344,12 +344,12 @@ namespace CSM
 
 
         // ReSharper disable Unity.PerformanceAnalysis
-        private bool ActorHasRequiredStatesFor(State state, List<State> statesCreatedThisFrame)
+        private bool ActorHasRequiredStatesFor(State state, List<State> statesCreatedThisFrame, HashSet<Type> statesProcessedRecursively) //statesProcessedRecursively added as a HACK
         {
             foreach (Type requiredState in state.requiredStates)
             {
                 bool requirementExists;
-                requirementExists = statesStack.Contains(requiredState);
+                requirementExists = statesStack.Contains(requiredState) || statesProcessedRecursively.Contains(requiredState);
 
                 //TODO Z-67... you already know
                 foreach (State incomingState in statesCreatedThisFrame)
