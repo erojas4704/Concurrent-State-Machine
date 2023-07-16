@@ -462,7 +462,7 @@ namespace Tests
         }
         
         [Test]
-        public void GhostStateShouldProcessJump()
+        public void TestGhostStateShouldProcessJump()
         {            
             Message message1 = new("Jump", Message.Phase.Started);
             actor.EnterState<Grounded>();
