@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace CSM
 {
@@ -400,11 +399,18 @@ namespace CSM
 
 
             //Process ghost states. Ghost states have no order and cannot block messages.
+            //TODO Z-67...
             GhostState[] ghostStateValues = ghostStates.Values.ToArray();
             foreach (GhostState ghost in ghostStateValues)
             {
                 if (ghost.messagesToListenFor.Count > 0 && !ghost.messagesToListenFor.Contains(message.name)) continue;
                 State ghostState = ghost.state;
+                if (statesStack.Contains(ghost.state.GetType()))
+                {
+                    ghostStates.Remove(ghostState.GetType());
+                    continue;
+                }
+                
                 if (Time.time < ghostState.expiresAt)
                 {
                     ghostState.Process(message);
