@@ -1,16 +1,19 @@
 using System;
+using System.Collections;
 using UnityEditor;
 using CSM;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+using Debug = System.Diagnostics.Debug;
 
 //TODO z-57 - - Clean this up
 [CustomEditor(typeof(Actor), true)]
 public class ActorEditor : Editor
 {
     private static List<Type> stateTypes;
-    private static List<String> stateTypeNames;
+    private static List<string> stateTypeNames;
     private static string[] namespaces;
 
     private int selectedIndex;
@@ -34,7 +37,121 @@ public class ActorEditor : Editor
     private void OnEnable()
     {
         defaultStateProperty = serializedObject.FindProperty("defaultState");
+        UpdateSelectedIndices();
+    }
 
+    public override void OnInspectorGUI()
+    {
+        serializedObject.Update();
+        DrawDefaultInspector();
+        DrawDefaultStateSelector();
+        DrawStates();
+        DrawMessages();
+        DrawGhostStates();
+        serializedObject.ApplyModifiedProperties();
+    }
+
+    private void DrawGhostStates()
+    {
+        Type ghostStateType = typeof(Actor).GetNestedType("GhostState", BindingFlags.NonPublic);
+        FieldInfo ghostStateField = typeof(Actor).GetField("ghostStates",
+            BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+        IDictionary dictionary = (IDictionary)ghostStateField!.GetValue(target);
+        ICollection ghostStates = dictionary.Values;
+
+        if (ghostStates.Count < 1)
+            return;
+
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Ghost States", EditorStyles.boldLabel);
+        foreach (object o in ghostStates)
+        {
+            FieldInfo stateField = ghostStateType.GetField("state", BindingFlags.Public | BindingFlags.Instance);
+            FieldInfo messagesField =
+                ghostStateType.GetField("messagesToListenFor", BindingFlags.Public | BindingFlags.Instance);
+
+            State state = stateField!.GetValue(o) as State;
+            HashSet<string> messages = messagesField!.GetValue(o) as HashSet<string>;
+            DrawGhostState(state, messages);
+        }
+    }
+
+    private void DrawGhostState(State state, HashSet<string> messages)
+    {
+        EditorGUILayout.LabelField(
+            $@"<{state!.GetType().Name}> ::: Time: {state.expiresAt - Time.time} Listening for: {messages.Aggregate("", (current, next) => current + next + " ")}");
+    }
+
+    private void DrawDefaultStateSelector()
+    {
+        selectedNamespaceIndex = EditorGUILayout.Popup("Behavior Set", selectedNamespaceIndex, namespaces);
+        Type[] namespaceFilteredStateTypes = GetStateTypesInNamespace(selectedNamespaceIndex);
+
+        string currentStateName = defaultStateProperty.stringValue;
+        Type selectedStateType = stateTypes.FirstOrDefault(type => type.FullName == currentStateName);
+
+        selectedIndex = Array.IndexOf(namespaceFilteredStateTypes, selectedStateType);
+        selectedIndex = EditorGUILayout.Popup("Default State", selectedIndex,
+            namespaceFilteredStateTypes.Select(type => type.Name).ToArray());
+        if (selectedIndex >= 0)
+            defaultStateProperty.stringValue = stateTypeNames[selectedIndex];
+    }
+
+    private void DrawStates()
+    {
+        StateStack states = ((Actor)target).GetStates();
+        EditorGUILayout.LabelField("State Stack", EditorStyles.boldLabel);
+        
+        foreach (State state in states)
+        {
+            EditorGUILayout.LabelField(
+                $"[State ({state.Group}): {state}] Priority: {state.Priority} Active: {state.Timer}");
+        }
+    }
+
+    private void DrawMessages()
+    {
+        FieldInfo messageBufferField = typeof(Actor).GetField("messageBuffer",
+            BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+        FieldInfo heldMessagesField = typeof(Actor).GetField("heldMessages",
+            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+
+        Queue<Message> messageBuffer = messageBufferField!.GetValue(target) as Queue<Message>;
+        Dictionary<string, Message> heldMessages = heldMessagesField!.GetValue(target) as Dictionary<string, Message>;
+
+        Debug.Assert(messageBuffer != null, nameof(messageBuffer) + " != null");
+        if (messageBuffer.Count > 0)
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Buffered Messages", EditorStyles.boldLabel);
+            
+            foreach (Message message in messageBuffer)
+            {
+                EditorGUILayout.LabelField($"[Message: {message}]");
+            }
+        }
+
+        if (heldMessages != null)
+        {
+            EditorGUILayout.Space();
+            foreach (KeyValuePair<string, Message> keyValuePair in heldMessages)
+            {
+                EditorGUILayout.LabelField($"[{keyValuePair.Key}] {keyValuePair.Value}");
+            }
+        }
+    }
+
+    private Type[] GetStateTypesInNamespace(int namespaceIndex)
+    {
+        return stateTypes
+            .Where(type => type.Namespace == namespaces[namespaceIndex])
+            .ToArray();
+    }
+
+    private void UpdateSelectedIndices()
+    {
         string currentStateName = defaultStateProperty.stringValue;
 
         Type selectedStateType = stateTypes.FirstOrDefault(type => type.FullName == currentStateName);
@@ -46,59 +163,6 @@ public class ActorEditor : Editor
 
         if (selectedIndex < 0)
             selectedIndex = 0;
-    }
-
-    public override void OnInspectorGUI()
-    {
-        selectedNamespaceIndex = EditorGUILayout.Popup("Behavior Set", selectedNamespaceIndex, namespaces);
-        Type[] namespaceFilteredStateTypes = stateTypes
-            .Where(type => type.Namespace == namespaces[selectedNamespaceIndex])
-            .ToArray();
-
-        string currentStateName = defaultStateProperty.stringValue;
-        Type selectedStateType = stateTypes.FirstOrDefault(type => type.FullName == currentStateName);
-
-        selectedIndex = Array.IndexOf(namespaceFilteredStateTypes, selectedStateType);
-
-        selectedIndex = EditorGUILayout.Popup("Default State", selectedIndex,
-            namespaceFilteredStateTypes.Select(type => type.Name).ToArray());
-        if (selectedIndex >= 0)
-            defaultStateProperty.stringValue = stateTypeNames[selectedIndex];
-        
-        serializedObject.ApplyModifiedProperties();
-
-        DrawDefaultInspector();
-
-        serializedObject.Update();
-
-        StateStack states = ((Actor)target).GetStates();
-        FieldInfo fi = typeof(Actor).GetField("messageBuffer",
-            BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-
-        FieldInfo fiHeldMessages = typeof(Actor).GetField("heldMessages",
-            BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
-
-        Queue<Message> messageBuffer = fi.GetValue(target) as Queue<Message>;
-        Dictionary<string, Message> heldMessages = fiHeldMessages.GetValue(target) as Dictionary<string, Message>;
-
-
-        foreach (State state in states)
-        {
-            EditorGUILayout.LabelField(
-                $"[State ({state.Group}): {state}] Priority: {state.Priority} Active: {state.Timer}");
-        }
-
-        foreach (Message message in messageBuffer)
-        {
-            EditorGUILayout.LabelField($"[Message: {message}]");
-        }
-
-        EditorGUILayout.Space();
-        if (heldMessages != null)
-            foreach (KeyValuePair<string, Message> keyValuePair in heldMessages)
-            {
-                EditorGUILayout.LabelField($"[{keyValuePair.Key}] {keyValuePair.Value}");
-            }
     }
 
     private static List<Type> GetAllStateTypes()
