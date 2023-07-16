@@ -172,7 +172,7 @@ namespace Tests
             actor.EnterState<Grounded>();
             actor.EnterState<SoloState>();
             actor.EnterState<Jump>();
-            
+
             actor.Update();
             Assert.IsTrue(actor.Is<SoloState>());
             Assert.IsFalse(actor.Is<Grounded>());
@@ -181,6 +181,37 @@ namespace Tests
             Assert.AreEqual(1, actor.GetStates().Count);
         }
 
+        [Test]
+        public void TestSoloStatesShouldKnockoutOldStates()
+        {
+            actor.EnterState<Grounded>();
+            actor.EnterState<State1>();
+            actor.Update();
+
+            actor.EnterState<SoloState>();
+            actor.Update();
+
+            Assert.IsTrue(actor.Is<SoloState>());
+            Assert.IsFalse(actor.Is<Grounded>());
+            Assert.IsFalse(actor.Is<State1>());
+            Assert.AreEqual(1, actor.GetStates().Count);
+        }
+
+        [Test]
+        public void TestIncomingStatesShouldBeBlockedBySoloStates()
+        {
+            actor.EnterState<SoloState>();
+
+            actor.Update();
+            actor.EnterState<Grounded>();
+            actor.EnterState<State1>();
+            
+            actor.Update();
+            Assert.IsTrue(actor.Is<SoloState>());
+            Assert.IsFalse(actor.Is<Grounded>());
+            Assert.IsFalse(actor.Is<State1>());
+            Assert.AreEqual(1, actor.GetStates().Count);
+        }
 
         private void SetDefaultStateAndInitialize(string defaultStateReference)
         {
