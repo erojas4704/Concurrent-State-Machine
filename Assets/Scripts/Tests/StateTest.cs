@@ -144,6 +144,17 @@ namespace Tests
             Assert.Throws<CsmException>(() => { actor.EnterState(typeof(void)); });
         }
 
+        [Test]
+        public void TestActorShouldEnterPartnerStateWithBackRequirement()
+        {
+            actor.EnterState<MasterState>();
+            
+            actor.Update();
+            Assert.IsTrue(actor.Is<MasterState>());
+            Assert.IsTrue(actor.Is<AssistState>());
+        }
+        
+        
         private void SetDefaultStateAndInitialize(string defaultStateReference)
         {
             FieldInfo defaultStateField = typeof(Actor).GetField("defaultState",
@@ -159,6 +170,11 @@ namespace Tests
         }
 
         #region test states
+        [Require(typeof(Airborne))]
+        private class AssistState : State {}
+        
+        [With(typeof(AssistState))]
+        private class MasterState : State {}
 
         [StateDescriptor(priority = 0)]
         private class State0 : State { }
