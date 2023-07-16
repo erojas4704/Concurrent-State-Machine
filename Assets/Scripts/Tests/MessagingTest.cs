@@ -1,6 +1,8 @@
+using System;
 using CSM;
 using NUnit.Framework;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Tests
 {
@@ -236,22 +238,22 @@ namespace Tests
             Vector2 movementAxis = new(-1f, 0f);
             axisMessage.SetValue(movementAxis);
             actor.EnterState<GroundedState>();
-            
+
             actor.Update();
             actor.EnterState<BlockingState>();
-            
+
             actor.Update();
             actor.PropagateMessage(axisMessage);
 
             actor.Update();
             Assert.IsFalse(axisMessage.processed);
             actor.ExitState<BlockingState>();
-            
+
             actor.Update();
             Assert.IsFalse(actor.Is<BlockingState>());
             Assert.IsTrue(actor.Is<GroundedState>());
             Assert.IsTrue(actor.Is<MovingState>());
-            
+
             MovingState movingState = actor.GetState<MovingState>();
             Assert.AreEqual(movementAxis, movingState.axis);
         }
@@ -260,12 +262,12 @@ namespace Tests
         public void TestGhostStateShouldNotExistWithLiveState()
         {
             actor.EnterState<GroundedState>();
-            
+
             actor.Update();
             GroundedState groundedState = actor.GetState<GroundedState>();
             groundedState.isTouchingGround = false;
             actor.Update();
-            
+
             actor.EnterState<GroundedState>();
             actor.PropagateMessage(new("Jump", Message.Phase.Started));
             actor.Update();
@@ -273,6 +275,29 @@ namespace Tests
             Assert.AreEqual(1, groundedState.jumps);
         }
 
+        [Test]
+        public void TestStateStartedWithInitiator()
+        {
+            actor.EnterState<StateWithInitiator>("Test");
+
+            actor.Update();
+            StateWithInitiator stateWithInitiator = actor.GetState<StateWithInitiator>();
+            Assert.AreEqual("Test", stateWithInitiator.initiatorData);
+        }
+
+
+        #region messaging states
+
+        private class StateWithInitiator : State
+        {
+            public string initiatorData;
+
+            public override void Init(Message initiator)
+            {
+                initiatorData = initiator.GetInitiator<String>();
+            }
+        }
+        
         [StateDescriptor(group = 2, priority = 99)]
         [Require(typeof(GroundedState))]
         private class AttackState : State
@@ -382,5 +407,7 @@ namespace Tests
                 return true;
             }
         }
+
+        #endregion
     }
 }
