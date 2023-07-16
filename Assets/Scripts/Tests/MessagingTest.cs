@@ -256,6 +256,23 @@ namespace Tests
             Assert.AreEqual(movementAxis, movingState.axis);
         }
 
+        [Test]
+        public void TestGhostStateShouldNotExistWithLiveState()
+        {
+            actor.EnterState<GroundedState>();
+            
+            actor.Update();
+            GroundedState groundedState = actor.GetState<GroundedState>();
+            groundedState.isTouchingGround = false;
+            actor.Update();
+            
+            actor.EnterState<GroundedState>();
+            actor.PropagateMessage(new("Jump", Message.Phase.Started));
+            actor.Update();
+            actor.Update();
+            Assert.AreEqual(1, groundedState.jumps);
+        }
+
         [StateDescriptor(group = 2, priority = 99)]
         [Require(typeof(GroundedState))]
         private class AttackState : State
@@ -282,6 +299,7 @@ namespace Tests
         private class GroundedState : State
         {
             public bool isTouchingGround = true;
+            public int jumps;
 
             public override void Update()
             {
@@ -312,6 +330,7 @@ namespace Tests
                     {
                         actor.EnterState<JumpState>();
                         message.processed = true;
+                        jumps++;
                     }
 
                     if (message.name == "Axis")
