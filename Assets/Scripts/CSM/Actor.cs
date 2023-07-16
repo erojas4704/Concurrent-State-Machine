@@ -136,14 +136,13 @@ namespace CSM
                 StateAndInitiator si = slatedForCreation.Dequeue();
                 if (statesStack.Contains(si.state)) continue;
 
-                List<State> statesToCreate = new(),
-                    statesToDestroy = new();
+                List<State> statesToCreate = new() { si.state };
+                List<State> statesToDestroy = new();
 
                 HashSet<Type> stateTypesProcessed = new();
 
                 if (ResolveStateDependencies(si.state, ref statesToCreate, ref statesToDestroy,
-                        ref stateTypesProcessed) &&
-                    CreateState(si) != null)
+                        ref stateTypesProcessed))
                 {
                     if (statesToCreate.Intersect(statesToDestroy).Any())
                     {
@@ -231,6 +230,7 @@ namespace CSM
 
             if (newState.solo)
             {
+                statesToCreate = new() { newState };
                 statesToDestroy.AddRange(statesStack.Values);
                 return true;
             }
@@ -336,7 +336,7 @@ namespace CSM
         {
             foreach (Type requiredState in state.requiredStates)
             {
-                bool requirementExists = false;
+                bool requirementExists;
                 requirementExists = statesStack.Contains(requiredState);
 
                 //TODO Z-67... you already know
@@ -410,7 +410,7 @@ namespace CSM
                     ghostStates.Remove(ghostState.GetType());
                     continue;
                 }
-                
+
                 if (Time.time < ghostState.expiresAt)
                 {
                     ghostState.Process(message);
