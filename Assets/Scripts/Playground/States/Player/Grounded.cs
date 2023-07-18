@@ -53,7 +53,7 @@ namespace Playground.States.Player
                         break;
                     case "Ladder":
                         message.processed = true;
-                        if (CanClimb(actor, message.GetInitiator<Ladder>()))
+                        if (CanClimb(actor, message.GetTrigger<Ladder>()))
                         {
                             actor.EnterState<Climb>(message);
                         }

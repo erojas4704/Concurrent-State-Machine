@@ -285,8 +285,79 @@ namespace Tests
             Assert.AreEqual("Test", stateWithInitiator.initiatorData);
         }
 
+        [Test]
+        public void TestAxisValuePassedThroughMessage()
+        {
+            actor.EnterState<AxisState>();
+
+            actor.Update();
+            Message axisMessage = new Message("Axis", Message.Phase.Started);
+            axisMessage.SetValue(Vector2.right);
+            actor.PropagateMessage(axisMessage);
+
+            actor.Update();
+
+            AxisState axisState = actor.GetState<AxisState>();
+            Assert.AreEqual(Vector2.right, axisState.axis);
+            Assert.IsTrue(axisMessage.processed);
+            Assert.IsTrue(actor.Is<AxisState>());
+        }
+
+        [Test]
+        public void TestAxisValuePassedThroughMessageModifyAndPropagate()
+        {
+            actor.EnterState<AxisState>();
+            actor.EnterState<AxisFlipState>();
+
+            actor.Update();
+            Message axisMessage = new Message("Axis", Message.Phase.Started);
+            axisMessage.SetValue(Vector2.right);
+            actor.PropagateMessage(axisMessage);
+
+            actor.Update();
+
+            AxisState axisState = actor.GetState<AxisState>();
+            Assert.AreEqual(Vector2.left, axisState.axis);
+            Assert.IsTrue(axisMessage.processed);
+            Assert.IsTrue(actor.Is<AxisState>());
+            Assert.IsTrue(actor.Is<AxisFlipState>());
+        }
+
 
         #region messaging states
+
+        [StateDescriptor(priority =  2)]
+        private class AxisFlipState : State
+        {
+            public override bool Process(Message message)
+            {
+                if (message.name == "Axis" && message.phase == Message.Phase.Started)
+                {
+                    Vector2 axis = message.GetValue<Vector2>();
+                    axis = -axis;
+                    message.SetValue(axis);
+                    message.processed = true;
+                }
+
+                return false;
+            }
+        }
+
+        private class AxisState : State
+        {
+            public Vector2 axis;
+
+            public override bool Process(Message message)
+            {
+                if (message.name == "Axis" && message.phase == Message.Phase.Started)
+                {
+                    axis = message.GetValue<Vector2>();
+                    message.processed = true;
+                }
+
+                return false;
+            }
+        }
 
         private class StateWithInitiator : State
         {
@@ -294,10 +365,10 @@ namespace Tests
 
             public override void Init(Message initiator)
             {
-                initiatorData = initiator.GetInitiator<String>();
+                initiatorData = initiator.GetTrigger<String>();
             }
         }
-        
+
         [StateDescriptor(group = 2, priority = 99)]
         [Require(typeof(GroundedState))]
         private class AttackState : State
