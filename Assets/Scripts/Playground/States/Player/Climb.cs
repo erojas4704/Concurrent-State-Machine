@@ -13,12 +13,13 @@ namespace Playground.States.Player
         private PlayerActor player;
         private CharacterController controller;
         private Ladder ladder;
+        private Vector2 axis;
 
         public override void Init(Message inititator)
         {
             player = (PlayerActor)actor;
             controller = actor.GetComponent<CharacterController>();
-            ladder = inititator.GetInitiator<Ladder>();
+            ladder = inititator.GetTrigger<Ladder>();
 
             controller.enabled = false;
         }
@@ -30,7 +31,6 @@ namespace Playground.States.Player
 
         public override void Update()
         {
-            Vector2 axis = player.axis;
             if (ladder == null) Exit();
             Vector3 ladderDirection = Vector3.Normalize(ladder.end.position - ladder.start.position);
             Vector3 futurePosition = player.transform.position +
@@ -59,20 +59,14 @@ namespace Playground.States.Player
             {
                 if (message.name == "Ladder")
                 {
-                    if (message.GetInitiator<Ladder>() == ladder)
+                    if (message.GetTrigger<Ladder>() == ladder)
                     {
                         //!!! Error-prone. Consider having a default state
                         //Enter(typeof(Airborne));
                     }
                 }
             }
-
-            if (message.name == "Move")
-            {
-                player.axis = message.axis;
-                message.processed = true;
-            }
-
+            
             if (message.name == "Jump")
             {
                 Exit();

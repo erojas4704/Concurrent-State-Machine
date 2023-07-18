@@ -1,32 +1,30 @@
 using System;
 using CSM;
 using UnityEngine;
-using Debug = System.Diagnostics.Debug;
 
 namespace Playground.States.Player
 {
+    [With(typeof(AxisProcessor))]
     [StateDescriptor(priority = 1)]
-    public abstract class Movable : State<Playground.PlayerStats>
+    public abstract class Movable : State<PlayerStats>
     {
-        private PlayerActor player;
         protected CharacterController controller;
+        private Vector2 axis;
         private Vector3 vel;
         private const float DIRECTION_CHANGE_THRESHOLD = 0.99f;
 
         public override void Init(Message initiator)
         {
-            player = (PlayerActor)actor;
             controller = actor.GetComponent<CharacterController>();
         }
 
         public override void Update()
         {
-            //TODO demo: We shouldn't use the axis here.
-
+            axis = stats.axis;
             Vector3 targetVelocity = new()
             {
-                x = player.axis.x * stats.Speed,
-                z = player.axis.y * stats.Speed
+                x = axis.x * stats.Speed,
+                z = axis.y * stats.Speed
             };
 
 
@@ -81,17 +79,6 @@ namespace Playground.States.Player
             actor.velocity.z = AccelerateWithClamping(accelerationThisFrame, actor.velocity.z, targetVelocity.z);
         }
 
-        public override bool Process(Message message)
-        {
-            if (message.name == "Move")
-            {
-                player.axis = message.axis;
-                message.processed = true;
-            }
-
-            return base.Process(message);
-        }
-
         private float AccelerateWithClamping(float accelerationThisFrame, float from, float to)
         {
             float sign = Mathf.Sign(to - from);
@@ -108,17 +95,13 @@ namespace Playground.States.Player
                 if (from + speedDelta < to)
                     return to;
             }
-            /*
-            if(Mathf.Abs(from) + speedDelta > Mathf.Abs(to))
-                return to;
-            */
 
             return from + speedDelta;
         }
 
         public override string ToString()
         {
-            return base.ToString() + $" Axis: ({player.axis.x}, {player.axis.y})";
+            return base.ToString() + $" Axis: ({axis.x}, {axis.y})";
         }
     }
 }

@@ -5,7 +5,6 @@ namespace CSM
 {
     public class PlayerActor : Actor
     {
-        [HideInInspector] public Vector2 axis;
         public InputActionMap actionMap;
 
         private void OnAction(InputAction.CallbackContext context)

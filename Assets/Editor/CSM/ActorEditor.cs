@@ -102,9 +102,12 @@ public class ActorEditor : Editor
     {
         StateStack states = ((Actor)target).GetStates();
         EditorGUILayout.LabelField("State Stack", EditorStyles.boldLabel);
-        
+
         foreach (State state in states)
         {
+            if (IsStateHidden(state))
+                continue;
+            
             EditorGUILayout.LabelField(
                 $"[State ({state.Group}): {state}] Priority: {state.Priority} Active: {state.Timer}");
         }
@@ -126,7 +129,7 @@ public class ActorEditor : Editor
         {
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Buffered Messages", EditorStyles.boldLabel);
-            
+
             foreach (Message message in messageBuffer)
             {
                 EditorGUILayout.LabelField($"[Message: {message}]");
@@ -141,6 +144,13 @@ public class ActorEditor : Editor
                 EditorGUILayout.LabelField($"[{keyValuePair.Key}] {keyValuePair.Value}");
             }
         }
+    }
+
+    private static bool IsStateHidden(State state)
+    {
+        StateDescriptor stateDescriptor =
+            Attribute.GetCustomAttribute(state.GetType(), typeof(StateDescriptor)) as StateDescriptor;
+        return stateDescriptor is { hidden: true };
     }
 
     private Type[] GetStateTypesInNamespace(int namespaceIndex)

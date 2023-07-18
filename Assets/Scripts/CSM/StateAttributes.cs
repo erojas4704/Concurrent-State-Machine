@@ -7,6 +7,7 @@ namespace CSM
     {
         public int group = -1;
         public int priority;
+        public bool hidden;
 
         public StateDescriptor()
         {

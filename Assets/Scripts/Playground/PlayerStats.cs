@@ -19,5 +19,6 @@ namespace Playground
         [SerializeField] private float coyoteTime = 0.015f;
         [SerializeField] private float jumpForce = 7.5f;
         [SerializeField] private float turnSpeed = 10f;
+        public Vector2 axis;
     }
 }

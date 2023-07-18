@@ -365,7 +365,7 @@ namespace Tests
 
             public override void Init(Message initiator)
             {
-                initiatorData = initiator.GetInitiator<String>();
+                initiatorData = initiator.GetTrigger<String>();
             }
         }
 

@@ -20,7 +20,6 @@ namespace CSM
         public Phase phase = Phase.None;
         public bool processed;
         public float timer;
-        public Vector2 axis;
 
         public Message(string name)
         {
@@ -33,18 +32,18 @@ namespace CSM
             this.phase = phase;
         }
 
-        public Message(string name, object initiator)
+        public Message(string name, object trigger)
         {
             this.name = name;
             phase = Phase.Started;
-            _initiator = initiator;
+            this.trigger = trigger;
         }
 
-        public Message(string name, object initiator, Phase phase)
+        public Message(string name, object trigger, Phase phase)
         {
             this.name = name;
             this.phase = phase;
-            _initiator = initiator;
+            this.trigger = trigger;
         }
 
         public Message(InputAction.CallbackContext context)
@@ -52,35 +51,33 @@ namespace CSM
             InputAction action = context.action;
             name = action.name;
             phase = TranslateToActionPhase(context.phase);
-            //TODO This is a workaround to include an axis value. Remove this.
-            if (context.valueType == typeof(Vector2))
-            {
-                axis = context.ReadValue<Vector2>();
-            }
+            value = context.ReadValueAsObject();
         }
 
-        private object _value;
+        public bool IsStartedOrHeld => phase is Phase.Started or Phase.Held;
 
-        public void SetValue<T>(T value) where T : struct
+        private object value;
+
+        public void SetValue<T>(T newValue) where T : struct
         {
-            _value = value;
+            value = newValue;
         }
 
         public T GetValue<T>() where T : struct
         {
-            return (T)_value;
+            return (T)value;
         }
 
-        private object _initiator;
+        private object trigger;
 
-        public void SetInitiator<T>(T value)
+        public void SetTrigger<T>(T newTrigger)
         {
-            _initiator = value;
+            trigger = newTrigger;
         }
 
-        public T GetInitiator<T>()
+        public T GetTrigger<T>()
         {
-            return (T)_initiator;
+            return (T)trigger;
         }
 
         public static Phase TranslateToActionPhase(InputActionPhase phase)
@@ -96,9 +93,9 @@ namespace CSM
 
         public override string ToString()
         {
-            string token = phase == Phase.Started ? "(v)"
-                : phase == Phase.Held ? "(h)"
-                : phase == Phase.Ended ? "(^)"
+            string token = phase == Phase.Started ? "🟢"
+                : phase == Phase.Held ? "🟡"
+                : phase == Phase.Ended ? "🔴"
                 : "()";
 
             return $"--> Action {name} {token}";
