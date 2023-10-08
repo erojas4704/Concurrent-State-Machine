@@ -490,7 +490,7 @@ namespace CSM
 
         #region ExitState overloads
 
-        private void ExitState(Type stateType)
+        public void ExitState(Type stateType)
         {
             if (statesStack.TryGetValue(stateType, out State state))
             {
