@@ -18651,6 +18651,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 149817911921091500, guid: e49477745ebc6a346aa4595c5db05d47, type: 3}
+      propertyPath: actionAsset
+      value: 
+      objectReference: {fileID: -944628639613478452, guid: 80634d06690348f48a44baeb2685e308, type: 3}
+    - target: {fileID: 149817911921091500, guid: e49477745ebc6a346aa4595c5db05d47, type: 3}
+      propertyPath: defaultState
+      value: Playground.States.Player.Grounded
+      objectReference: {fileID: 0}
     - target: {fileID: 2687149650872564001, guid: e49477745ebc6a346aa4595c5db05d47, type: 3}
       propertyPath: m_Name
       value: Player

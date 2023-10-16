@@ -5,18 +5,23 @@ namespace CSM
 {
     public class PlayerActor : Actor
     {
-        public InputActionMap actionMap;
+        private InputActionMap actionMap;
+        [SerializeField] private InputActionAsset actionAsset;
+
+        private void OnEnable()
+        {
+            actionMap = actionAsset.FindActionMap("Player");
+            actionMap.actionTriggered += OnAction;
+            actionMap.Enable();
+        }
 
         private void OnAction(InputAction.CallbackContext context)
         {
             Message message = new(context);
-            PropagateMessage(message);
-        }
-
-        private void OnEnable()
-        {
-            actionMap.actionTriggered += OnAction;
-            actionMap.Enable();
+            if (context.action.type == InputActionType.Value)
+                PropagateMessage(message, false);
+            else
+                PropagateMessage(message);
         }
 
         private void OnDisable()
@@ -24,12 +29,12 @@ namespace CSM
             actionMap.actionTriggered -= OnAction;
             actionMap.Disable();
         }
-        
+
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
             PropagateMessage(new("ControllerCollision", hit, Message.Phase.Started), false);
         }
-        
+
         public void OnTriggerEnter(Collider other)
         {
             ITrigger trigger = other.GetComponent<ITrigger>();
