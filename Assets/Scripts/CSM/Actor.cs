@@ -8,23 +8,23 @@ namespace CSM
     [RequireComponent(typeof(Stats))]
     public class Actor : MonoBehaviour, ISerializationCallbackReceiver
     {
-        private StateStack statesStack = new();
+        private StateStack statesStack = new StateStack();
 
         /**States scheduled to be deleted this frame. This work is done at the end of an update cycle.*/
-        private Queue<State> slatedForDeletion = new();
+        private Queue<State> slatedForDeletion = new Queue<State>();
 
         /**States scheduled to be initialized this frame. This work is done at the end of an update cycle. */
-        private Queue<StateAndInitiator> slatedForCreation = new();
+        private Queue<StateAndInitiator> slatedForCreation = new Queue<StateAndInitiator>();
 
         /** Buffered messages for player input buffering. */
-        private readonly Queue<Message> messageBuffer = new();
+        private readonly Queue<Message> messageBuffer = new Queue<Message>();
 
         /** Pool of states that have been removed. This prevents GC running on expired states. */
-        private readonly Dictionary<Type, State> statePool = new();
+        private readonly Dictionary<Type, State> statePool = new Dictionary<Type, State>();
 
-        private readonly Dictionary<Type, GhostState> ghostStates = new();
+        private readonly Dictionary<Type, GhostState> ghostStates = new Dictionary<Type, GhostState>();
 
-        private readonly Dictionary<string, Message> heldMessages = new();
+        private readonly Dictionary<string, Message> heldMessages = new Dictionary<string, Message>();
 
         [SerializeField, HideInInspector] private string defaultState;
 
@@ -92,9 +92,7 @@ namespace CSM
 
             State newState = GetOrCreateState(stateType);
 
-            StateAndInitiator si = new(
-                newState, initiator
-            );
+            StateAndInitiator si = new StateAndInitiator(newState, initiator);
 
             slatedForCreation.Enqueue(si);
 
@@ -142,10 +140,10 @@ namespace CSM
                 StateAndInitiator si = slatedForCreation.Dequeue();
                 if (statesStack.Contains(si.state)) continue;
 
-                List<State> statesToCreate = new() { si.state };
-                List<State> statesToDestroy = new();
+                List<State> statesToCreate = new List<State> { si.state };
+                List<State> statesToDestroy = new List<State>();
 
-                HashSet<Type> stateTypesProcessed = new();
+                HashSet<Type> stateTypesProcessed = new HashSet<Type>();
 
                 if (ResolveStateDependencies(si.state, ref statesToCreate, ref statesToDestroy,
                         ref stateTypesProcessed))
@@ -329,7 +327,7 @@ namespace CSM
             if (persistDuration > 0f)
             {
                 state.expiresAt = Time.time + persistDuration;
-                GhostState ghostState = new()
+                GhostState ghostState = new GhostState
                 {
                     state = state,
                     messagesToListenFor = new(messagesToListenFor)
@@ -445,7 +443,7 @@ namespace CSM
 
         private List<State> GetDependentStates(State state)
         {
-            List<State> dependentStates = new();
+            List<State> dependentStates = new List<State>();
             foreach (State activeState in statesStack)
             {
                 if (activeState.requiredStates.Contains(state.GetType()) ||

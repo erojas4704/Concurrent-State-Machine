@@ -17,7 +17,7 @@ namespace CSM
 
         private void OnAction(InputAction.CallbackContext context)
         {
-            Message message = new(context);
+            Message message = new Message(context);
             if (context.action.type == InputActionType.Value)
                 PropagateMessage(message, false);
             else
