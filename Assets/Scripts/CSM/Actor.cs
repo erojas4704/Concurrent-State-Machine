@@ -51,6 +51,7 @@ namespace CSM
 
             ProcessQueues();
             ProcessActionBuffer();
+            ProcessHeldMessages();
 
             foreach (State state in statesStack)
             {
@@ -198,8 +199,6 @@ namespace CSM
             if (changed)
             {
                 OnStateChange?.Invoke(this);
-                Message[] messageArray = heldMessages.Values.ToArray();
-                foreach (Message heldMessage in messageArray) PropagateMessage(heldMessage);
                 if (statesStack.Count < 1) EnterDefaultState();
             }
         }
@@ -385,32 +384,26 @@ namespace CSM
                 messageBuffer.Dequeue();
             }
         }
+        
+        private void ProcessHeldMessages()
+        {
+            List<Message> heldMessageBuffer = new List<Message>(heldMessages.Values);
+            foreach (Message message in heldMessageBuffer)
+            {
+                PropagateMessage(message, false);
+            }
+        }
 
         public bool PropagateMessage(Message message, bool buffer = true)
         {
-            if (statesStack.Count < 1)
-            {
-                Debug.LogWarning($"Actor {name} has no states!");
-            }
-
-            if (message.phase == Message.Phase.Ended)
-            {
-                heldMessages.Remove(message.name);
-            }
-            else if (message.phase == Message.Phase.Held)
-            {
-                heldMessages[message.name] = message;
-            }
-
             foreach (State s in statesStack)
             {
                 bool messageBlocked = s.Process(message);
                 if (messageBlocked) return message.processed;
             }
 
-
+            //TODO [Z-67]...
             //Process ghost states. Ghost states have no order and cannot block messages.
-            //TODO Z-67...
             GhostState[] ghostStateValues = ghostStates.Values.ToArray();
             foreach (GhostState ghost in ghostStateValues)
             {
@@ -434,6 +427,16 @@ namespace CSM
 
             if (ShouldBufferMessage(message, buffer))
                 messageBuffer.Enqueue(message);
+            
+            if (message.phase == Message.Phase.Ended)
+            {
+                heldMessages.Remove(message.name);
+            }
+            else if (message.phase == Message.Phase.Started)
+            {
+                heldMessages[message.name] = message;
+                message.phase = Message.Phase.Held;
+            }
 
             return message.processed;
         }

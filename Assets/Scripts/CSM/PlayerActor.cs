@@ -17,9 +17,16 @@ namespace CSM
 
         private void OnAction(InputAction.CallbackContext context)
         {
+            if (context.phase == InputActionPhase.Started) return;
+
+            // if (context.action.name == "Attack")
+            // {
+            //     Debug.Log(context.phase);
+            // }
+
             Message message = new Message(context);
             if (context.action.type == InputActionType.Value)
-                PropagateMessage(message, false);
+                PropagateMessage(message, false); //We don't want to propagate value messages, like analog sticks
             else
                 PropagateMessage(message);
         }

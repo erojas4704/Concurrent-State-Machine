@@ -85,7 +85,7 @@ namespace CSM
             return phase switch
             {
                 InputActionPhase.Started => Phase.Started,
-                InputActionPhase.Performed => Phase.Held,
+                InputActionPhase.Performed => Phase.Started,
                 InputActionPhase.Canceled => Phase.Ended,
                 _ => Phase.None
             };
