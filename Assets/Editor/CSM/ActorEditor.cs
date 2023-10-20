@@ -107,7 +107,7 @@ public class ActorEditor : Editor
         {
             if (IsStateHidden(state))
                 continue;
-            
+
             EditorGUILayout.LabelField(
                 $"[State ({state.Group}): {state}] Priority: {state.Priority} Active: {state.Timer}");
         }
@@ -115,14 +115,20 @@ public class ActorEditor : Editor
 
     private void DrawMessages()
     {
-        FieldInfo messageBufferField = typeof(Actor).GetField("messageBuffer",
+        FieldInfo messageBrokerField = typeof(Actor).GetField("messageBroker",
+            BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+        MessageBroker messageBroker = messageBrokerField!.GetValue(target) as MessageBroker;
+        
+        FieldInfo messageBufferField = typeof(MessageBroker).GetField("messageBuffer",
             BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
-        FieldInfo heldMessagesField = typeof(Actor).GetField("heldMessages",
+        FieldInfo heldMessagesField = typeof(MessageBroker).GetField("heldMessages",
             BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
 
-        Queue<Message> messageBuffer = messageBufferField!.GetValue(target) as Queue<Message>;
-        Dictionary<string, Message> heldMessages = heldMessagesField!.GetValue(target) as Dictionary<string, Message>;
+
+        List<Message> messageBuffer = messageBufferField!.GetValue(messageBroker) as List<Message>;
+        Dictionary<string, Message> heldMessages =
+            heldMessagesField!.GetValue(messageBroker) as Dictionary<string, Message>;
 
         Debug.Assert(messageBuffer != null, nameof(messageBuffer) + " != null");
         if (messageBuffer.Count > 0)
@@ -139,6 +145,7 @@ public class ActorEditor : Editor
         if (heldMessages != null)
         {
             EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Held Inputs", EditorStyles.boldLabel);
             foreach (KeyValuePair<string, Message> keyValuePair in heldMessages)
             {
                 EditorGUILayout.LabelField($"[{keyValuePair.Key}] {keyValuePair.Value}");

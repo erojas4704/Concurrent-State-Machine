@@ -12,8 +12,8 @@ namespace CSM
         public StateStack()
         {
             IsReadOnly = true;
-            dictionary = new();
-            list = new();
+            dictionary = new Dictionary<Type, State>();
+            list = new List<State>();
         }
 
         IEnumerator<KeyValuePair<Type, State>> IEnumerable<KeyValuePair<Type, State>>.GetEnumerator() =>
@@ -118,7 +118,7 @@ namespace CSM
             int i = 0;
             while (i++ < list.Count - 1)
             {
-                array[i + arrayIndex] = new(list[i].GetType(), list[i]);
+                array[i + arrayIndex] = new KeyValuePair<Type, State>(list[i].GetType(), list[i]);
             }
         }
 

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
+using UnityEngine.Serialization;
 
 namespace CSM
 {
@@ -19,7 +20,13 @@ namespace CSM
 
         public Phase phase = Phase.None;
         public bool processed;
-        public float timer;
+        public bool isBufferable;
+        public float activationTime;
+
+        /**If true, this message will be held*/
+        public bool hold;
+
+        public float Timer => Time.time - activationTime;
 
         public Message(string name)
         {
@@ -85,7 +92,7 @@ namespace CSM
             return phase switch
             {
                 InputActionPhase.Started => Phase.Started,
-                InputActionPhase.Performed => Phase.Held,
+                InputActionPhase.Performed => Phase.Started,
                 InputActionPhase.Canceled => Phase.Ended,
                 _ => Phase.None
             };
@@ -93,10 +100,13 @@ namespace CSM
 
         public override string ToString()
         {
-            string token = phase == Phase.Started ? "🟢"
-                : phase == Phase.Held ? "🟡"
-                : phase == Phase.Ended ? "🔴"
-                : "()";
+            string token = phase switch
+            {
+                Phase.Started => "🟢",
+                Phase.Held => "🟡",
+                Phase.Ended => "🔴",
+                _ => "()"
+            };
 
             return $"--> Action {name} {token}";
         }

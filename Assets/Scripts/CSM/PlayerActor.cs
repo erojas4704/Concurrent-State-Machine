@@ -17,11 +17,16 @@ namespace CSM
 
         private void OnAction(InputAction.CallbackContext context)
         {
-            Message message = new(context);
+            if (context.phase == InputActionPhase.Started) return; //We only listen to InputActionPhase.Performed
+
+            Message message = new Message(context);
             if (context.action.type == InputActionType.Value)
-                PropagateMessage(message, false);
+                EnqueueMessage(message, false); //We don't want to propagate value messages, like analog sticks
             else
-                PropagateMessage(message);
+            {
+                message.hold = true;
+                EnqueueMessage(message);
+            }
         }
 
         private void OnDisable()
@@ -32,7 +37,7 @@ namespace CSM
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            PropagateMessage(new("ControllerCollision", hit, Message.Phase.Started), false);
+            EnqueueMessage(new Message("ControllerCollision", hit, Message.Phase.Started), false);
         }
 
         public void OnTriggerEnter(Collider other)
@@ -40,7 +45,7 @@ namespace CSM
             ITrigger trigger = other.GetComponent<ITrigger>();
             if (trigger != null)
             {
-                PropagateMessage(new Message(trigger.GetTriggerAction(), trigger), false);
+                EnqueueMessage(new Message(trigger.GetTriggerAction(), trigger), false);
             }
         }
 
@@ -49,7 +54,7 @@ namespace CSM
             ITrigger trigger = other.GetComponent<ITrigger>();
             if (trigger != null)
             {
-                PropagateMessage(new Message(trigger.GetTriggerAction(), trigger, Message.Phase.Ended),
+                EnqueueMessage(new Message(trigger.GetTriggerAction(), trigger, Message.Phase.Ended),
                     false);
             }
         }

@@ -13,7 +13,7 @@ namespace Tests
         [SetUp]
         public void SetUp()
         {
-            go = new();
+            go = new GameObject();
             actor = go.AddComponent<Actor>();
         }
 
@@ -361,28 +361,28 @@ namespace Tests
         }
 
         #endregion
-        
+
         [Test]
         public void TestEnterStateCheckRequirementsSameCycle()
         {
             //Requirements should be met from incoming states
-            actor.EnterState<Sprint>(); 
+            actor.EnterState<Sprint>();
             actor.EnterState<Grounded>();
-            
+
             actor.Update();
             Assert.IsTrue(actor.Is<Sprint>());
             Assert.IsTrue(actor.Is<Grounded>());
         }
-        
+
         [Test]
         public void TestMultipleEnterStateCalls()
         {
             actor.EnterState<Grounded>();
-            
+
             actor.Update();
-            actor.EnterState<Sprint>(); 
-            actor.EnterState<Sprint>(); 
-            
+            actor.EnterState<Sprint>();
+            actor.EnterState<Sprint>();
+
             actor.Update();
             Assert.IsTrue(actor.Is<Sprint>());
             Assert.IsTrue(actor.Is<Grounded>());
@@ -394,19 +394,19 @@ namespace Tests
         [Test]
         public void TestGhostStateShouldNotTriggerWhenStateIsReplaced()
         {
-            Message message1 = new("End", Message.Phase.Started);
-            Message message2 = new("End", Message.Phase.Started);
+            Message message1 = new Message("End", Message.Phase.Started);
+            Message message2 = new Message("End", Message.Phase.Started);
             actor.EnterState<MessagingState0>();
 
             actor.Update();
-            actor.PropagateMessage(message1);
+            actor.EnqueueMessage(message1);
 
             actor.Update();
             Assert.IsTrue(message1.processed);
             Assert.IsTrue(actor.Is<MessagingState1>());
             Assert.IsFalse(actor.Is<MessagingState0>());
 
-            actor.PropagateMessage(message2);
+            actor.EnqueueMessage(message2);
             actor.Update();
             Assert.IsFalse(message2.processed);
         }
@@ -414,7 +414,7 @@ namespace Tests
         [Test]
         public void TestGhostStateShouldProcessMessageAfterExit()
         {
-            Message message1 = new("End", Message.Phase.Started);
+            Message message1 = new Message("End", Message.Phase.Started);
             actor.EnterState<MessagingState0>();
 
             actor.Update();
@@ -426,7 +426,7 @@ namespace Tests
             Assert.IsFalse(actor.Is<MessagingState0>());
             Assert.IsTrue(actor.Is<MessagingState1>());
 
-            actor.PropagateMessage(message1);
+            actor.EnqueueMessage(message1);
             actor.Update();
 
             Assert.IsTrue(message1.processed);
@@ -436,49 +436,49 @@ namespace Tests
         [Test]
         public void TestGhostStateShouldNotProcessMessageAfterCancelledByGroup()
         {
-            Message message1 = new("Jump", Message.Phase.Started);
-            Message message2 = new("Jump", Message.Phase.Started);
+            Message message1 = new Message("Jump", Message.Phase.Started);
+            Message message2 = new Message("Jump", Message.Phase.Started);
             actor.EnterState<Grounded>();
 
             actor.Update();
-            actor.PropagateMessage(message1); //"Jump" is sent to grounded.
+            actor.EnqueueMessage(message1); //"Jump" is sent to grounded.
 
             actor.Update(); //This update needs to be the one to resolve Jump, Airborne, but not Grounded.
-            
+
             //Grounded forces actor to enter Jump, which forces Airborne.
             //This should have cancelled Grounded.
-            
+
             Assert.IsFalse(actor.Is<Grounded>());
             Assert.IsTrue(actor.Is<Airborne>());
             Assert.IsTrue(actor.Is<Jump>());
 
             actor.Update();
-            actor.PropagateMessage(message2);
-            
+            actor.EnqueueMessage(message2);
+
             actor.Update();
             Assert.IsTrue(message1.processed);
             Assert.IsFalse(message2.processed);
             Assert.AreEqual(actor.GetStates().Count, 2);
         }
-        
+
         [Test]
         public void TestGhostStateShouldProcessJump()
-        {            
-            Message message1 = new("Jump", Message.Phase.Started);
+        {
+            Message message1 = new Message("Jump", Message.Phase.Started);
             actor.EnterState<Grounded>();
-            
+
             actor.Update();
             Grounded groundedState = actor.GetState<Grounded>();
             groundedState.isTouchingGround = false;
-            
+
             actor.Update();
             //The State will not be removed until the 2nd update later because it removes itself. 
             //Should we raise a concern over this?
-            
+
             actor.Update();
             Assert.IsFalse(actor.Is<Grounded>());
-            actor.PropagateMessage(message1);
-            
+            actor.EnqueueMessage(message1);
+
             actor.Update();
             Assert.IsFalse(actor.Is<Grounded>());
             Assert.IsTrue(actor.Is<Jump>());
@@ -486,243 +486,172 @@ namespace Tests
             Assert.IsTrue(message1.processed);
         }
 
+
         [Test]
         public void TestHeldInputShouldBeProcessedByNewState()
-        {            
-            Message message1 = new("Sprint", Message.Phase.Started);
-            Message message2 = new("Sprint", Message.Phase.Held);
-            Message message3 = new("Sprint", Message.Phase.Ended);
-            Message message4 = new("Jump", Message.Phase.Started);
+        {
+            Message message1 = new Message("Sprint", Message.Phase.Started);
+            Message message2 = new Message("Sprint", Message.Phase.Held);
+            Message message3 = new Message("Sprint", Message.Phase.Ended);
+            Message message4 = new Message("Jump", Message.Phase.Started);
             actor.EnterState<Grounded>();
-            
+
             actor.Update();
-            actor.PropagateMessage(message1); //Press Sprint
-            
+            actor.EnqueueMessage(message1); //Press Sprint
+
             actor.Update();
-            actor.PropagateMessage(message2); //Holding Sprint
+            actor.EnqueueMessage(message2); //Holding Sprint
 
             Assert.IsTrue(actor.Is<Sprint>());
-            actor.PropagateMessage(message4); //Press Jump
+            actor.EnqueueMessage(message4); //Press Jump
             actor.Update();
-            
+
             Assert.IsTrue(actor.Is<Airborne>());
             Assert.IsFalse(actor.Is<Sprint>());
-            
-            actor.Update();
-            actor.EnterState<Grounded>(); 
-            
-            actor.Update(); //Landed
-            Assert.IsTrue(actor.Is<Sprint>());
-            Assert.IsTrue(actor.Is<Grounded>());
 
-            actor.PropagateMessage(message3);
             actor.Update();
-            
+            actor.EnterState<Grounded>();
+
+            //TODO [Zeal-93] Are we sure we want to go with this design? Where states are not processed until the next update?
+            actor.Update(); //Processes Enter Grounded
+            Assert.IsTrue(actor.Is<Grounded>());
+            actor.Update(); //Processes Enter Sprint. 
+            Assert.IsTrue(actor.Is<Sprint>());
+
+            actor.EnqueueMessage(message3);
+            actor.Update();
+
             Assert.IsFalse(actor.Is<Sprint>());
             Assert.IsTrue(actor.Is<Grounded>());
         }
-        
+
         #endregion
 
         #region dependency states
 
         /** State0 Has no Requirements */
-        private class State0 : State
-        {
-        }
+        private class State0 : State { }
 
         /** State1 Includes State0 and State2. */
         [With(typeof(State0), typeof(State2))]
-        private class State1 : State
-        {
-        }
+        private class State1 : State { }
 
         /** State2 is a simple State */
-        private class State2 : State
-        {
-        }
+        private class State2 : State { }
 
         /** State3 Includes State4 and State5. State4 requires State6 and State5 requires State7. */
         [With(typeof(State4), typeof(State5))]
-        private class State3 : State
-        {
-        }
+        private class State3 : State { }
 
         /** State4 requires State6 */
         [Require(typeof(State6))]
-        private class State4 : State
-        {
-        }
+        private class State4 : State { }
 
         /** State5 requires State7 */
         [Require(typeof(State7))]
-        private class State5 : State
-        {
-        }
+        private class State5 : State { }
 
         /** Simple State */
-        private class State6 : State
-        {
-        }
+        private class State6 : State { }
 
         /** Simple State */
-        private class State7 : State
-        {
-        }
+        private class State7 : State { }
 
         /** State8 Includes that no other states be present. State8 will eliminate all other states. */
         [Solo]
-        private class State8 : State
-        {
-        }
+        private class State8 : State { }
 
         /** State9 Negates States 1 and 2 */
         [Negate(typeof(State1), typeof(State2))]
-        private class State9 : State
-        {
-        }
+        private class State9 : State { }
 
         /** State10 Includes State9, which negates States 1 and 2*/
         [With(typeof(State9))]
-        private class State10 : State
-        {
-        }
+        private class State10 : State { }
 
         /** State11 Requires States 1, and 2 */
         [Require(typeof(State1), typeof(State2))]
-        private class State11 : State
-        {
-        }
+        private class State11 : State { }
 
         /** State12 Includes State 10, which includes State9 which negates states 1 and 2. State12 Negates States 0 and 7 */
         [With(typeof(State10)), Negate(typeof(State0), typeof(State7))]
-        private class State12 : State
-        {
-        }
+        private class State12 : State { }
 
         /** State13 Includes State14 and State15. State15 Negates State 14. This state is unsolvable */
         [With(typeof(State14), typeof(State15))]
-        private class State13 : State
-        {
-        }
+        private class State13 : State { }
 
-        private class State14 : State
-        {
-        }
+        private class State14 : State { }
 
         [Negate(typeof(State14))]
-        private class State15 : State
-        {
-        }
+        private class State15 : State { }
 
         /** Requires Itself */
         [Require(typeof(State16))]
-        private class State16 : State
-        {
-        }
+        private class State16 : State { }
 
         /** Negates itself */
         [Negate(typeof(State17))]
-        private class State17 : State
-        {
-        }
+        private class State17 : State { }
 
         /** Includes itself */
         [With(typeof(State18))]
-        private class State18 : State
-        {
-        }
+        private class State18 : State { }
 
         /** Includes 20, which includes 19 */
         [With(typeof(State20))]
-        private class State19 : State
-        {
-        }
+        private class State19 : State { }
 
         /** Includes 19, which includes 20. */
         [With(typeof(State19))]
-        private class State20 : State
-        {
-        }
+        private class State20 : State { }
 
         [Solo]
-        private class State21 : State
-        {
-        }
+        private class State21 : State { }
 
         [StateDescriptor(group = 1)]
-        private class State22 : State
-        {
-        }
+        private class State22 : State { }
 
         [StateDescriptor(group = 1)]
-        private class State23 : State
-        {
-        }
+        private class State23 : State { }
 
-        private class State24 : State
-        {
-        }
+        private class State24 : State { }
 
         [Require(typeof(State24))]
-        private class State25 : State
-        {
-        }
+        private class State25 : State { }
 
         [Require(typeof(State24))]
-        private class State26 : State
-        {
-        }
+        private class State26 : State { }
 
         [Require(typeof(State25))]
-        private class State27 : State
-        {
-        }
+        private class State27 : State { }
 
         [Require(typeof(State22))]
-        private class State28 : State
-        {
-        }
+        private class State28 : State { }
 
         [Require(typeof(State22))]
-        private class State29 : State
-        {
-        }
+        private class State29 : State { }
 
         [With(typeof(State31)), StateDescriptor(group = 1)]
-        private class State30 : State
-        {
-        }
+        private class State30 : State { }
 
         [StateDescriptor(group = 1)]
-        private class State31 : State
-        {
-        }
+        private class State31 : State { }
 
         [With(typeof(State33))]
-        private class State32 : State
-        {
-        }
+        private class State32 : State { }
 
         [With(typeof(State34))]
-        private class State33 : State
-        {
-        }
+        private class State33 : State { }
 
         [Negate(typeof(State35))]
-        private class State34 : State
-        {
-        }
+        private class State34 : State { }
 
         [With(typeof(State36))]
-        private class State35 : State
-        {
-        }
+        private class State35 : State { }
 
         [Require(typeof(State35))]
-        private class State36 : State
-        {
-        }
+        private class State36 : State { }
 
         #endregion
 
@@ -760,9 +689,7 @@ namespace Tests
         }
 
         [StateDescriptor(group = 1)]
-        private class MessagingState1 : State
-        {
-        }
+        private class MessagingState1 : State { }
 
         [StateDescriptor(group = 1)]
         private class Grounded : State
@@ -820,7 +747,7 @@ namespace Tests
         }
 
         [Require(typeof(Grounded))]
-        [StateDescriptor(group=3)]
+        [StateDescriptor(group = 3)]
         private class Sprint : State
         {
             public override bool Process(Message message)
@@ -836,9 +763,7 @@ namespace Tests
         }
 
         [With(typeof(Airborne))]
-        private class Jump : State
-        {
-        }
+        private class Jump : State { }
 
         #endregion
     }

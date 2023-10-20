@@ -22,6 +22,7 @@ namespace Playground.States.Player
 
         public override bool Process(Message message)
         {
+
             if (message.name == "Attack" && message.phase == Message.Phase.Started)
             {
                 message.processed = true;

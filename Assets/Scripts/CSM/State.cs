@@ -14,6 +14,7 @@ namespace CSM
         public int Group { get; init; } = -1;
 
         public float startTime;
+        /**Time for ghost state to expire.*/
         public float expiresAt;
 
         public Stats stats;
@@ -39,9 +40,9 @@ namespace CSM
         protected void Exit(float persistDuration = 0f, params string[] messagesToListenFor) =>
             OnExit?.Invoke(this, persistDuration, messagesToListenFor);
 
-        public HashSet<Type> requiredStates = new();
-        public HashSet<Type> negatedStates = new();
-        public HashSet<Type> partnerStates = new();
+        public HashSet<Type> requiredStates = new HashSet<Type>();
+        public HashSet<Type> negatedStates = new HashSet<Type>();
+        public HashSet<Type> partnerStates = new HashSet<Type>();
 
         protected State()
         {

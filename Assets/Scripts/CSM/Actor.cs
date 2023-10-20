@@ -8,23 +8,19 @@ namespace CSM
     [RequireComponent(typeof(Stats))]
     public class Actor : MonoBehaviour, ISerializationCallbackReceiver
     {
-        private StateStack statesStack = new();
+        private StateStack statesStack = new StateStack();
 
         /**States scheduled to be deleted this frame. This work is done at the end of an update cycle.*/
-        private Queue<State> slatedForDeletion = new();
+        private Queue<State> slatedForDeletion = new Queue<State>();
 
         /**States scheduled to be initialized this frame. This work is done at the end of an update cycle. */
-        private Queue<StateAndInitiator> slatedForCreation = new();
-
-        /** Buffered messages for player input buffering. */
-        private readonly Queue<Message> messageBuffer = new();
+        private Queue<StateAndInitiator> slatedForCreation = new Queue<StateAndInitiator>();
 
         /** Pool of states that have been removed. This prevents GC running on expired states. */
-        private readonly Dictionary<Type, State> statePool = new();
+        private readonly Dictionary<Type, State> statePool = new Dictionary<Type, State>();
 
-        private readonly Dictionary<Type, GhostState> ghostStates = new();
-
-        private readonly Dictionary<string, Message> heldMessages = new();
+        /**A list of states that have ended, but are still capable of parsing inputs.*/
+        private Dictionary<Type, GhostState> ghostStates = new Dictionary<Type, GhostState>();
 
         [SerializeField, HideInInspector] private string defaultState;
 
@@ -35,9 +31,11 @@ namespace CSM
         public delegate void StateChangeHandler(Actor actor);
 
         public event StateChangeHandler OnStateChange;
+        private readonly MessageBroker messageBroker = new MessageBroker();
 
-        /**How long messages are buffered for, in seconds. */
-        public float messageBufferDurationSeconds = 0.05f;
+        /** If a message isn't processed, this is the time, in seconds, that we will hold on to it to process it in a later frame.*/
+        [SerializeField] float bufferTime = 0.05f;
+
 
         private void Awake()
         {
@@ -47,16 +45,46 @@ namespace CSM
 
         public virtual void Update()
         {
-            if (stats) stats.Reset();
-
+            if (stats) stats.Reset(); //TODO [Z-56] keep record of all stat changes.
+            messageBroker.PrimeMessages();
+            ProcessGhostStates();
+            ProcessStates(statesStack);
             ProcessQueues();
-            ProcessActionBuffer();
+            messageBroker.CleanUp(bufferTime);
+        }
 
-            foreach (State state in statesStack)
+
+        private void ProcessStates(IEnumerable<State> states)
+        {
+            foreach (State state in states)
             {
+                messageBroker.ProcessMessagesForState(state);
                 state.Update();
-                //TODO Z-56 keep record of all stat changes.
             }
+        }
+
+        private void ProcessGhostStates()
+        {
+            Dictionary<Type, GhostState> ghostStatesNextFrame = new Dictionary<Type, GhostState>();
+            foreach (GhostState ghost in ghostStates.Values)
+            {
+                if (statesStack.Contains(ghost.state.GetType()))
+                {
+                    //If the ghostState is active, we can remove it.
+                    ghostStates.Remove(ghostStates.GetType());
+                    continue;
+                }
+
+                if (Time.time < ghost.state.expiresAt)
+                {
+                    //TODO [Zeal-159] Will no longer using Types to uniquely identify states.
+                    bool processed = messageBroker.ProcessMessagesForGhostState(ghost);
+                    if (!processed)
+                        ghostStatesNextFrame[ghost.state.GetType()] = ghost;
+                }
+            }
+
+            ghostStates = ghostStatesNextFrame;
         }
 
         //TODO Z-67: What happens if we call this with a state that does not exist in the stack?
@@ -92,10 +120,7 @@ namespace CSM
 
             State newState = GetOrCreateState(stateType);
 
-            StateAndInitiator si = new(
-                newState, initiator
-            );
-
+            StateAndInitiator si = new StateAndInitiator(newState, initiator);
             slatedForCreation.Enqueue(si);
 
             //TODO Z-67. Wildly inefficient use of queues. Redesign the list.
@@ -127,9 +152,10 @@ namespace CSM
         /**Creates and deletes all states that are slated for creation or deletion. This method handles state pooling and
          * resolving dependencies.
          */
-        private void ProcessQueues()
+        private List<State> ProcessQueues()
         {
             bool changed = false;
+            List<State> statesCreatedThisFrame = new List<State>();
 
             while (slatedForCreation.Count > 0)
             {
@@ -142,10 +168,10 @@ namespace CSM
                 StateAndInitiator si = slatedForCreation.Dequeue();
                 if (statesStack.Contains(si.state)) continue;
 
-                List<State> statesToCreate = new() { si.state };
-                List<State> statesToDestroy = new();
+                List<State> statesToCreate = new List<State> { si.state };
+                List<State> statesToDestroy = new List<State>();
 
-                HashSet<Type> stateTypesProcessed = new();
+                HashSet<Type> stateTypesProcessed = new HashSet<Type>();
 
                 if (ResolveStateDependencies(si.state, ref statesToCreate, ref statesToDestroy,
                         ref stateTypesProcessed))
@@ -171,7 +197,9 @@ namespace CSM
                     changed = true;
                     foreach (State stateToCreate in statesToCreate)
                     {
-                        CreateState(stateToCreate, si.initiator);
+                        statesCreatedThisFrame.Add(
+                            CreateState(stateToCreate, si.initiator)
+                        );
                     }
 
                     foreach (State stateToDestroy in statesToDestroy)
@@ -200,10 +228,10 @@ namespace CSM
             if (changed)
             {
                 OnStateChange?.Invoke(this);
-                Message[] messageArray = heldMessages.Values.ToArray();
-                foreach (Message heldMessage in messageArray) PropagateMessage(heldMessage);
                 if (statesStack.Count < 1) EnterDefaultState();
             }
+
+            return statesCreatedThisFrame;
         }
 
         private bool HasSoloState() => statesStack.Values.Any(state => state.solo);
@@ -216,8 +244,6 @@ namespace CSM
             newState.Init(initiator);
             newState.startTime = Time.time;
             newState.expiresAt = 0;
-            //TODO Z-67: Nasty way of handling. Also potential InvalidOperationException. Break this down into a method
-            foreach (Message message in heldMessages.Values) newState.Process(message); //Process held messages
             return newState;
         }
 
@@ -329,10 +355,10 @@ namespace CSM
             if (persistDuration > 0f)
             {
                 state.expiresAt = Time.time + persistDuration;
-                GhostState ghostState = new()
+                GhostState ghostState = new GhostState
                 {
                     state = state,
-                    messagesToListenFor = new(messagesToListenFor)
+                    messagesToListenFor = new HashSet<string>(messagesToListenFor)
                 };
 
                 ghostStates[state.GetType()] = ghostState;
@@ -370,82 +396,20 @@ namespace CSM
             return true;
         }
 
-        private void ProcessActionBuffer()
+        /**Enqueues a message to be processed the immediate next frame.
+         * @param message The message to be processed.
+         * @param buffer If true, the message will be held until it is processed.
+         */
+        public void EnqueueMessage(Message message, bool buffer = true)
         {
-            if (messageBuffer.Count < 1) return;
-
-            Message firstMessage = messageBuffer.Peek();
-            firstMessage.timer +=
-                Time.deltaTime; //TODO <- make a field for this that uses Time.time instead of having to increment it every time.
-
-            if (PropagateMessage(firstMessage, false))
-            {
-                messageBuffer.Dequeue();
-            }
-            else if (firstMessage.timer >= messageBufferDurationSeconds)
-            {
-                messageBuffer.Dequeue();
-            }
+            message.isBufferable = buffer;
+            messageBroker.EnqueueMessage(message);
         }
 
-        public bool PropagateMessage(Message message, bool buffer = true)
-        {
-            if (statesStack.Count < 1)
-            {
-                Debug.LogWarning($"Actor {name} has no states!");
-            }
-
-            if (message.phase == Message.Phase.Ended)
-            {
-                heldMessages.Remove(message.name);
-            }
-            else if (message.phase == Message.Phase.Held)
-            {
-                heldMessages[message.name] = message;
-            }
-
-            foreach (State s in statesStack)
-            {
-                bool messageBlocked = s.Process(message);
-                if (messageBlocked) return message.processed;
-            }
-
-
-            //Process ghost states. Ghost states have no order and cannot block messages.
-            //TODO Z-67...
-            GhostState[] ghostStateValues = ghostStates.Values.ToArray();
-            foreach (GhostState ghost in ghostStateValues)
-            {
-                if (ghost.messagesToListenFor.Count > 0 && !ghost.messagesToListenFor.Contains(message.name)) continue;
-                State ghostState = ghost.state;
-                if (statesStack.Contains(ghost.state.GetType()))
-                {
-                    ghostStates.Remove(ghostState.GetType());
-                    continue;
-                }
-
-                if (Time.time < ghostState.expiresAt)
-                {
-                    ghostState.Process(message);
-                    if (message.processed)
-                    {
-                        ghostStates.Remove(ghostState.GetType());
-                    }
-                }
-            }
-
-            if (ShouldBufferMessage(message, buffer))
-                messageBuffer.Enqueue(message);
-
-            return message.processed;
-        }
-
-        private static bool ShouldBufferMessage(Message message, bool buffer) =>
-            !message.processed && buffer && message.phase == Message.Phase.Started;
 
         private List<State> GetDependentStates(State state)
         {
-            List<State> dependentStates = new();
+            List<State> dependentStates = new List<State>();
             foreach (State activeState in statesStack)
             {
                 if (activeState.requiredStates.Contains(state.GetType()) ||
@@ -482,9 +446,11 @@ namespace CSM
             }
         }
 
-        private class GhostState
+        internal class GhostState
         {
             public State state;
+
+            /**A whitelist of messages to listen for. If specified, the ghost state will only consume these.*/
             public HashSet<string> messagesToListenFor;
         }
 
@@ -508,7 +474,7 @@ namespace CSM
 
         #region EnterState overloads
 
-        public void EnterState<T>(object initiator) where T : State => EnterState<T>(new("", initiator));
+        public void EnterState<T>(object initiator) where T : State => EnterState<T>(new Message("", initiator));
 
         public void EnterState<T>() where T : State => EnterState(typeof(T));
 
