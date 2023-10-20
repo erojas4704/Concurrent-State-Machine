@@ -20,8 +20,6 @@ namespace CSM
         /**Bufferable messages that failed to be processed this frame.*/
         private readonly HashSet<Message> unprocessedMessages = new HashSet<Message>();
 
-        [SerializeField] float bufferTime = 0.05f;
-
 
         public void EnqueueMessage(Message message)
         {
@@ -40,7 +38,7 @@ namespace CSM
             messagesToProcessThisFrame = new HashSet<Message>(newMessages.Concat(messageBuffer));
         }
 
-        public void CleanUp()
+        public void CleanUp(float bufferTime)
         {
             newMessages.Clear();
             //Add all messages to the messageBuffer that have not expired yet to try again next frame.

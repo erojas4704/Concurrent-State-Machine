@@ -26,9 +26,14 @@ namespace CSM
         //TODO <- This may be better off delegated to a persistent stat. 
         public Vector3 velocity;
         private Stats stats;
+
         public delegate void StateChangeHandler(Actor actor);
+
         public event StateChangeHandler OnStateChange;
         private readonly MessageBroker messageBroker = new MessageBroker();
+
+        /** If a message isn't processed, this is the time, in seconds, that we will hold on to it to process it in a later frame.*/
+        [SerializeField] float bufferTime = 0.05f;
 
 
         private void Awake()
@@ -48,7 +53,8 @@ namespace CSM
                 state.Update();
                 //TODO [Z-56] keep record of all stat changes.
             }
-            messageBroker.CleanUp();
+
+            messageBroker.CleanUp(bufferTime);
 
             ProcessQueues();
         }
