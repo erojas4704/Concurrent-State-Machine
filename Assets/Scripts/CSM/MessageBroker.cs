@@ -7,7 +7,7 @@ namespace CSM
     public class MessageBroker
     {
         /** Buffered messages for player input buffering. Messages that could not be processed to be processed in later frames. */
-        private List<Message> messageBuffer = new List<Message>();
+        private readonly List<Message> messageBuffer = new List<Message>();
 
         /**Messages that are 'held,' such as held button inputs.*/
         private readonly Dictionary<string, Message> heldMessages = new Dictionary<string, Message>();
@@ -16,7 +16,7 @@ namespace CSM
         private readonly List<Message> newMessages = new List<Message>();
 
         /**Messages to be processed the entire frame across all states.*/
-        private HashSet<Message> messagesToProcessThisFrame = new HashSet<Message>();
+        private readonly HashSet<Message> messagesToProcessThisFrame = new HashSet<Message>();
 
         /**Bufferable messages that failed to be processed this frame.*/
         private readonly HashSet<Message> unprocessedMessages = new HashSet<Message>();
@@ -41,6 +41,11 @@ namespace CSM
 
         public void CleanUp(float bufferTime)
         {
+            foreach (Message message in newMessages.Where(message => message.phase == Message.Phase.Ended))
+            {
+                heldMessages.Remove(message.name);
+            }
+
             newMessages.Clear();
             //Add all messages to the messageBuffer that have not expired yet to try again next frame.
             messageBuffer.Clear();
