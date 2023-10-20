@@ -15,7 +15,7 @@ namespace Tests
         [SetUp]
         public void SetUp()
         {
-            go = new();
+            go = new GameObject();
             actor = go.AddComponent<Actor>();
         }
 
@@ -125,8 +125,8 @@ namespace Tests
             actor.EnterState<Grounded>(); //<- Grounded knocks out DefaultState
 
             actor.Update();
-            actor.PropagateMessage(new("Jump", Message.Phase.Started));
-            actor.PropagateMessage(new("Jump", Message.Phase.Held));
+            actor.PropagateMessage(new Message("Jump", Message.Phase.Started));
+            actor.PropagateMessage(new Message("Jump", Message.Phase.Held));
 
             actor.ExitState<Grounded>();
             actor.ExitState<Movable>();
@@ -160,7 +160,7 @@ namespace Tests
             actor.EnterState<PreliminaryState>();
             
             actor.Update();
-            actor.PropagateMessage(new("Next", Message.Phase.Started));
+            actor.PropagateMessage(new Message("Next", Message.Phase.Started));
             
             actor.Update();
             actor.Update();

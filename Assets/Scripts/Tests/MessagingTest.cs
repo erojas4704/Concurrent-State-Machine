@@ -14,7 +14,7 @@ namespace Tests
         [SetUp]
         public void SetUp()
         {
-            go = new();
+            go = new GameObject();
             actor = go.AddComponent<Actor>();
         }
 
@@ -31,7 +31,7 @@ namespace Tests
             actor.EnterState<GroundedState>();
 
             actor.Update();
-            actor.PropagateMessage(new("Sprint", Message.Phase.Started));
+            actor.PropagateMessage(new Message("Sprint", Message.Phase.Started));
 
             actor.Update();
             Assert.IsTrue(actor.Is<MovingState>());
@@ -45,15 +45,15 @@ namespace Tests
             actor.EnterState<GroundedState>();
 
             actor.Update();
-            actor.PropagateMessage(new("Sprint", Message.Phase.Started));
-            actor.PropagateMessage(new("Sprint", Message.Phase.Held));
+            actor.PropagateMessage(new Message("Sprint", Message.Phase.Started));
+            actor.PropagateMessage(new Message("Sprint", Message.Phase.Held));
 
             //Sprint is held, actor enters "SprintState"
             actor.Update();
             Assert.IsTrue(actor.Is<MovingState>());
             Assert.IsTrue(actor.Is<GroundedState>());
             Assert.IsTrue(actor.Is<SprintState>());
-            actor.PropagateMessage(new("Attack", Message.Phase.Started));
+            actor.PropagateMessage(new Message("Attack", Message.Phase.Started));
 
             //Actor enters "AttackState", which negates the "SprintState"
             actor.Update();
@@ -78,11 +78,11 @@ namespace Tests
             actor.EnterState<GroundedState>();
             actor.Update();
 
-            actor.PropagateMessage(new("Attack", Message.Phase.Started));
+            actor.PropagateMessage(new Message("Attack", Message.Phase.Started));
             actor.Update();
 
             Assert.IsTrue(actor.Is<AttackState>());
-            Message jumpMessage = new("Jump", Message.Phase.Started);
+            Message jumpMessage = new Message("Jump", Message.Phase.Started);
             actor.PropagateMessage(jumpMessage);
 
             actor.Update();
@@ -106,7 +106,7 @@ namespace Tests
             Assert.IsFalse(actor.Is<GroundedState>());
             Assert.IsTrue(actor.Is<AirborneState>());
 
-            Message message = new("Jump", Message.Phase.Started);
+            Message message = new Message("Jump", Message.Phase.Started);
             actor.PropagateMessage(message);
 
             actor.Update();
@@ -117,7 +117,7 @@ namespace Tests
         [Test]
         public void TestGhostStatesShouldNotProcessMessagesMoreThanOnce()
         {
-            Message message1 = new("Jump", Message.Phase.Started);
+            Message message1 = new Message("Jump", Message.Phase.Started);
             Message message2 = new Message("Jump", Message.Phase.Started);
             actor.EnterState<GroundedState>();
 
@@ -131,7 +131,8 @@ namespace Tests
             Assert.IsTrue(actor.Is<AirborneState>());
             actor.PropagateMessage(message1);
 
-            actor.Update();
+            actor.Update(); //To process the message
+            actor.Update(); //To process the queue
             Assert.IsTrue(actor.Is<JumpState>());
             actor.PropagateMessage(message2);
 
@@ -153,9 +154,9 @@ namespace Tests
             Assert.IsFalse(actor.Is<GroundedState>());
             Assert.IsTrue(actor.Is<AirborneState>());
 
-            Message message = new("Jump", Message.Phase.Started);
-            Message axisMessage0 = new("Axis", Message.Phase.Started);
-            Message axisMessage1 = new("Axis", Message.Phase.Held);
+            Message message = new Message("Jump", Message.Phase.Started);
+            Message axisMessage0 = new Message("Axis", Message.Phase.Started);
+            Message axisMessage1 = new Message("Axis", Message.Phase.Held);
             axisMessage0.SetValue(Vector2.up);
             axisMessage1.SetValue(Vector2.up);
             actor.PropagateMessage(axisMessage0);
@@ -174,19 +175,19 @@ namespace Tests
             actor.EnterState<GroundedState>();
 
             actor.Update();
-            actor.PropagateMessage(new("Sprint", Message.Phase.Started));
-            actor.PropagateMessage(new("Sprint", Message.Phase.Held));
+            actor.PropagateMessage(new Message("Sprint", Message.Phase.Started));
+            actor.PropagateMessage(new Message("Sprint", Message.Phase.Held));
 
             actor.Update();
             Assert.IsTrue(actor.Is<SprintState>());
-            actor.PropagateMessage(new("Attack", Message.Phase.Started));
+            actor.PropagateMessage(new Message("Attack", Message.Phase.Started));
 
             actor.Update();
             Assert.IsTrue(actor.Is<AttackState>());
             Assert.IsFalse(actor.Is<SprintState>());
 
             actor.Update();
-            actor.PropagateMessage(new("Sprint", Message.Phase.Ended));
+            actor.PropagateMessage(new Message("Sprint", Message.Phase.Ended));
 
             actor.Update();
             Assert.IsFalse(actor.Is<SprintState>());
@@ -202,8 +203,8 @@ namespace Tests
         [Test]
         public void TestHeldAxisShouldPropagateToMovementState()
         {
-            Message axisMessage = new("Axis", Message.Phase.Started);
-            Vector2 movementAxis = new(-1f, 0f);
+            Message axisMessage = new Message("Axis", Message.Phase.Started);
+            Vector2 movementAxis = new Vector2(-1f, 0f);
             axisMessage.SetValue(movementAxis);
             actor.EnterState<GroundedState>();
 
@@ -218,8 +219,8 @@ namespace Tests
         [Test]
         public void TestHeldAxisShouldPropagateToIncomingState()
         {
-            Message axisMessage = new("Axis", Message.Phase.Held);
-            Vector2 movementAxis = new(-1f, 0f);
+            Message axisMessage = new Message("Axis", Message.Phase.Held);
+            Vector2 movementAxis = new Vector2(-1f, 0f);
             axisMessage.SetValue(movementAxis);
             actor.EnterState<ClimbState>();
 
@@ -237,8 +238,8 @@ namespace Tests
         [Test]
         public void TestHeldAxisShouldPassAfterBlockingStateEnds()
         {
-            Message axisMessage = new("Axis", Message.Phase.Held);
-            Vector2 movementAxis = new(-1f, 0f);
+            Message axisMessage = new Message("Axis", Message.Phase.Held);
+            Vector2 movementAxis = new Vector2(-1f, 0f);
             axisMessage.SetValue(movementAxis);
             actor.EnterState<GroundedState>();
 
@@ -272,7 +273,7 @@ namespace Tests
             actor.Update();
 
             actor.EnterState<GroundedState>();
-            actor.PropagateMessage(new("Jump", Message.Phase.Started));
+            actor.PropagateMessage(new Message("Jump", Message.Phase.Started));
             actor.Update();
             actor.Update();
             Assert.AreEqual(1, groundedState.jumps);
@@ -425,7 +426,7 @@ namespace Tests
                         message.processed = true;
                     }
 
-                    if (message.name == "Jump")
+                    if (message.phase == Message.Phase.Started && message.name == "Jump")
                     {
                         actor.EnterState<JumpState>();
                         message.processed = true;

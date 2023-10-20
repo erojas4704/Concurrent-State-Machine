@@ -23,8 +23,6 @@ namespace CSM
 
         public void EnqueueMessage(Message message)
         {
-            if (message.name == "Move")
-                Debug.Log($"Enqueued message {message} Phase: {message.phase}");
             newMessages.Add(message);
             if (message.phase == Message.Phase.Ended)
             {
@@ -91,9 +89,27 @@ namespace CSM
             }
         }
 
-        private bool ShouldHoldMessage(Message message) => message.phase == Message.Phase.Started && message.hold;
+        private bool ShouldHoldMessage(Message message) => message.phase == Message.Phase.Started ||
+                                                           message.phase == Message.Phase.Held && message.hold;
 
         private static bool ShouldBufferMessage(Message message) =>
             !message.processed && message.isBufferable && message.phase == Message.Phase.Started;
+
+        internal bool ProcessMessagesForGhostState(Actor.GhostState ghost)
+        {
+            bool processed = false;
+            //Ghost states do not get to block messages
+            foreach (Message message in messagesToProcessThisFrame)
+            {
+                if (ghost.messagesToListenFor.Count > 0 && !ghost.messagesToListenFor.Contains(message.name))
+                    continue;
+
+                ghost.state.Process(message);
+                if (message.processed)
+                    processed = true;
+            }
+
+            return processed;
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace Tests
         [SetUp]
         public void SetUp()
         {
-            go = new();
+            go = new GameObject();
             actor = go.AddComponent<Actor>();
         }
 
@@ -394,8 +394,8 @@ namespace Tests
         [Test]
         public void TestGhostStateShouldNotTriggerWhenStateIsReplaced()
         {
-            Message message1 = new("End", Message.Phase.Started);
-            Message message2 = new("End", Message.Phase.Started);
+            Message message1 = new Message("End", Message.Phase.Started);
+            Message message2 = new Message("End", Message.Phase.Started);
             actor.EnterState<MessagingState0>();
 
             actor.Update();
@@ -414,7 +414,7 @@ namespace Tests
         [Test]
         public void TestGhostStateShouldProcessMessageAfterExit()
         {
-            Message message1 = new("End", Message.Phase.Started);
+            Message message1 = new Message("End", Message.Phase.Started);
             actor.EnterState<MessagingState0>();
 
             actor.Update();
@@ -436,8 +436,8 @@ namespace Tests
         [Test]
         public void TestGhostStateShouldNotProcessMessageAfterCancelledByGroup()
         {
-            Message message1 = new("Jump", Message.Phase.Started);
-            Message message2 = new("Jump", Message.Phase.Started);
+            Message message1 = new Message("Jump", Message.Phase.Started);
+            Message message2 = new Message("Jump", Message.Phase.Started);
             actor.EnterState<Grounded>();
 
             actor.Update();
@@ -464,7 +464,7 @@ namespace Tests
         [Test]
         public void TestGhostStateShouldProcessJump()
         {            
-            Message message1 = new("Jump", Message.Phase.Started);
+            Message message1 = new Message("Jump", Message.Phase.Started);
             actor.EnterState<Grounded>();
             
             actor.Update();
@@ -487,12 +487,18 @@ namespace Tests
         }
 
         [Test]
+        public void GhostStateShouldNotProcessInputAfterExpiration()
+        {
+            Assert.IsTrue(false);
+        }
+
+        [Test]
         public void TestHeldInputShouldBeProcessedByNewState()
         {            
-            Message message1 = new("Sprint", Message.Phase.Started);
-            Message message2 = new("Sprint", Message.Phase.Held);
-            Message message3 = new("Sprint", Message.Phase.Ended);
-            Message message4 = new("Jump", Message.Phase.Started);
+            Message message1 = new Message("Sprint", Message.Phase.Started);
+            Message message2 = new Message("Sprint", Message.Phase.Held);
+            Message message3 = new Message("Sprint", Message.Phase.Ended);
+            Message message4 = new Message("Jump", Message.Phase.Started);
             actor.EnterState<Grounded>();
             
             actor.Update();
@@ -511,7 +517,7 @@ namespace Tests
             actor.Update();
             actor.EnterState<Grounded>(); 
             
-            actor.Update(); //Landed
+            actor.Update();
             Assert.IsTrue(actor.Is<Sprint>());
             Assert.IsTrue(actor.Is<Grounded>());
 

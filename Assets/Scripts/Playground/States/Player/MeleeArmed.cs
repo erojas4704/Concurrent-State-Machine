@@ -12,7 +12,6 @@ namespace Playground.States.Player
         {
             if (message.name == "Attack" && message.phase == Message.Phase.Held)
             {
-                Debug.Log("ATTACK HELD");
                 return false;
             }
 

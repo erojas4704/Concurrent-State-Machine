@@ -19,7 +19,8 @@ namespace CSM
         /** Pool of states that have been removed. This prevents GC running on expired states. */
         private readonly Dictionary<Type, State> statePool = new Dictionary<Type, State>();
 
-        private readonly Dictionary<Type, GhostState> ghostStates = new Dictionary<Type, GhostState>();
+        /**A list of states that have ended, but are still capable of parsing inputs.*/
+        private Dictionary<Type, GhostState> ghostStates = new Dictionary<Type, GhostState>();
 
         [SerializeField, HideInInspector] private string defaultState;
 
@@ -44,19 +45,47 @@ namespace CSM
 
         public virtual void Update()
         {
-            if (stats) stats.Reset();
-
+            if (stats) stats.Reset(); //TODO [Z-56] keep record of all stat changes.
             messageBroker.PrimeMessages();
-            foreach (State state in statesStack)
+            ProcessGhostStates();
+            ProcessStates(statesStack);
+            List<State> statesCreatedThisFrame = ProcessQueues();
+            ProcessStates(statesCreatedThisFrame);
+            messageBroker.CleanUp(bufferTime);
+        }
+
+
+        private void ProcessStates(IEnumerable<State> states)
+        {
+            foreach (State state in states)
             {
                 messageBroker.ProcessMessagesForState(state);
                 state.Update();
-                //TODO [Z-56] keep record of all stat changes.
+            }
+        }
+
+        private void ProcessGhostStates()
+        {
+            Dictionary<Type, GhostState> ghostStatesNextFrame = new Dictionary<Type, GhostState>();
+            foreach (GhostState ghost in ghostStates.Values)
+            {
+                if (statesStack.Contains(ghost.state.GetType()))
+                {
+                    //If the ghostState is active, we can remove it.
+                    ghostStates.Remove(ghostStates.GetType());
+                    continue;
+                }
+
+                if (Time.time < ghost.state.expiresAt)
+                {
+                    //TODO [Zeal-159] Will no longer using Types to uniquely identify states.
+                    bool processed = messageBroker.ProcessMessagesForGhostState(ghost);
+                    if (!processed)
+                        ghostStatesNextFrame[ghost.state.GetType()] = ghost;
+                }
             }
 
-            messageBroker.CleanUp(bufferTime);
-
-            ProcessQueues();
+            ghostStates = ghostStatesNextFrame;
         }
 
         //TODO Z-67: What happens if we call this with a state that does not exist in the stack?
@@ -93,7 +122,6 @@ namespace CSM
             State newState = GetOrCreateState(stateType);
 
             StateAndInitiator si = new StateAndInitiator(newState, initiator);
-
             slatedForCreation.Enqueue(si);
 
             //TODO Z-67. Wildly inefficient use of queues. Redesign the list.
@@ -125,9 +153,10 @@ namespace CSM
         /**Creates and deletes all states that are slated for creation or deletion. This method handles state pooling and
          * resolving dependencies.
          */
-        private void ProcessQueues()
+        private List<State> ProcessQueues()
         {
             bool changed = false;
+            List<State> statesCreatedThisFrame = new List<State>();
 
             while (slatedForCreation.Count > 0)
             {
@@ -169,7 +198,9 @@ namespace CSM
                     changed = true;
                     foreach (State stateToCreate in statesToCreate)
                     {
-                        CreateState(stateToCreate, si.initiator);
+                        statesCreatedThisFrame.Add(
+                            CreateState(stateToCreate, si.initiator)
+                        );
                     }
 
                     foreach (State stateToDestroy in statesToDestroy)
@@ -200,6 +231,8 @@ namespace CSM
                 OnStateChange?.Invoke(this);
                 if (statesStack.Count < 1) EnterDefaultState();
             }
+
+            return statesCreatedThisFrame;
         }
 
         private bool HasSoloState() => statesStack.Values.Any(state => state.solo);
@@ -370,40 +403,6 @@ namespace CSM
             messageBroker.EnqueueMessage(message);
         }
 
-        public bool PropagateMessage2(Message message, bool buffer = true)
-        {
-            foreach (State s in statesStack)
-            {
-                bool messageBlocked = s.Process(message);
-                if (messageBlocked) return message.processed;
-            }
-
-            //TODO [Z-67]...
-            //Process ghost states. Ghost states have no order and cannot block messages.
-            GhostState[] ghostStateValues = ghostStates.Values.ToArray();
-            foreach (GhostState ghost in ghostStateValues)
-            {
-                if (ghost.messagesToListenFor.Count > 0 && !ghost.messagesToListenFor.Contains(message.name)) continue;
-                State ghostState = ghost.state;
-                if (statesStack.Contains(ghost.state.GetType()))
-                {
-                    ghostStates.Remove(ghostState.GetType());
-                    continue;
-                }
-
-                if (Time.time < ghostState.expiresAt)
-                {
-                    ghostState.Process(message);
-                    if (message.processed)
-                    {
-                        ghostStates.Remove(ghostState.GetType());
-                    }
-                }
-            }
-
-            return message.processed;
-        }
-
 
         private List<State> GetDependentStates(State state)
         {
@@ -444,9 +443,11 @@ namespace CSM
             }
         }
 
-        private class GhostState
+        internal class GhostState
         {
             public State state;
+
+            /**A whitelist of messages to listen for. If specified, the ghost state will only consume these.*/
             public HashSet<string> messagesToListenFor;
         }
 

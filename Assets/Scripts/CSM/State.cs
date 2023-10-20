@@ -14,6 +14,7 @@ namespace CSM
         public int Group { get; init; } = -1;
 
         public float startTime;
+        /**Time for ghost state to expire.*/
         public float expiresAt;
 
         public Stats stats;
