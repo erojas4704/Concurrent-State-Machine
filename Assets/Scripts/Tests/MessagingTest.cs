@@ -233,6 +233,7 @@ namespace Tests
 
             actor.Update();
             actor.EnterState<GroundedState>();
+            actor.Update();
             Assert.IsTrue(actor.Is<MovingState>());
 
             actor.Update();
@@ -345,6 +346,24 @@ namespace Tests
             actor.EnqueueMessage(processMessage);
             actor.Update();
             Assert.AreEqual(1, multiprocessorState.iterations);
+        }
+
+        [Test]
+        public void TestHeldInputsShouldBeProcessedEveryFrame()
+        {
+            Message processMessage = new Message("Process", Message.Phase.Started);
+            processMessage.hold = true;
+            actor.EnterState<MultiprocessorState>();
+            actor.Update();
+            MultiprocessorState multiprocessorState = actor.GetState<MultiprocessorState>();
+            actor.EnqueueMessage(processMessage);
+            actor.Update();
+            Assert.AreEqual(1, multiprocessorState.iterations);
+            actor.Update();
+            actor.Update();
+            actor.Update();
+            actor.Update();
+            Assert.AreEqual(5, multiprocessorState.iterations);
         }
 
         #region messaging states
