@@ -15,6 +15,7 @@ namespace CSM
         /**New messages to be processed.*/
         private readonly List<Message> newMessages = new List<Message>();
 
+        /**Messages to be processed the entire frame across all states.*/
         private HashSet<Message> messagesToProcessThisFrame = new HashSet<Message>();
 
         /**Bufferable messages that failed to be processed this frame.*/
