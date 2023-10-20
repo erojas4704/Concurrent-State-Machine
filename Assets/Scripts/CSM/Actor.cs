@@ -396,7 +396,11 @@ namespace CSM
             return true;
         }
 
-        public void PropagateMessage(Message message, bool buffer = true)
+        /**Enqueues a message to be processed the immediate next frame.
+         * @param message The message to be processed.
+         * @param buffer If true, the message will be held until it is processed.
+         */
+        public void EnqueueMessage(Message message, bool buffer = true)
         {
             message.isBufferable = buffer;
             messageBroker.EnqueueMessage(message);

@@ -20,6 +20,8 @@ namespace CSM
         /**Bufferable messages that failed to be processed this frame.*/
         private readonly HashSet<Message> unprocessedMessages = new HashSet<Message>();
 
+        private readonly HashSet<Message> blockedMessagesThisFrame = new HashSet<Message>();
+
 
         public void EnqueueMessage(Message message)
         {
@@ -48,21 +50,26 @@ namespace CSM
                 message.phase = Message.Phase.Held;
 
             unprocessedMessages.Clear();
+            blockedMessagesThisFrame.Clear();
         }
 
         public void ProcessMessagesForState(State state)
         {
             //Process all buffered messages and in the queue.
             List<Message> messagesToProcessThisState = new List<Message>(messagesToProcessThisFrame);
+
+            //Attempt to process all held messages. Held messages are processed first so 
+            //messages that have just started don't become held and are processed twice.
+            foreach (Message message in heldMessages.Values)
+            {
+                //Held messages cannot be blocked.
+                if (!blockedMessagesThisFrame.Contains(message))
+                    state.Process(message);
+            }
+
             foreach (Message message in messagesToProcessThisState)
             {
                 ProcessOrBufferMessage(state, message);
-            }
-
-            //Attempt to process all held messages
-            foreach (Message message in heldMessages.Values)
-            {
-                state.Process(message);
             }
         }
 
@@ -77,6 +84,7 @@ namespace CSM
             if (blocking)
             {
                 messagesToProcessThisFrame.Remove(message);
+                blockedMessagesThisFrame.Add(message);
             }
 
             if (message.processed)

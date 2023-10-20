@@ -21,11 +21,11 @@ namespace CSM
 
             Message message = new Message(context);
             if (context.action.type == InputActionType.Value)
-                PropagateMessage(message, false); //We don't want to propagate value messages, like analog sticks
+                EnqueueMessage(message, false); //We don't want to propagate value messages, like analog sticks
             else
             {
                 message.hold = true;
-                PropagateMessage(message);
+                EnqueueMessage(message);
             }
         }
 
@@ -37,7 +37,7 @@ namespace CSM
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            PropagateMessage(new Message("ControllerCollision", hit, Message.Phase.Started), false);
+            EnqueueMessage(new Message("ControllerCollision", hit, Message.Phase.Started), false);
         }
 
         public void OnTriggerEnter(Collider other)
@@ -45,7 +45,7 @@ namespace CSM
             ITrigger trigger = other.GetComponent<ITrigger>();
             if (trigger != null)
             {
-                PropagateMessage(new Message(trigger.GetTriggerAction(), trigger), false);
+                EnqueueMessage(new Message(trigger.GetTriggerAction(), trigger), false);
             }
         }
 
@@ -54,7 +54,7 @@ namespace CSM
             ITrigger trigger = other.GetComponent<ITrigger>();
             if (trigger != null)
             {
-                PropagateMessage(new Message(trigger.GetTriggerAction(), trigger, Message.Phase.Ended),
+                EnqueueMessage(new Message(trigger.GetTriggerAction(), trigger, Message.Phase.Ended),
                     false);
             }
         }
