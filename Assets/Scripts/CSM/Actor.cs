@@ -49,8 +49,7 @@ namespace CSM
             messageBroker.PrimeMessages();
             ProcessGhostStates();
             ProcessStates(statesStack);
-            List<State> statesCreatedThisFrame = ProcessQueues();
-            ProcessStates(statesCreatedThisFrame);
+            ProcessQueues();
             messageBroker.CleanUp(bufferTime);
         }
 
