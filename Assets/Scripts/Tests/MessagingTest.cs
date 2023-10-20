@@ -48,19 +48,22 @@ namespace Tests
             actor.PropagateMessage(new("Sprint", Message.Phase.Started));
             actor.PropagateMessage(new("Sprint", Message.Phase.Held));
 
-
+            //Sprint is held, actor enters "SprintState"
             actor.Update();
             Assert.IsTrue(actor.Is<MovingState>());
             Assert.IsTrue(actor.Is<GroundedState>());
             Assert.IsTrue(actor.Is<SprintState>());
             actor.PropagateMessage(new("Attack", Message.Phase.Started));
 
+            //Actor enters "AttackState", which negates the "SprintState"
             actor.Update();
             Assert.IsTrue(actor.Is<AttackState>());
             Assert.IsFalse(actor.Is<SprintState>());
 
             AttackState attackState = actor.GetState<AttackState>();
             attackState.shouldEnd = true;
+            
+            //Attack state ends, actor should re-enter "SprintState"
             actor.Update();
             actor.Update();
             actor.Update();

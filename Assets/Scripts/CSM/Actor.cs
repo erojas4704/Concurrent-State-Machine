@@ -16,28 +16,20 @@ namespace CSM
         /**States scheduled to be initialized this frame. This work is done at the end of an update cycle. */
         private Queue<StateAndInitiator> slatedForCreation = new Queue<StateAndInitiator>();
 
-        /** Buffered messages for player input buffering. */
-        private readonly Queue<Message> messageBuffer = new Queue<Message>();
-
         /** Pool of states that have been removed. This prevents GC running on expired states. */
         private readonly Dictionary<Type, State> statePool = new Dictionary<Type, State>();
 
         private readonly Dictionary<Type, GhostState> ghostStates = new Dictionary<Type, GhostState>();
-
-        private readonly Dictionary<string, Message> heldMessages = new Dictionary<string, Message>();
 
         [SerializeField, HideInInspector] private string defaultState;
 
         //TODO <- This may be better off delegated to a persistent stat. 
         public Vector3 velocity;
         private Stats stats;
-
         public delegate void StateChangeHandler(Actor actor);
-
         public event StateChangeHandler OnStateChange;
+        private readonly MessageBroker messageBroker = new MessageBroker();
 
-        /**How long messages are buffered for, in seconds. */
-        public float messageBufferDurationSeconds = 0.05f;
 
         private void Awake()
         {
@@ -49,15 +41,16 @@ namespace CSM
         {
             if (stats) stats.Reset();
 
-            ProcessQueues();
-            ProcessActionBuffer();
-            ProcessHeldMessages();
-
+            messageBroker.PrimeMessages();
             foreach (State state in statesStack)
             {
+                messageBroker.ProcessMessagesForState(state);
                 state.Update();
-                //TODO Z-56 keep record of all stat changes.
+                //TODO [Z-56] keep record of all stat changes.
             }
+            messageBroker.CleanUp();
+
+            ProcessQueues();
         }
 
         //TODO Z-67: What happens if we call this with a state that does not exist in the stack?
@@ -213,8 +206,6 @@ namespace CSM
             newState.Init(initiator);
             newState.startTime = Time.time;
             newState.expiresAt = 0;
-            //TODO Z-67: Nasty way of handling. Also potential InvalidOperationException. Break this down into a method
-            foreach (Message message in heldMessages.Values) newState.Process(message); //Process held messages
             return newState;
         }
 
@@ -367,34 +358,13 @@ namespace CSM
             return true;
         }
 
-        private void ProcessActionBuffer()
+        public void PropagateMessage(Message message, bool buffer = true)
         {
-            if (messageBuffer.Count < 1) return;
-
-            Message firstMessage = messageBuffer.Peek();
-            firstMessage.timer +=
-                Time.deltaTime; //TODO <- make a field for this that uses Time.time instead of having to increment it every time.
-
-            if (PropagateMessage(firstMessage, false))
-            {
-                messageBuffer.Dequeue();
-            }
-            else if (firstMessage.timer >= messageBufferDurationSeconds)
-            {
-                messageBuffer.Dequeue();
-            }
-        }
-        
-        private void ProcessHeldMessages()
-        {
-            List<Message> heldMessageBuffer = new List<Message>(heldMessages.Values);
-            foreach (Message message in heldMessageBuffer)
-            {
-                PropagateMessage(message, false);
-            }
+            message.isBufferable = buffer;
+            messageBroker.EnqueueMessage(message);
         }
 
-        public bool PropagateMessage(Message message, bool buffer = true)
+        public bool PropagateMessage2(Message message, bool buffer = true)
         {
             foreach (State s in statesStack)
             {
@@ -425,24 +395,9 @@ namespace CSM
                 }
             }
 
-            if (ShouldBufferMessage(message, buffer))
-                messageBuffer.Enqueue(message);
-            
-            if (message.phase == Message.Phase.Ended)
-            {
-                heldMessages.Remove(message.name);
-            }
-            else if (message.phase == Message.Phase.Started)
-            {
-                heldMessages[message.name] = message;
-                message.phase = Message.Phase.Held;
-            }
-
             return message.processed;
         }
 
-        private static bool ShouldBufferMessage(Message message, bool buffer) =>
-            !message.processed && buffer && message.phase == Message.Phase.Started;
 
         private List<State> GetDependentStates(State state)
         {

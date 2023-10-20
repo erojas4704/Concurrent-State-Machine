@@ -17,18 +17,16 @@ namespace CSM
 
         private void OnAction(InputAction.CallbackContext context)
         {
-            if (context.phase == InputActionPhase.Started) return;
-
-            // if (context.action.name == "Attack")
-            // {
-            //     Debug.Log(context.phase);
-            // }
+            if (context.phase == InputActionPhase.Started) return; //We only listen to InputActionPhase.Performed
 
             Message message = new Message(context);
             if (context.action.type == InputActionType.Value)
                 PropagateMessage(message, false); //We don't want to propagate value messages, like analog sticks
             else
+            {
+                message.hold = true;
                 PropagateMessage(message);
+            }
         }
 
         private void OnDisable()
@@ -39,7 +37,7 @@ namespace CSM
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            PropagateMessage(new("ControllerCollision", hit, Message.Phase.Started), false);
+            PropagateMessage(new Message("ControllerCollision", hit, Message.Phase.Started), false);
         }
 
         public void OnTriggerEnter(Collider other)
