@@ -320,7 +320,7 @@ namespace CSM
                 GhostState ghostState = new GhostState
                 {
                     state = state,
-                    messagesToListenFor = new(messagesToListenFor)
+                    messagesToListenFor = new HashSet<string>(messagesToListenFor)
                 };
 
                 ghostStates[state.GetType()] = ghostState;
@@ -464,7 +464,7 @@ namespace CSM
 
         #region EnterState overloads
 
-        public void EnterState<T>(object initiator) where T : State => EnterState<T>(new("", initiator));
+        public void EnterState<T>(object initiator) where T : State => EnterState<T>(new Message("", initiator));
 
         public void EnterState<T>() where T : State => EnterState(typeof(T));
 
