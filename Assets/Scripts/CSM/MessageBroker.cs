@@ -15,7 +15,7 @@ namespace CSM
         /**New messages to be processed.*/
         private readonly List<Message> newMessages = new List<Message>();
 
-        private HashSet<Message> messagesToProcessThisFrame;
+        private HashSet<Message> messagesToProcessThisFrame = new HashSet<Message>();
 
         /**Bufferable messages that failed to be processed this frame.*/
         private readonly HashSet<Message> unprocessedMessages = new HashSet<Message>();
@@ -35,7 +35,7 @@ namespace CSM
         /**Must be called before ProcessMessagesForState. This prepares the list of messages to be sent to states.*/
         public void PrimeMessages()
         {
-            messagesToProcessThisFrame = new HashSet<Message>(newMessages.Concat(messageBuffer));
+            messagesToProcessThisFrame.UnionWith(newMessages.Concat(messageBuffer));
         }
 
         public void CleanUp(float bufferTime)
@@ -51,6 +51,7 @@ namespace CSM
 
             unprocessedMessages.Clear();
             blockedMessagesThisFrame.Clear();
+            messagesToProcessThisFrame.Clear();
         }
 
         public void ProcessMessagesForState(State state)
