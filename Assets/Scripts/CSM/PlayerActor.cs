@@ -37,7 +37,7 @@ namespace CSM
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            EnqueueMessage(new Message("ControllerCollision", hit, Message.Phase.Started), false);
+            PropagateImmediate(new Message("ControllerCollision", hit, Message.Phase.Started));
         }
 
         public void OnTriggerEnter(Collider other)
@@ -45,7 +45,7 @@ namespace CSM
             ITrigger trigger = other.GetComponent<ITrigger>();
             if (trigger != null)
             {
-                EnqueueMessage(new Message(trigger.GetTriggerAction(), trigger), false);
+                PropagateImmediate(new Message(trigger.GetTriggerAction(), trigger));
             }
         }
 
@@ -54,8 +54,7 @@ namespace CSM
             ITrigger trigger = other.GetComponent<ITrigger>();
             if (trigger != null)
             {
-                EnqueueMessage(new Message(trigger.GetTriggerAction(), trigger, Message.Phase.Ended),
-                    false);
+                PropagateImmediate(new Message(trigger.GetTriggerAction(), trigger, Message.Phase.Ended));
             }
         }
     }

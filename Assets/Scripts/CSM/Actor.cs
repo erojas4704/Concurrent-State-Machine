@@ -406,6 +406,19 @@ namespace CSM
             messageBroker.EnqueueMessage(message);
         }
 
+        /// <summary>
+        /// Propagates a message down the state chain immediately, not waiting for the next frame.
+        /// </summary>
+        /// <param name="message">The message to propagate</param>
+        public void PropagateImmediate(Message message)
+        {
+            foreach (State state in statesStack)
+            {
+                bool blocking = state.Process(message);
+                if (blocking) break;
+            }
+        }
+
 
         private List<State> GetDependentStates(State state)
         {
